@@ -1,0 +1,9 @@
+rpgWorld: "world"
+regions:
+  0:
+    name: "&aHub"
+    x: 0
+    z: 0
+    x2: 100
+    z2: 100
+npcs:

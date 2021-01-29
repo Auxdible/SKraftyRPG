@@ -1,0 +1,31 @@
+name: SKRPG
+version: ${project.version}
+main: com.auxdible.skrpg.SKRPG
+api-version: 1.13
+authors: [Auxdible]
+description: SKrafty RPG Plugin
+commands:
+  giveItem:
+    description: Give a player an Item.
+  createMobSpawn:
+    description: Create a mob spawn.
+  menu:
+    description: Open the Menu for SKRPG.
+  createregion:
+    description: Creates a region for SKRPG.
+  ct:
+    description: Open the crafting table.
+  stats:
+    description: Show your statistics.
+  skills:
+    description: Show your skills.
+  createnpc:
+    description: Create a npc for SKRPG.
+  addcredits:
+    description: Add credits.
+  setSpeed:
+    description: Set your speed.
+  trade:
+    description: Do a trade with a player.
+  spawnEntity:
+    description: Spawn a entity.

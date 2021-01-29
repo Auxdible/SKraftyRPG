@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="SKraftyRPG:jar">
+    <output-path>$USER_HOME$/Desktop/Spigot Coding</output-path>
+    <root id="archive" name="SKraftyRPG.jar">
+      <element id="module-output" name="SKraftyRPG" />
+    </root>
+  </artifact>
+</component>
