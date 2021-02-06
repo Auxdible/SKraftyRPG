@@ -26,6 +26,9 @@ public class GiveItemCommand implements CommandExecutor {
             return false;
         }
         Player player = (Player) sender;
+        if (!player.hasPermission("skrpg.admin")) {
+            Text.applyText(player, "&cAdmin is required to run this command!");
+        }
         if (args.length == 0) {
             skrpg.getLogger().info("Please name an item!");
         }

@@ -14,9 +14,12 @@ import com.auxdible.skrpg.player.economy.TradeManager;
 import com.auxdible.skrpg.regions.Region;
 import com.auxdible.skrpg.regions.RegionManager;
 import com.auxdible.skrpg.utils.Text;
+import com.sun.scenario.Settings;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -27,13 +30,13 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.EnumSet;
 
 public class SKRPG extends JavaPlugin {
-    public File playerData;
-    public File getPlayerDataFile() { return playerData; }
-    public FileConfiguration playerDataConfig;
-    public FileConfiguration getPlayerData() { return playerDataConfig; }
 
     public PlayerManager playerManager;
     public PlayerManager getPlayerManager() { return playerManager; }
@@ -53,20 +56,25 @@ public class SKRPG extends JavaPlugin {
     public TradeManager tradeManager;
     public TradeManager getTradeManager() { return tradeManager; }
 
+    private String host, database, username, password;
+    private int port;
+    private static Connection connection;
+
     @Override
     public void onEnable() {
         // Plugin startup logic
         getLogger().info("Loading SKRPG core plugin...");
         saveDefaultConfig();
-        playerData = new File(getDataFolder(), "playerdata.yml");
-        if (!playerData.exists()) {
-            playerData.getParentFile().mkdirs();
-            saveResource("playerdata.yml", false);
-        }
-        playerDataConfig = new YamlConfiguration();
+        host = getConfig().getString("mySQL.host");
+        database = getConfig().getString("mySQL.database");
+        username = getConfig().getString("mySQL.username");
+        password = getConfig().getString("mySQL.password");
+        port = getConfig().getInt("mySQL.port");
+
         try {
-            playerDataConfig.load(playerData);
-        } catch (IOException | InvalidConfigurationException x) {
+            openConnection();
+            getLogger().info("Connected to database.");
+        } catch (SQLException x) {
             x.printStackTrace();
         }
 
@@ -78,7 +86,6 @@ public class SKRPG extends JavaPlugin {
         tradeManager = new TradeManager(this);
         mobSpawnManager.enable();
         npcManager.enable();
-        playerManager.enable();
         regionManager.enable();
         Bukkit.getPluginManager().registerEvents(new PlayerJoinLeaveListener(this), this);
         Bukkit.getPluginManager().registerEvents(new PlayerListener(this), this);
@@ -93,10 +100,10 @@ public class SKRPG extends JavaPlugin {
         getCommand("createnpc").setExecutor(new CreateNPCCommand(this));
         getCommand("createMobSpawn").setExecutor(new CreateMobSpawnCommand(this));
         getCommand("addCredits").setExecutor(new AddCreditsCommand(this));
-        getCommand("setSpeed").setExecutor(new SpeedCommand(this));
         getCommand("trade").setExecutor(new TradeCommand(this));
         getCommand("spawnEntity").setExecutor(new SpawnEntityCommand(this));
-        playerManager.enable();
+        getCommand("collections").setExecutor(new CollectionsCommand(this));
+        getCommand("settings").setExecutor(new SettingsCommand(this));
         getLogger().info("Loaded SKRPG core plugin!");
         new BukkitRunnable() {
 
@@ -146,7 +153,7 @@ public class SKRPG extends JavaPlugin {
                     for (Items item : Items.values()) {
                         if (player.getInventory().getItemInMainHand().getType() != Material.AIR) {
                             if (player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().contains(
-                                    Text.color(item.getName())) && item.getItemType().equals(ItemType.SWORD)) {
+                                    Text.color(item.getName()))) {
                                 strengthIncrease = strengthIncrease + item.getStrength();
                                 defenceIncrease = defenceIncrease + item.getDefence();
                                 energyIncrease = energyIncrease + item.getEnergy();
@@ -230,7 +237,7 @@ public class SKRPG extends JavaPlugin {
                     }
                 }
             }
-        }.runTaskTimer(this, 0, 40);
+        }.runTaskTimer(this, 0, 80);
         SKRPG skrpg = this;
         new BukkitRunnable() {
             @Override
@@ -247,15 +254,36 @@ public class SKRPG extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        playerManager.disable();
+        playerManager.disableMySQL();
         regionManager.disable();
         npcManager.disable();
         mobSpawnManager.disable();
+
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.kickPlayer("The server is reloading!");
         }
         for (Entity entity : Bukkit.getWorld(getConfig().getString("rpgWorld")).getEntities()) {
             entity.remove();
         }
+    }
+    public static int levelToInt(String level) {
+        return Integer.parseInt(level.replaceAll("_", ""));
+    }
+    private void openConnection() throws SQLException {
+        if (connection != null && !connection.isClosed()) {
+            return;
+        }
+
+        connection = DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database,
+                this.username, this.password);
+    }
+    public static PreparedStatement prepareStatement(String query) {
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(query);
+        } catch (SQLException x) {
+            x.printStackTrace();
+        }
+        return ps;
     }
 }

@@ -21,9 +21,15 @@ public class CreateRegionCommand implements CommandExecutor {
             return false;
         }
         Player player = (Player) sender;
+        if (!player.hasPermission("skrpg.admin")) {
+            Text.applyText(player, "&cAdmin is required to run this command!");
+        }
         if (args.length != 5) {
             Text.applyText(player, "&c&oUsage: /createregion (x) (z) (x2) (z2) (name)");
             return false;
+        }
+        if (!player.hasPermission("skrpg.admin")) {
+            Text.applyText(player, "&cAdmin is required to run this command!");
         }
         skrpg.getRegionManager().addRegion(skrpg.getRegionManager().getRegions().size(),
                 args[4].replace("_", " "), Double.parseDouble(args[0]), Double.parseDouble(args[1]), Double.parseDouble(args[2]),

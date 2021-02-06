@@ -22,6 +22,9 @@ public class CreateMobSpawnCommand implements CommandExecutor {
             return false;
         }
         Player player = (Player) sender;
+        if (!player.hasPermission("skrpg.admin")) {
+            Text.applyText(player, "&cAdmin is required to run this command!");
+        }
         if (args.length != 1) {
             Text.applyText(player, "&c&oUsage: /createmobspawn (type)");
             return false;

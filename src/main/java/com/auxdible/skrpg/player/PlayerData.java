@@ -1,5 +1,7 @@
 package com.auxdible.skrpg.player;
 
+import com.auxdible.skrpg.items.Rarity;
+import com.auxdible.skrpg.player.collections.Collection;
 import com.auxdible.skrpg.player.economy.Bank;
 import com.auxdible.skrpg.player.economy.Trade;
 import com.auxdible.skrpg.player.skills.Combat;
@@ -36,9 +38,13 @@ public class PlayerData {
     private ArrayList<Bank> banks;
     private Date intrestDate;
     private int baseSpeed;
+    private Rarity sellAboveRarity;
+    private boolean toggleTrade;
     private Trade trade;
+    private ArrayList<Collection> collections;
     public PlayerData(int maxHP, int maxEnergy, int strength, int defence, int speed, UUID uuid, int credits, Combat combat,
-                      Mining mining, Herbalism herbalism, Crafting crafting, ArrayList<Bank> banks, Date intrestDate) {
+                      Mining mining, Herbalism herbalism, Crafting crafting, ArrayList<Bank> banks,
+                      Date intrestDate, ArrayList<Collection> collections, Rarity sellAboveRarity, boolean toggleTrade) {
         this.crafting = crafting;
         this.maxHP = maxHP;
         this.hp = maxHP;
@@ -61,7 +67,15 @@ public class PlayerData {
         this.baseSpeed = speed;
         this.speed = speed;
         this.trade = null;
+        this.collections = collections;
+        this.toggleTrade = toggleTrade;
+        this.sellAboveRarity = sellAboveRarity;
     }
+    public ArrayList<Collection> getCollections() { return collections; }
+    public Rarity getSellAboveRarity() { return sellAboveRarity; }
+    public boolean canTrade() { return toggleTrade; }
+    public void setToggleTrade(boolean toggleTrade) { this.toggleTrade = toggleTrade; }
+    public void setSellAboveRarity(Rarity sellAboveRarity) { this.sellAboveRarity = sellAboveRarity; }
     public Trade getTrade() { return trade; }
     public void setTrade(Trade trade) { this.trade = trade; }
     public int getBaseSpeed() { return baseSpeed; }

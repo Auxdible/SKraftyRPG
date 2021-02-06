@@ -42,9 +42,15 @@ public class MenuCommand implements CommandExecutor {
                         Text.color("&fCredits: &b" + playerData.getCredits() + " C$"),
                         Text.color("&8&m>               <")
                 )).asItem());
-        inv.setItem(30, new ItemBuilder(Material.STONE_SWORD, 0).setName("&aSkills").asItem());
+        inv.setItem(30, new ItemBuilder(Material.STONE_SWORD, 0).setName("&aSkills")
+                .setLore(Arrays.asList(" ", Text.color("&7&oSkills are the heart of SKRPG, providing"),
+                        Text.color("&7&obuffs and awards to those who do the most work."), " ")).asItem());
         inv.setItem(31, new ItemBuilder(Material.CRAFTING_TABLE, 0).setName("&aCrafting Table").asItem());
-        inv.setItem(32, new ItemBuilder(Material.CHEST, 0).setName("&aCollections").asItem());
+        inv.setItem(32, new ItemBuilder(Material.CHEST, 0).setName("&aCollections").setLore(Arrays.asList(" ",
+                Text.color("&7&oDiscover new recourses to unlock collections,"), Text.color("&7&olevel up existing collections to get more crafting recipes,"), Text.color("&7&oand MORE!"), " ")).asItem());
+        inv.setItem(49, new ItemBuilder(Material.PAPER, 0).setName("&aSettings").setLore(
+                Arrays.asList(" ", Text.color("&7&oChange things about your Profile."), " ")
+        ).asItem());
         player.openInventory(inv);
         return false;
     }

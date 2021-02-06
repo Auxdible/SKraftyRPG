@@ -3,9 +3,13 @@ package com.auxdible.skrpg.player;
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.items.CraftingIngrediant;
 import com.auxdible.skrpg.items.ItemType;
+import com.auxdible.skrpg.items.Rarity;
 import com.auxdible.skrpg.mobs.MobSpawn;
 import com.auxdible.skrpg.mobs.npcs.NpcType;
 import com.auxdible.skrpg.mobs.npcs.PurchasableItem;
+import com.auxdible.skrpg.player.collections.Collection;
+import com.auxdible.skrpg.player.collections.CollectionType;
+import com.auxdible.skrpg.player.collections.Tiers;
 import com.auxdible.skrpg.player.economy.Bank;
 import com.auxdible.skrpg.player.economy.BankLevel;
 import com.auxdible.skrpg.player.skills.*;
@@ -51,13 +55,13 @@ public class PlayerListener implements Listener {
             return;
         }
         if (e.getRightClicked().getCustomName().contains("exportmerchant")) {
-            if (!(Integer.parseInt(playerData.getCombat().getLevel().toString().replace("_", "")) >= 7) ||
+            /* if (!(Integer.parseInt(playerData.getCombat().getLevel().toString().replace("_", "")) >= 7) ||
                     !(Integer.parseInt(playerData.getMining().getLevel().toString().replace("_", "")) >= 7) ||
                     !(Integer.parseInt(playerData.getCrafting().getLevel().toString().replace("_", "")) >= 7) ||
                     !(Integer.parseInt(playerData.getHerbalism().getLevel().toString().replace("_", "")) >= 7)) {
             Text.applyText(p, "&cYou must have Combat 7, Mining 7, Herbalism 7 and Crafting 7 &cin order to use the Export Merchant!");
             return;
-            }
+            } */
             Inventory inv = Bukkit.createInventory(null, 54, "Export Merchant");
             for (int i = 0; i <= 53; i++) {
                 inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
@@ -217,7 +221,7 @@ public class PlayerListener implements Listener {
                     if (player.getInventory().getItemInMainHand().getType() != Material.AIR && player.getInventory().getItemInMainHand().getItemMeta().getDisplayName()
                             .contains("Zombie Sword")) {
                         if (mob.getEnt().getType().equals(EntityType.ZOMBIE)) {
-                            nerfedDamage = (int) (nerfedDamage * 1.5);
+                            nerfedDamage = (int) Math.round(nerfedDamage * 1.5);
                         }
                     }
                     mob.setCurrentHP(mob.getCurrentHP() - nerfedDamage);
@@ -242,16 +246,31 @@ public class PlayerListener implements Listener {
                     if (mob.getEnt() instanceof LivingEntity) {
                         LivingEntity livingEntity = (LivingEntity) mob.getEnt();
                         livingEntity.damage(1.0);
-                        livingEntity.setHealth(20.0);
+                        livingEntity.setHealth(livingEntity.getMaxHealth());
                         livingEntity.setVelocity(new Vector(player.getLocation().getDirection().getX() / 3, 0.3, player.getLocation().getDirection().getZ() / 3));
                     }
                     if (mob.getCurrentHP() <= 0) {
                         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f);
 
                         for (MobKill mobKill : EnumSet.allOf(MobKill.class)) {
-                            if (mob.getEnt().getCustomName()    .contains(Text.color(mobKill.getMobType().getName()))) {
+                            if (mob.getEnt().getCustomName().contains(Text.color(mobKill.getMobType().getName()))) {
                                 if (mobKill.getDrop() != null) {
                                     player.getInventory().addItem(Items.buildItem(mobKill.getDrop()));
+                                }
+                                for (Collection collection : playerData.getCollections()) {
+                                    if (collection.getCollectionType().getItem().equals(mobKill.getDrop())) {
+                                        collection.setCollectionAmount(collection.getCollectionAmount() + 1);
+                                        if (collection.getCollectionAmount() > Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)).getAmountRequired()) {
+                                            collection.setTier(Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)));
+                                            Text.applyText(player, "&8&m>                                          ");
+                                            Text.applyText(player, "&b&l           TIER UP!");
+                                            Text.applyText(player, " ");
+                                            Text.applyText(player, "&7You tiered up to " + collection.getCollectionType().getItem().getName() + " &b" +
+                                                    Integer.parseInt(collection.getTier().toString()));
+                                            Text.applyText(player, "&7Recipe Unlocked: " + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getRarity().getColor() + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getName());
+                                            Text.applyText(player, "&8&m>                                          ");
+                                        }
+                                    }
                                 }
                                 if (mobKill.getRareDrops() != null) {
                                     double random = Math.random();
@@ -264,15 +283,15 @@ public class PlayerListener implements Listener {
                                                         .getRarity().getColor() + drop.getItems().getName());
                                                 Player finalPlayer = player;
                                                 new BukkitRunnable() {
-                                                    private int seconds = 1;
+                                                    int seconds = 1;
                                                     @Override
                                                     public void run() {
                                                         if (seconds == 1) {
-                                                            finalPlayer.playSound(finalPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 0.0f, 1.0f);
+                                                            finalPlayer.playSound(finalPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f);
                                                         } else if (seconds == 2) {
-                                                            finalPlayer.playSound(finalPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 0.0f, 0.5f);
+                                                            finalPlayer.playSound(finalPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 0.5f);
                                                         } else if (seconds == 3) {
-                                                            finalPlayer.playSound(finalPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 0.0f, 2.0f);
+                                                            finalPlayer.playSound(finalPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 2.0f);
                                                             cancel();
                                                         }
                                                         seconds++;
@@ -404,6 +423,21 @@ public class PlayerListener implements Listener {
         for (MineBlock mineBlock : EnumSet.allOf(MineBlock.class)) {
             if (e.getBlock().getType() == mineBlock.getBlockObtainedFrom()) {
                 p.getInventory().addItem(Items.buildItem(mineBlock.getCommonDrop()));
+                for (Collection collection : playerData.getCollections()) {
+                    if (collection.getCollectionType().getItem().equals(mineBlock.getCommonDrop())) {
+                        collection.setCollectionAmount(collection.getCollectionAmount() + 1);
+                        if (collection.getCollectionAmount() > Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)).getAmountRequired()) {
+                            collection.setTier(Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)));
+                            Text.applyText(p, "&8&m>                                          ");
+                            Text.applyText(p, "&b&l           TIER UP!");
+                            Text.applyText(p, " ");
+                            Text.applyText(p, "&7You tiered up to " + collection.getCollectionType().getItem().getName() + " &b" +
+                                    Integer.parseInt(collection.getTier().toString()));
+                            Text.applyText(p, "&7Recipe Unlocked: " + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getRarity().getColor() + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getName());
+                            Text.applyText(p, "&8&m>                                          ");
+                        }
+                    }
+                }
                 e.setCancelled(true);
                 double random = Math.random();
                 double random2 = Math.random();
@@ -414,15 +448,15 @@ public class PlayerListener implements Listener {
                             Text.applyText(p, "&r&5&lSPECIAL DROP! &r&8| " + drop.getItems()
                                     .getRarity().getColor() + drop.getItems().getName());
                             new BukkitRunnable() {
-                                private int seconds = 1;
+                                int seconds = 1;
                                 @Override
                                 public void run() {
                                     if (seconds == 1) {
-                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 0.0f, 1.0f);
+                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f);
                                     } else if (seconds == 2) {
-                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 0.0f, 0.5f);
+                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 0.5f);
                                     } else if (seconds == 3) {
-                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 0.0f, 2.0f);
+                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 2.0f);
                                         cancel();
                                     }
                                     seconds++;
@@ -485,7 +519,21 @@ public class PlayerListener implements Listener {
         for (MinePlant minePlant : EnumSet.allOf(MinePlant.class)) {
             if (e.getBlock().getType() == minePlant.getBlockObtainedFrom()) {
                 p.getInventory().addItem(Items.buildItem(minePlant.getObtainedItem()));
-
+                for (Collection collection : playerData.getCollections()) {
+                    if (collection.getCollectionType().getItem().equals(minePlant.getObtainedItem())) {
+                        collection.setCollectionAmount(collection.getCollectionAmount() + 1);
+                        if (collection.getCollectionAmount() > Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)).getAmountRequired()) {
+                            collection.setTier(Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)));
+                            Text.applyText(p, "&8&m>                                          ");
+                            Text.applyText(p, "&b&l           TIER UP!");
+                            Text.applyText(p, " ");
+                            Text.applyText(p, "&7You tiered up to " + collection.getCollectionType().getItem().getName() + " &b" +
+                                    Integer.parseInt(collection.getTier().toString()));
+                            Text.applyText(p, "&7Recipe Unlocked: " + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getRarity().getColor() + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getName());
+                            Text.applyText(p, "&8&m>                                          ");
+                        }
+                    }
+                }
                 int caneHeight = 0;
                 e.setCancelled(true);
                 double random = Math.random();
@@ -497,15 +545,15 @@ public class PlayerListener implements Listener {
                             Text.applyText(p, "&r&5&lSPECIAL DROP! &r&8| " + drop.getItems()
                                     .getRarity().getColor() + drop.getItems().getName());
                             new BukkitRunnable() {
-                                private int seconds = 1;
+                                int seconds = 1;
                                 @Override
                                 public void run() {
                                     if (seconds == 1) {
-                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 0.0f, 1.0f);
+                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f);
                                     } else if (seconds == 2) {
-                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 0.0f, 0.5f);
+                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 0.5f);
                                     } else if (seconds == 3) {
-                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 0.0f, 2.0f);
+                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 2.0f);
                                         cancel();
                                     }
                                     seconds++;
@@ -625,6 +673,21 @@ public class PlayerListener implements Listener {
         }
         if (e.getBlock().getType().toString().contains("WOOD") || e.getBlock().getType().toString().contains("LOG")) {
             e.getPlayer().getInventory().addItem(Items.buildItem(Items.WOOD));
+            for (Collection collection : playerData.getCollections()) {
+                if (collection.getCollectionType().getItem().equals(Items.WOOD)) {
+                    collection.setCollectionAmount(collection.getCollectionAmount() + 1);
+                    if (collection.getCollectionAmount() > Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)).getAmountRequired()) {
+                        collection.setTier(Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)));
+                        Text.applyText(p, "&8&m>                                          ");
+                        Text.applyText(p, "&b&l           TIER UP!");
+                        Text.applyText(p, " ");
+                        Text.applyText(p, "&7You tiered up to " + collection.getCollectionType().getItem().getName() + " &b" +
+                                SKRPG.levelToInt(collection.getTier().toString()));
+                        Text.applyText(p, "&7Recipe Unlocked: " + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getRarity().getColor() + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getName());
+                        Text.applyText(p, "&8&m>                                          ");
+                    }
+                }
+            }
             e.setCancelled(true);
             playerData.getCrafting().setXpTillNext(playerData.getCrafting().getXpTillNext() +
                     10);
@@ -684,6 +747,91 @@ public class PlayerListener implements Listener {
         }
     }
     @EventHandler
+    public void onInventoryInteract(InventoryInteractEvent e) {
+        Player p  = (Player) e.getWhoClicked();
+        PlayerData playerData = skrpg.getPlayerManager().getPlayerData(p.getUniqueId());
+        if (e.getView().getTitle().equals("Crafting Table")) {
+            List<Integer> slots = Arrays.asList(10, 11, 12, 19, 20, 21, 28, 29, 30);
+            HashMap<Integer, CraftingIngrediant> craftingItems = new HashMap<>();
+            int slot = 0;
+
+            for (int integer : slots) {
+                if (e.getInventory().getItem(integer) != null && e.getInventory().getItem(integer)
+                        .getType() != Material.AIR) {
+
+                    for (Items items : EnumSet.allOf(Items.class)) {
+                        if (ChatColor.stripColor(
+                                e.getInventory().getItem(integer).getItemMeta().getDisplayName()).contains(items.getName())) {
+                            if (e.getInventory().getItem(integer).getAmount() == 1) {
+                                craftingItems.put(slot, new CraftingIngrediant(items,
+                                        1));
+
+                            } else {
+                                craftingItems.put(slot, new CraftingIngrediant(items,
+                                        e.getInventory().getItem(integer).getAmount()));
+
+                            }
+
+
+                        }
+                    }
+                } else {
+                    craftingItems.put(slot, new CraftingIngrediant(Items.NONE, 0));
+                }
+                slot++;
+            }
+            Items recipeItem = null;
+            if (craftingItems.size() == 9) {
+                for (Items items : EnumSet.allOf(Items.class)) {
+                    int correctCraftingParts = 0;
+                    if (items.getCraftingRecipe() != null) {
+                        for (int b = 0; b < items.getCraftingRecipe().size(); b++) {
+                            if (items.getCraftingRecipe().get(b).getItems().equals(craftingItems.get(b).getItems()) &&
+                                    items.getCraftingRecipe().get(b).getAmount() <= craftingItems.get(b).getAmount()) {
+                                correctCraftingParts++;
+                            }
+                            if (correctCraftingParts == 9) {
+                                boolean collectionFound = false;
+                                for (Collection collection : playerData.getCollections()) {
+                                    for (int i = 0; i < CollectionType.generateRewardsMap(collection.getCollectionType()).size(); i++) {
+                                        if (CollectionType.generateRewardsMap(collection.getCollectionType()).get(Tiers.valueOf("_" + (i + 1))).getId().equals(items.getId())) {
+                                            collectionFound = true;
+                                            if (i + 1 > SKRPG.levelToInt(collection.getTier().toString())) {
+                                                Text.applyText(p, "You do not have a high enough collection level to use this!");
+                                            } else {
+                                                recipeItem = items;
+                                            }
+                                        }
+                                    }
+                                }
+                                if (!collectionFound) {
+                                    recipeItem = items;
+                                }
+                            }
+                        }
+
+                    }
+
+                }
+
+            }
+            if (recipeItem != null) {
+                e.getInventory().setItem(25, Items.buildItem(recipeItem));
+                e.getInventory().getItem(25).setAmount(recipeItem.getCraftingAmount());
+
+            } else {
+                e.getInventory().setItem(25, null);
+            }
+            new BukkitRunnable() {
+
+                @Override
+                public void run() {
+                    p.updateInventory();
+                }
+            }.runTaskLater(skrpg, 1);
+        }
+    }
+    @EventHandler
     public void onInventoryEvent(InventoryClickEvent e) {
         Player p  = (Player) e.getWhoClicked();
         PlayerData playerData = skrpg.getPlayerManager().getPlayerData(p.getUniqueId());
@@ -696,8 +844,8 @@ public class PlayerListener implements Listener {
         if (e.getView().getTitle().equals("Crafting Table")) {
             if (e.getSlot() == 25 && e.getAction().equals(InventoryAction.PLACE_ALL)) {
                 e.setCancelled(true);
-                return;
             }
+
             if (e.getCurrentItem() != null) {
                 if (e.getCurrentItem().getType() == Material.BLACK_STAINED_GLASS_PANE ||
                         e.getCurrentItem().getType() == Material.ARROW) {
@@ -705,15 +853,20 @@ public class PlayerListener implements Listener {
                     e.setCancelled(true);
                 }
             }
-            if (e.getSlot() == 25 && e.getInventory().getItem(25) == null && e.getInventory().equals(p.getOpenInventory().getTopInventory())) {
-                e.setCancelled(true);
-            }
             if (e.getSlot() == 25 && e.getInventory().getItem(25) != null) {
-                    for (int integer : slots) {
-                        e.getInventory().setItem(integer, null);
-                    }
                 for (Items items : EnumSet.allOf(Items.class)) {
-                    if (e.getCurrentItem().getItemMeta().getDisplayName().contains(items.getName())) {
+                    if (ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName()).contains(items.getName())) {
+                        for (int integer : slots) {
+                            if (e.getInventory().getItem(integer) != null) {
+                                if (e.getInventory().getItem(integer).getAmount() == 1 || e.getInventory().getItem(integer).getAmount() <= items.getCraftingRecipe().get(slots.indexOf(integer)).getAmount()) {
+                                    e.getInventory().setItem(integer, null);
+                                } else {
+                                    e.getInventory().getItem(integer).setAmount(e.getInventory().getItem(integer).getAmount() -
+                                            items.getCraftingRecipe().get(slots.indexOf(integer)).getAmount());
+                                }
+                            }
+
+                        }
                         playerData.getCrafting().setXpTillNext(playerData.getCrafting().getXpTillNext() +
                                 items.getCraftingXPGained());
                         playerData.getCrafting().setTotalXP(playerData.getCrafting().getTotalXP()
@@ -746,69 +899,93 @@ public class PlayerListener implements Listener {
                         p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f);
                     }
                 }
-                    p.getInventory().addItem(e.getCurrentItem());
-                    e.getInventory().setItem(e.getSlot(), null);
+                p.getInventory().addItem(e.getCurrentItem());
+                e.getInventory().setItem(e.getSlot(), null);
 
-                    p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 0.5f);
+                p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 0.5f);
 
-                    e.setCancelled(true);
+                e.setCancelled(true);
             }
+            if (e.getInventory().equals(p.getOpenInventory().getTopInventory())) {
 
-            HashMap<Integer, CraftingIngrediant> craftingItems = new HashMap<>();
-                    int slot = 0;
+                HashMap<Integer, CraftingIngrediant> craftingItems = new HashMap<>();
+                int slot = 0;
 
-                    for (int integer : slots)  {
-                        if (e.getInventory().getItem(integer) != null && e.getInventory().getItem(integer)
-                                .getType() != Material.AIR) {
+                for (int integer : slots) {
+                    if (e.getInventory().getItem(integer) != null && e.getInventory().getItem(integer)
+                            .getType() != Material.AIR) {
 
-                            for (Items items : EnumSet.allOf(Items.class)) {
-                                if (ChatColor.stripColor(
-                                        e.getInventory().getItem(integer).getItemMeta().getDisplayName()).contains(items.getName())) {
-                                        if (e.getInventory().getItem(integer).getAmount() == 1) {
-                                            craftingItems.put(slot, new CraftingIngrediant(items,
-                                                    1));
-                                            skrpg.getLogger().info("Added " + slot + " with item " + items.getName() + " with amount " + 1);
-                                        } else {
-                                            craftingItems.put(slot, new CraftingIngrediant(items,
-                                                    e.getInventory().getItem(integer).getAmount()));
-                                            skrpg.getLogger().info("Added " + slot + " with item " + items.getName() + " with amount " + e.getInventory().getItem(integer).getAmount());
-                                        }
-
-
-                                }
-                            }
-                        } else {
-                            craftingItems.put(slot, new CraftingIngrediant(Items.NONE, 0));
-                        }
-                        slot++;
-                    }
-                    if (craftingItems.size() == 9) {
                         for (Items items : EnumSet.allOf(Items.class)) {
-                            int correctCraftingParts = 0;
-                            if (items.getCraftingRecipe() != null) {
-                                for (int b = 0; b < items.getCraftingRecipe().size(); b++) {
-                                    if (items.getCraftingRecipe().get(b) == null) {
-                                        skrpg.getLogger().info("Null crafting part!");
-                                    }
-                                    if (items.getCraftingRecipe().get(b).getItems().equals(craftingItems.get(b).getItems()) &&
-                                    items.getCraftingRecipe().get(b).getAmount() == craftingItems.get(b).getAmount()) {
-                                        correctCraftingParts++;
-                                    } else {
-                                        if (p.getOpenInventory().getItem(25) != null) {
-                                            p.getOpenInventory().setItem(25, null);
-                                        }
-                                    }
-                                    if (correctCraftingParts == 9) {
-                                        p.getOpenInventory().setItem(25, Items.buildItem(items));
-                                        p.getOpenInventory().getItem(25).setAmount(items.getCraftingAmount());
-                                        return;
-                                    }
+                            if (ChatColor.stripColor(
+                                    e.getInventory().getItem(integer).getItemMeta().getDisplayName()).contains(items.getName())) {
+                                if (e.getInventory().getItem(integer).getAmount() == 1) {
+                                    craftingItems.put(slot, new CraftingIngrediant(items,
+                                            1));
+
+                                } else {
+                                    craftingItems.put(slot, new CraftingIngrediant(items,
+                                            e.getInventory().getItem(integer).getAmount()));
+
                                 }
 
+
+                            }
+                        }
+                    } else {
+                        craftingItems.put(slot, new CraftingIngrediant(Items.NONE, 0));
+                    }
+                    slot++;
+                }
+                Items recipeItem = null;
+                if (craftingItems.size() == 9) {
+                    for (Items items : EnumSet.allOf(Items.class)) {
+                        int correctCraftingParts = 0;
+                        if (items.getCraftingRecipe() != null) {
+                            for (int b = 0; b < items.getCraftingRecipe().size(); b++) {
+                                if (items.getCraftingRecipe().get(b).getItems().equals(craftingItems.get(b).getItems()) &&
+                                        items.getCraftingRecipe().get(b).getAmount() <= craftingItems.get(b).getAmount()) {
+                                    correctCraftingParts++;
+                                }
+                                if (correctCraftingParts == 9) {
+                                    boolean collectionFound = false;
+                                    for (Collection collection : playerData.getCollections()) {
+                                        for (int i = 0; i < CollectionType.generateRewardsMap(collection.getCollectionType()).size(); i++) {
+                                            if (CollectionType.generateRewardsMap(collection.getCollectionType()).get(Tiers.valueOf("_" + (i + 1))).getId().equals(items.getId())) {
+                                                collectionFound = true;
+                                                if (i + 1 > SKRPG.levelToInt(collection.getTier().toString())) {
+                                                    Text.applyText(p, "You do not have a high enough collection level to use this!");
+                                                } else {
+                                                    recipeItem = items;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (!collectionFound) {
+                                        recipeItem = items;
+                                    }
+                                }
                             }
 
                         }
+
                     }
+
+                }
+                if (recipeItem != null) {
+                    e.getInventory().setItem(25, Items.buildItem(recipeItem));
+                    e.getInventory().getItem(25).setAmount(recipeItem.getCraftingAmount());
+
+                } else {
+                    e.getInventory().setItem(25, null);
+                }
+                new BukkitRunnable() {
+
+                    @Override
+                    public void run() {
+                        p.updateInventory();
+                    }
+                }.runTaskLater(skrpg, 1);
+            }
         } else if (e.getView().getTitle().equals("SKRPG Menu")) {
             e.setCancelled(true);
             if (e.getCurrentItem().getItemMeta().getDisplayName().equals(Text.color("&aCrafting Table"))) {
@@ -817,6 +994,10 @@ public class PlayerListener implements Listener {
                 p.performCommand("stats");
             } else if (e.getCurrentItem().getItemMeta().getDisplayName().equals(Text.color("&aSkills"))) {
                 p.performCommand("skills");
+            } else if (e.getCurrentItem().getItemMeta().getDisplayName().equals(Text.color("&aCollections"))) {
+                p.performCommand("collections");
+            } else if (e.getCurrentItem().getItemMeta().getDisplayName().equals(Text.color("&aSettings"))) {
+                p.performCommand("settings");
             }
         } else if (e.getView().getTitle().equals("Your Skills")) {
             e.setCancelled(true);
@@ -850,7 +1031,6 @@ public class PlayerListener implements Listener {
                             Text.applyText(p, "&cYou don't have enough coins to buy a new bank!");
                             p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 0.25f);
                             p.closeInventory();
-                            return;
                         } else {
                             p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0f, 0.25f);
                             p.closeInventory();
@@ -1040,6 +1220,60 @@ public class PlayerListener implements Listener {
                     }
                 }
 
+            }
+        } else if (e.getView().getTitle().equals("Your Statistics") || e.getView().getTitle().equals("Your Collections")) {
+            e.setCancelled(true);
+        } else if (e.getView().getTitle().equals("Settings")) {
+            e.setCancelled(true);
+            if (e.getCurrentItem() != null) {
+                if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Toggle Trading")) {
+                    playerData.setToggleTrade(!playerData.canTrade());
+                    p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f);
+                    Text.applyText(p, Text.color("&aToggled trading has been set to " + playerData.canTrade() + "."));
+                    p.closeInventory();
+                    p.performCommand("settings");
+                } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Do not Sell Beyond This Rarity")) {
+                    if (playerData.getSellAboveRarity() != Rarity.LEGENDARY) {
+                        for (Rarity rarity : EnumSet.allOf(Rarity.class)) {
+                            if (playerData.getSellAboveRarity().getPriority() + 1 == rarity.getPriority()) {
+                                playerData.setSellAboveRarity(rarity);
+                                p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f);
+                                if (playerData.getSellAboveRarity() != Rarity.LEGENDARY) {
+                                    Text.applyText(p, "&aSet rarity to " + rarity.getNameColored() + "&a!");
+                                } else {
+                                    Text.applyText(p, "&aAll rarities enabled!");
+                                }
+                                p.closeInventory();
+                                p.performCommand("settings");
+                                return;
+                            }
+                        }
+                    } else {
+                        playerData.setSellAboveRarity(Rarity.COMMON);
+                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f);
+                        Text.applyText(p, "&aDisabled selling!");
+                    }
+                    p.closeInventory();
+                    p.performCommand("settings");
+                } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Reset My Stats")) {
+                    Inventory inv = Bukkit.createInventory(null, 27, "Confirm Deletion");
+                    inv.setItem(10, new ItemBuilder(Material.REDSTONE_LAMP, 0).setName("&cDelete").setLore(Arrays.asList(" ", Text.color("&cTHIS CANNOT BE UNDONE!"), " ")).asItem());
+                    inv.setItem(16, new ItemBuilder(Material.LIME_CONCRETE, 0).setName("&aCancel").asItem());
+                    p.openInventory(inv);
+                }
+            }
+        } else if (e.getView().getTitle().equals("Confirm Deletion")) {
+            if (e.getCurrentItem() != null) {
+                if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Delete")) {
+                    p.closeInventory();
+                    Text.applyText(p, "&cDeleting!");
+                    p.getInventory().clear();
+                    p.kickPlayer(Text.color("&cResetting your SKRPG game..."));
+                    skrpg.getPlayerManager().removePlayer(p.getUniqueId());
+                } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Cancel")) {
+                    p.closeInventory();
+                    Text.applyText(p, "&aCancelled!");
+                }
             }
         }
     }

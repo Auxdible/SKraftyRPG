@@ -19,7 +19,9 @@ public enum MobType {
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 88, 44, 0),
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 0, 88, 35),
             new ItemBuilder(Material.IRON_PICKAXE, 0).asItem(), "CAVE_ZOMBIE"),
-    SKELETON("Skeleton", 2, 50, 100, 25, EntityType.SKELETON, null, null, null, null, new ItemBuilder(Material.BOW, 0).asItem(), "SKELETON");
+    SKELETON("Skeleton", 2, 50, 100, 25,
+            EntityType.SKELETON, null, null, null, null, new ItemBuilder(Material.BOW, 0).asItem(), "SKELETON"),
+    PIG("Pig", 0, 10, 0, 0, EntityType.PIG, null, null, null, null, null, "PIG");
     private String name;
     private int level;
     private int maxHP;
@@ -100,8 +102,10 @@ public enum MobType {
                         ((Zombie) monster).setBaby(false);
                     }
                 }
-                entity.setCustomName(Text.color("&8[LVL &e" + mobType.getLevel() + "&8] &r&c" + mobType.getName() + " " + "&f" +
+
+                entity.setCustomName(Text.color("&7&l☠&e" + mobType.getLevel() + "&8 &r&8" + mobType.getName() + " " + "&c" +
                         mobType.getMaxHP() + "&c♥"));
+                entity.setCustomNameVisible(true);
                 Mob mob = new Mob(mobType, entity);
                 skrpg.getMobManager().addMob(mob);
             }

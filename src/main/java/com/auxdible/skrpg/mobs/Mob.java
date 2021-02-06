@@ -20,7 +20,7 @@ public class Mob {
 
     public void setCurrentHP(int currentHP) {
         this.currentHP = currentHP;
-        ent.setCustomName(Text.color("&8[Level &e" + getMobType().getLevel() + "&8] &r&c" + getMobType().getName() + " " + "&f" +
-                getCurrentHP() + "&c♥"));
+        ent.setCustomName(Text.color("&7&l☠&e" + getMobType().getLevel() + " &r&8" + getMobType().getName() + " " + "&c" +
+                getCurrentHP() + "♥"));
     }
 }

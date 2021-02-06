@@ -8,11 +8,13 @@ import net.minecraft.server.v1_16_R3.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.*;
 import org.bukkit.scoreboard.Scoreboard;
 
@@ -28,14 +30,19 @@ public class PlayerJoinLeaveListener implements Listener {
     }
     @EventHandler
     public void onJoinEvent(PlayerJoinEvent e) {
-        if (skrpg.getPlayerManager().getPlayerData(e.getPlayer().getUniqueId()) == null) {
-            skrpg.getPlayerManager().createPlayer(e.getPlayer().getUniqueId());
-        }
+        skrpg.getPlayerManager().loadMySQLPlayerData(e.getPlayer());
         PlayerData playerData = skrpg.getPlayerManager().getPlayerData(e.getPlayer().getUniqueId());
         buildScoreboard(e.getPlayer());
         playerData.setRegion(null);
         playerData.setSpeed(playerData.getBaseSpeed());
-        playerData.setHp(playerData.getMaxHP());
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                playerData.setHp(playerData.getMaxHP());
+            }
+        }.runTaskLater(skrpg, 20);
+
+        e.getPlayer().getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(16);
         e.setJoinMessage(Text.color("&8[&a+&8] &r&7" + e.getPlayer().getDisplayName()));
         e.getPlayer().setFoodLevel(20);
         e.getPlayer().setHealth(20.0);
@@ -60,21 +67,24 @@ public class PlayerJoinLeaveListener implements Listener {
         Calendar calendar = Calendar.getInstance();
         ZoneId zoneId = ZoneId.systemDefault();
 
-        if (localDate.getYear() > calendar.get(Calendar.YEAR)) {
-            playerData.setIntrestDate(Date.from(localDate.atStartOfDay(zoneId).toInstant()));
-        }
-        if (localDate.getMonthValue() > calendar.get(Calendar.MONTH) + 1) {
-            playerData.setIntrestDate(Date.from(localDate.atStartOfDay(zoneId).toInstant()));
-        }
-        if (localDate.getDayOfMonth() > calendar.get(Calendar.DAY_OF_MONTH) && localDate.getMonthValue() == calendar.get(Calendar.MONTH) + 1) {
 
-            playerData.setIntrestDate(Date.from(localDate.atStartOfDay(zoneId).toInstant()));
-        }
 
         calendar.setTime(playerData.getIntrestDate());
-        skrpg.getLogger().info("Date: " + calendar.get(Calendar.DAY_OF_MONTH) + " " + calendar.get(Calendar.MONTH) + " " + localDate.getMonthValue() + " " + localDate.getDayOfMonth());
-        if (localDate.getDayOfMonth() == calendar.get(Calendar.DAY_OF_MONTH)) {
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        if (calendar.getTime().before(Date.from(localDate.atStartOfDay(zoneId).toInstant()))) {
+            skrpg.getLogger().info("Before");
+            skrpg.getLogger().info(calendar.getTime() + "");
+            skrpg.getLogger().info(Date.from(localDate.atStartOfDay(zoneId).toInstant()) + "");
+            playerData.setIntrestDate(Date.from(localDate.atStartOfDay(zoneId).toInstant()));
+            calendar.setTime(playerData.getIntrestDate());
+            skrpg.getLogger().info(calendar.getTime() + "");
+        }
+        if (calendar.getTime().equals(Date.from(localDate.atStartOfDay(zoneId).toInstant()))) {
             skrpg.getLogger().info(calendar.get(Calendar.DAY_OF_MONTH) + " ");
+            calendar.setTime(Date.from(localDate.atStartOfDay(zoneId).toInstant()));
             calendar.add(Calendar.DAY_OF_MONTH, 1);
             playerData.setIntrestDate(calendar.getTime());
             e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0f, 0.25f);
@@ -83,6 +93,7 @@ public class PlayerJoinLeaveListener implements Listener {
                 Text.applyText(e.getPlayer(), "&aYou earned &b" + (bank.getCredits() * 0.005) + " C$ &afrom bank intrest!");
             }
         }
+        skrpg.getLogger().info(calendar.getTime() + "");
     }
     public void buildScoreboard(Player player) {
         Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();

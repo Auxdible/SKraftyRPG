@@ -44,11 +44,11 @@ public class StatsCommand implements CommandExecutor {
                 ((playerData.getDefence() / 100.0) + 1))), Text.color("&7&o(Your HP Score is your HP with"),
                 Text.color("&7&oyour defence factored in.)")));
         hpHead.setItemMeta(hpiM);
-        inv.setItem(11, hpHead);
-        inv.setItem(12, new ItemBuilder(Material.SHIELD, 0).setName("&aYour Defence ✿")
+        inv.setItem(10, hpHead);
+        inv.setItem(11, new ItemBuilder(Material.SHIELD, 0).setName("&aYour Defence ✿")
                 .setLore(Arrays.asList(" ", Text.color("&7Total Defence: &a" + playerData.getDefence() + " ✿"),
                         Text.color("&7Base Defence: &a" + playerData.getBaseDefence() + " ✿"))).asItem());
-        inv.setItem(13, new ItemBuilder(Material.RED_DYE,0).setName("&4Your Strength ☄")
+        inv.setItem(12, new ItemBuilder(Material.RED_DYE,0).setName("&4Your Strength ☄")
                 .setLore(Arrays.asList(" ", Text.color("&7Total Strength: &4" + playerData.getStrength() + " ☄"),
                         Text.color("&7Base Strength: &4" + playerData.getBaseStrength() + " ☄"))).asItem());
         ItemStack energyHead = ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6I" +
@@ -61,7 +61,7 @@ public class StatsCommand implements CommandExecutor {
                 Text.color("&7Base (Max) Energy: &e" +
                         playerData.getBaseEnergy() + " ☢")));
         energyHead.setItemMeta(energyMeta);
-        inv.setItem(14, energyHead);
+        inv.setItem(13, energyHead);
         ItemStack creditsHead = ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA" +
                 "6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmQzNzI2YzFiMzY4OTNmZ" +
                 "TMzNDQ5Mzk1ODQ0ZGJhMTZlZjIyNDFkZGI1MzM1NWMyOTdmMDQxMzhmZWJjY2FmIn19fQ==",
@@ -69,8 +69,8 @@ public class StatsCommand implements CommandExecutor {
         ItemMeta creditsMeta = creditsHead.getItemMeta();
         creditsMeta.setDisplayName(Text.color("&7Your Credits: &b" + playerData.getCredits() + " C$"));
         creditsHead.setItemMeta(creditsMeta);
-        inv.setItem(15, creditsHead);
-        inv.setItem(16, new ItemBuilder(Material.SUGAR, 0).setName("&fYour Speed ≈")
+        inv.setItem(14, creditsHead);
+        inv.setItem(15, new ItemBuilder(Material.SUGAR, 0).setName("&fYour Speed ≈")
                 .setLore(Arrays.asList(" ", Text.color("&7Total Speed: &f" + playerData.getSpeed() + " ≈"),
                         Text.color("&7Base Speed: &f" + playerData.getBaseSpeed() + " ≈"))).asItem());
         inv.setItem(27, new ItemBuilder(Material.ARROW, 0).setName("&aBack to Menu").asItem());

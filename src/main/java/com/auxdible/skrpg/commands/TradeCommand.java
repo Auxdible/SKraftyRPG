@@ -24,7 +24,14 @@ public class TradeCommand implements CommandExecutor {
         }
         Player player = (Player) sender;
         PlayerData playerData = skrpg.getPlayerManager().getPlayerData(player.getUniqueId());
-        if (args[0].equals("accept")) {
+        if (!playerData.canTrade()) {
+            player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+            Text.applyText(player, "&cYou have trades disabled!");
+            return false;
+        }
+        if (args.length == 0) {
+            Text.applyText(player, "&cValid Arguments: accept, deny, online_player_name");
+        } else if (args[0].equals("accept")) {
             if (skrpg.getTradeManager().getTrade(player) != null) {
                 playerData.setTrade(skrpg.getTradeManager().getTrade(player));
                 skrpg.getTradeManager().getTrade(player).setPlayer2(player);
@@ -42,6 +49,11 @@ public class TradeCommand implements CommandExecutor {
 
             }
         } else if (Bukkit.getPlayer(args[0]) != null) {
+            if (!skrpg.getPlayerManager().getPlayerData(Bukkit.getPlayer(args[0]).getUniqueId()).canTrade()) {
+                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                Text.applyText(player, "&cThis player has trades disabled!");
+                return false;
+            }
             Trade trade = new Trade(player, null);
             playerData.setTrade(trade);
             skrpg.getTradeManager().addTrade(Bukkit.getPlayer(args[0]), trade);
@@ -89,7 +101,7 @@ public class TradeCommand implements CommandExecutor {
                 }
             }.runTaskTimer(skrpg, 0, 20);
         } else {
-            Text.applyText(player, "&cValid Arguements: accept, deny, online_player_name");
+            Text.applyText(player, "&cValid Arguments: accept, deny, online_player_name");
         }
         return false;
     }

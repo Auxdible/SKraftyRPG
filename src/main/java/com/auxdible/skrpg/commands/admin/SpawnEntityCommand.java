@@ -4,6 +4,7 @@ import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.items.Items;
 import com.auxdible.skrpg.mobs.Mob;
 import com.auxdible.skrpg.mobs.MobType;
+import com.auxdible.skrpg.utils.Text;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,6 +17,7 @@ public class SpawnEntityCommand implements CommandExecutor {
     public SpawnEntityCommand(SKRPG skrpg) {
         this.skrpg = skrpg;
     }
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
@@ -23,6 +25,9 @@ public class SpawnEntityCommand implements CommandExecutor {
             return false;
         }
         Player player = (Player) sender;
+        if (!player.hasPermission("skrpg.admin")) {
+            Text.applyText(player, "&cAdmin is required to run this command!");
+        }
         if (args.length == 0) {
             skrpg.getLogger().info("Please name a mob!");
         }

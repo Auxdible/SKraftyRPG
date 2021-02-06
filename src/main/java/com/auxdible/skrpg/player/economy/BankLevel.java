@@ -1,6 +1,7 @@
 package com.auxdible.skrpg.player.economy;
 
 public enum BankLevel {
+    NULL(0, 0, 0, "NONE"),
     FREE(1, 500000, 0, "&aFree"),
     BASIC(2, 1000000, 250000, "&9Basic"),
     ADVANCED(3, 2500000, 750000, "&cAdvanced"),

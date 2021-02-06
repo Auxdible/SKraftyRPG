@@ -81,6 +81,7 @@ public class NPC {
                 slime.setGravity(false);
                 slime.setCollidable(false);
                 slime.setCustomName("exportmerchant");
+                slime.setRemoveWhenFarAway(false);
             } else if (npcType == NpcType.PLAYER_BANKER) {
                 GameProfile gameProfile = new GameProfile(UUID.randomUUID(), "weaponsales" + getId());
                 gameProfile.getProperties().put("textures", new Property("textures", "ewogICJ0aW1lc3RhbXAiIDogMTYxMDkyMzcyMDA2MywKICAicHJvZmlsZUlkIiA6ICJkZTE0MGFmM2NmMjM0ZmM0OTJiZTE3M2Y2NjA3MzViYiIsCiAgInByb2ZpbGVOYW1lIiA6ICJTUlRlYW0iLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDhhOWJkNmNmZDY2NWM5ODM3M2RjN2EzMGVkZDU0ODdjMjI0YmMyN2RmY2IwYmU3ZWU2NDVkMGZjYTgxOTA1OSIKICAgIH0KICB9Cn0=",
@@ -117,6 +118,7 @@ public class NPC {
                 slime.setGravity(false);
                 slime.setCollidable(false);
                 slime.setCustomName("banker");
+                slime.setRemoveWhenFarAway(false);
             }
             } else if (npcType == NpcType.WEAPON_FORGER_SALESMAN) {
             Villager villager = (Villager) Bukkit.getWorld(skrpg.getConfig().getString("rpgWorld")).spawnEntity(location, EntityType.VILLAGER);
@@ -148,6 +150,7 @@ public class NPC {
             slime.setGravity(false);
             slime.setCollidable(false);
             slime.setCustomName("weaponsalesman");
+            slime.setRemoveWhenFarAway(false);
             entity = villager;
         }
 

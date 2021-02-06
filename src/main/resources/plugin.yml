@@ -23,9 +23,11 @@ commands:
     description: Create a npc for SKRPG.
   addcredits:
     description: Add credits.
-  setSpeed:
-    description: Set your speed.
   trade:
     description: Do a trade with a player.
   spawnEntity:
     description: Spawn a entity.
+  collections:
+    description: View your collections.
+  settings:
+    description: View your settings.
