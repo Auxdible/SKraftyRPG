@@ -2,6 +2,7 @@ package com.auxdible.skrpg;
 
 import com.auxdible.skrpg.commands.*;
 import com.auxdible.skrpg.commands.admin.*;
+import com.auxdible.skrpg.commands.inventory.*;
 import com.auxdible.skrpg.items.ItemType;
 import com.auxdible.skrpg.items.Items;
 import com.auxdible.skrpg.mobs.*;
@@ -11,30 +12,24 @@ import com.auxdible.skrpg.player.PlayerJoinLeaveListener;
 import com.auxdible.skrpg.player.PlayerListener;
 import com.auxdible.skrpg.player.PlayerManager;
 import com.auxdible.skrpg.player.economy.TradeManager;
+import com.auxdible.skrpg.player.guilds.GuildInviteManager;
+import com.auxdible.skrpg.player.guilds.GuildManager;
+import com.auxdible.skrpg.player.guilds.raid.RaidManager;
 import com.auxdible.skrpg.regions.Region;
 import com.auxdible.skrpg.regions.RegionManager;
 import com.auxdible.skrpg.utils.Text;
-import com.sun.scenario.Settings;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.EnumSet;
 
 public class SKRPG extends JavaPlugin {
 
@@ -55,6 +50,15 @@ public class SKRPG extends JavaPlugin {
 
     public TradeManager tradeManager;
     public TradeManager getTradeManager() { return tradeManager; }
+
+    public GuildManager guildManager;
+    public GuildManager getGuildManager() { return guildManager; }
+
+    public GuildInviteManager guildInviteManager;
+    public GuildInviteManager getGuildInviteManager() { return guildInviteManager; }
+
+    public RaidManager raidManager;
+    public RaidManager getRaidManager() { return raidManager; }
 
     private String host, database, username, password;
     private int port;
@@ -84,9 +88,14 @@ public class SKRPG extends JavaPlugin {
         npcManager = new NPCManager(this);
         mobSpawnManager = new MobSpawnManager(this);
         tradeManager = new TradeManager(this);
+        guildManager = new GuildManager(this);
+        guildInviteManager = new GuildInviteManager(this);
+        raidManager = new RaidManager(this);
         mobSpawnManager.enable();
         npcManager.enable();
+        guildManager.enableGuilds();
         regionManager.enable();
+
         Bukkit.getPluginManager().registerEvents(new PlayerJoinLeaveListener(this), this);
         Bukkit.getPluginManager().registerEvents(new PlayerListener(this), this);
         Bukkit.getWorld(getConfig().getString("rpgWorld")).setGameRule(GameRule.NATURAL_REGENERATION, false);
@@ -104,6 +113,9 @@ public class SKRPG extends JavaPlugin {
         getCommand("spawnEntity").setExecutor(new SpawnEntityCommand(this));
         getCommand("collections").setExecutor(new CollectionsCommand(this));
         getCommand("settings").setExecutor(new SettingsCommand(this));
+        getCommand("guild").setExecutor(new GuildCommand(this));
+        getCommand("skrpg").setExecutor(new SKRPGCommand(this));
+        getCommand("recipe").setExecutor(new RecipeCommand(this));
         getLogger().info("Loaded SKRPG core plugin!");
         new BukkitRunnable() {
 
@@ -129,13 +141,20 @@ public class SKRPG extends JavaPlugin {
                     }
                     boolean regionFound = false;
                     for (Region region : getRegionManager().getRegions()) {
-                        if (player.getLocation().getX() >= region.getX() &&
-                                player.getLocation().getX() <= region.getX2() &&
-                                player.getLocation().getZ() >= region.getZ() &&
-                                player.getLocation().getZ() <= region.getZ2()) {
+                       if (locationIsInCuboid(player.getLocation(),
+                               new Location(region.getSpawnLocation().getWorld(),
+                                       region.getX(), 0, region.getZ()),
+                               new Location(region.getSpawnLocation().getWorld(), region.getX2(), 256, region.getZ2()))) {
                             if (playerData.getRegion() != region) {
                                 player.sendTitle(Text.color("&e&lYou are now entering"),
                                         Text.color(region.getName()), 20, 40, 20);
+                            }
+                            if (region.getControllingGuild() != null) {
+                                player.getScoreboard().getTeam("regionOwner")
+                                        .setSuffix(Text.color(region.getControllingGuild().getName()));
+                            } else {
+                                player.getScoreboard().getTeam("regionOwner")
+                                        .setSuffix(Text.color("&8NONE"));
                             }
                             getPlayerManager().getPlayerData(player.getUniqueId()).setRegion(region);
                             regionFound = true;
@@ -144,6 +163,8 @@ public class SKRPG extends JavaPlugin {
                     }
                     if (!regionFound) {
                             getPlayerManager().getPlayerData(player.getUniqueId()).setRegion(null);
+                        player.getScoreboard().getTeam("regionOwner")
+                                .setSuffix(Text.color("&8NONE"));
                     }
                     int strengthIncrease = 0;
                     int defenceIncrease = 0;
@@ -258,7 +279,7 @@ public class SKRPG extends JavaPlugin {
         regionManager.disable();
         npcManager.disable();
         mobSpawnManager.disable();
-
+        guildManager.disableGuilds();
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.kickPlayer("The server is reloading!");
         }
@@ -285,5 +306,27 @@ public class SKRPG extends JavaPlugin {
             x.printStackTrace();
         }
         return ps;
+    }
+    public boolean locationIsInCuboid(Location playerLocation, Location min, Location max) {
+        boolean trueOrNot = false;
+        if (playerLocation.getWorld() == min.getWorld() && playerLocation.getWorld() == max.getWorld()) {
+            if (playerLocation.getX() >= min.getX() && playerLocation.getX() <= max.getX()) {
+                if (playerLocation.getY() >= min.getY() && playerLocation.getY() <= max.getY()) {
+                    if (playerLocation.getZ() >= min.getZ()
+                            && playerLocation.getZ() <= max.getZ()) {
+                        trueOrNot = true;
+                    }
+                }
+            }
+            if (playerLocation.getX() <= min.getX() && playerLocation.getX() >= max.getX()) {
+                if (playerLocation.getY() <= min.getY() && playerLocation.getY() >= max.getY()) {
+                    if (playerLocation.getZ() <= min.getZ()
+                            && playerLocation.getZ() >= max.getZ()) {
+                        trueOrNot = true;
+                    }
+                }
+            }
+        }
+        return trueOrNot;
     }
 }

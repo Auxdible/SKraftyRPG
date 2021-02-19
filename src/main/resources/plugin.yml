@@ -31,3 +31,11 @@ commands:
     description: View your collections.
   settings:
     description: View your settings.
+  guild:
+    description: Manage things related to guilds.
+  skrpg:
+    description: View SKRPG commands.
+  recipe:
+    aliases: [r]
+    description: View a recipe for an item.
+

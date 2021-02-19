@@ -1,4 +1,4 @@
-package com.auxdible.skrpg.commands;
+package com.auxdible.skrpg.commands.inventory;
 
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.items.Rarity;

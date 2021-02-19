@@ -17,7 +17,11 @@ public enum MineBlock {
     LAPIS_LAZULI(Items.LAPIS_LAZULI, null, Material.LAPIS_ORE, 8),
     DIAMOND(Items.DIAMOND, null, Material.DIAMOND_ORE, 10),
     EMERALD(Items.EMERALD, null, Material.EMERALD_ORE, 10),
-    OBSIDIAN(Items.OBSIDIAN, null, Material.OBSIDIAN, 20);
+    OBSIDIAN(Items.OBSIDIAN, null, Material.OBSIDIAN, 50),
+    CRYSTALITE(Items.CRYSTALLITE, null, Material.WHITE_STAINED_GLASS, 25),
+    NETHERRRACK(Items.NETHERRACK, null, Material.NETHERRACK, 2),
+    END_STONE(Items.END_STONE, null, Material.END_STONE, 27),
+    CORRUPTED_ROOT(Items.CORRUPTED_ROOT, null, Material.MYCELIUM, 30);
     private Items commonDrop;
 
     private Material blockObtainedFrom;

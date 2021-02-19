@@ -4,6 +4,7 @@ import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.items.CraftingIngrediant;
 import com.auxdible.skrpg.items.ItemType;
 import com.auxdible.skrpg.items.Rarity;
+import com.auxdible.skrpg.items.abilities.Abilities;
 import com.auxdible.skrpg.mobs.MobSpawn;
 import com.auxdible.skrpg.mobs.npcs.NpcType;
 import com.auxdible.skrpg.mobs.npcs.PurchasableItem;
@@ -12,6 +13,10 @@ import com.auxdible.skrpg.player.collections.CollectionType;
 import com.auxdible.skrpg.player.collections.Tiers;
 import com.auxdible.skrpg.player.economy.Bank;
 import com.auxdible.skrpg.player.economy.BankLevel;
+import com.auxdible.skrpg.player.guilds.raid.Raid;
+import com.auxdible.skrpg.player.guilds.raid.RaidMob;
+import com.auxdible.skrpg.player.guilds.raid.RaidMobs;
+import com.auxdible.skrpg.player.quests.Quests;
 import com.auxdible.skrpg.player.skills.*;
 import com.auxdible.skrpg.items.Items;
 import com.auxdible.skrpg.mobs.Mob;
@@ -47,14 +52,42 @@ public class PlayerListener implements Listener {
         this.skrpg = skrpg;
     }
     @EventHandler
+    public void raidTargetEvent(EntityTargetLivingEntityEvent e) {
+        if (e.getTarget() instanceof Villager) {
+            e.setCancelled(true);
+        }
+        if (e.getTarget() instanceof Player) {
+            Player p = (Player) e.getTarget();
+            if (skrpg.getRaidManager().isInRaid(p)) {
+                e.setCancelled(true);
+            }
+            }
+        if (e.getEntity() instanceof IronGolem) {
+            for (Raid raid : skrpg.getRaidManager().getRaids().values()) {
+                for (RaidMob raidMob : raid.getRaidMobs()) {
+                    if (raidMob.getEnt().equals(e.getEntity())) {
+                        e.setCancelled(true);
+                    }
+                }
+            }
+        }
+        }
+
+    @EventHandler
     public void onClickEntityEvent(PlayerInteractAtEntityEvent e) {
         Player p = e.getPlayer();
         PlayerData playerData = skrpg.getPlayerManager().getPlayerData(p.getUniqueId());
-        if (e.getRightClicked().getType().equals(EntityType.VILLAGER)) {
+        if (e.getRightClicked() instanceof Villager || e.getRightClicked() instanceof Player) {
+            e.setCancelled(true);
+        }
+        if (skrpg.getRaidManager().isInRaid(p)) {
+            Text.applyText(p, "&cYou are in a raid!");
+            p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
             e.setCancelled(true);
             return;
         }
-        if (e.getRightClicked().getCustomName().contains("exportmerchant")) {
+        if (e.getRightClicked() instanceof Slime) {
+            if (e.getRightClicked().getCustomName().contains("exportmerchant")) {
             /* if (!(Integer.parseInt(playerData.getCombat().getLevel().toString().replace("_", "")) >= 7) ||
                     !(Integer.parseInt(playerData.getMining().getLevel().toString().replace("_", "")) >= 7) ||
                     !(Integer.parseInt(playerData.getCrafting().getLevel().toString().replace("_", "")) >= 7) ||
@@ -62,310 +95,188 @@ public class PlayerListener implements Listener {
             Text.applyText(p, "&cYou must have Combat 7, Mining 7, Herbalism 7 and Crafting 7 &cin order to use the Export Merchant!");
             return;
             } */
-            Inventory inv = Bukkit.createInventory(null, 54, "Export Merchant");
-            for (int i = 0; i <= 53; i++) {
-                inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
-            }
-            inv.setItem(49, null);
-            inv.setItem(40, new ItemBuilder(Material.LIGHT_BLUE_STAINED_GLASS_PANE, 0)
-                    .setName("&bPlease insert an item.").asItem());
-            inv.setItem(31, new ItemBuilder(Material.LIGHT_BLUE_STAINED_GLASS_PANE, 0)
-                    .setName("&bPlease insert an item.").asItem());
-            ItemStack creditsHead = ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA" +
-                            "6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmQzNzI2YzFiMzY4OTNmZ" +
-                            "TMzNDQ5Mzk1ODQ0ZGJhMTZlZjIyNDFkZGI1MzM1NWMyOTdmMDQxMzhmZWJjY2FmIn19fQ==",
-                    "8fa29c20-1475-44c7-a77b-1c87bc10b3b2");
-            ItemMeta itemMeta = creditsHead.getItemMeta();
-            itemMeta.setDisplayName(Text.color("Please put in an item..."));
-            creditsHead.setItemMeta(itemMeta);
-            inv.setItem(22, creditsHead);
-            e.getPlayer().openInventory(inv);
-        } else if (e.getRightClicked().getCustomName().contains("banker")) {
-            Inventory inv = Bukkit.createInventory(null, 27, "Banker");
-            for (int i = 0; i <= 26; i++) {
-                inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
-            }
-            List<Integer> slots = Arrays.asList(11, 12, 13, 14, 15);
-            for (int i = 0; i < playerData.getBanks().size(); i++) {
-                ItemStack bank = ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmY3NWQxYjc4NWQxOGQ0N2IzZWE4ZjBhN2UwZmQ0YTFmYWU5ZTdkMzIzY2YzYjEzOGM4Yzc4Y2ZlMjRlZTU5In19fQ==", "1d2bf3fe-1b67-495f-995d-435693e90fa0");
-                ItemMeta iM = bank.getItemMeta();
-                iM.setDisplayName(Text.color("&7Bank &a") + (i + 1));
-                iM.setLore(Arrays.asList(" ", Text.color("&7Level: " + playerData.getBanks().get(i).getLevel()
-                        .getNameColored()), Text.color("&7Credits: &b" + playerData.getBanks().get(i).getCredits() + " C$")));
-                bank.setItemMeta(iM);
-                inv.setItem(slots.get(i), bank);
-            }
-            if (playerData.getBanks().size() != 5) {
-                inv.setItem(22, new ItemBuilder(Material.LIME_DYE, 0).setName("&7Buy Bank: &b" + (
-                        2500000 * playerData.getBanks().size())).asItem());
-            }
-            p.openInventory(inv);
-        } else if (e.getRightClicked().getCustomName().contains("salesman")) {
-            NpcType salesman = null;
-            Inventory inventory = Bukkit.createInventory(null, 54, "Salesman");
-            if (e.getRightClicked().getCustomName().contains("weaponsalesman")) {
-                inventory = Bukkit.createInventory(null, 54, "Weapon Salesman");
-                salesman = NpcType.WEAPON_FORGER_SALESMAN;
-            }
-            List<Integer> outlineSlots = Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53);
-            for (int i : outlineSlots) {
-                inventory.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
-            }
-            if (salesman != null && salesman.getPurchasableItems() != null) {
+                Inventory inv = Bukkit.createInventory(null, 54, "Export Merchant");
+                for (int i = 0; i <= 53; i++) {
+                    inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
+                }
+                inv.setItem(49, null);
+                inv.setItem(40, new ItemBuilder(Material.LIGHT_BLUE_STAINED_GLASS_PANE, 0)
+                        .setName("&bPlease insert an item.").asItem());
+                inv.setItem(31, new ItemBuilder(Material.LIGHT_BLUE_STAINED_GLASS_PANE, 0)
+                        .setName("&bPlease insert an item.").asItem());
+                ItemStack creditsHead = ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA" +
+                                "6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmQzNzI2YzFiMzY4OTNmZ" +
+                                "TMzNDQ5Mzk1ODQ0ZGJhMTZlZjIyNDFkZGI1MzM1NWMyOTdmMDQxMzhmZWJjY2FmIn19fQ==",
+                        "8fa29c20-1475-44c7-a77b-1c87bc10b3b2");
+                ItemMeta itemMeta = creditsHead.getItemMeta();
+                itemMeta.setDisplayName(Text.color("Please put in an item..."));
+                creditsHead.setItemMeta(itemMeta);
+                inv.setItem(22, creditsHead);
+                e.getPlayer().openInventory(inv);
+            } else if (e.getRightClicked().getCustomName().contains("banker")) {
+                Inventory inv = Bukkit.createInventory(null, 27, "Banker");
+                for (int i = 0; i <= 26; i++) {
+                    inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
+                }
+                List<Integer> slots = Arrays.asList(11, 12, 13, 14, 15);
+                for (int i = 0; i < playerData.getBanks().size(); i++) {
+                    ItemStack bank = ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmY3NWQxYjc4NWQxOGQ0N2IzZWE4ZjBhN2UwZmQ0YTFmYWU5ZTdkMzIzY2YzYjEzOGM4Yzc4Y2ZlMjRlZTU5In19fQ==", "1d2bf3fe-1b67-495f-995d-435693e90fa0");
+                    ItemMeta iM = bank.getItemMeta();
+                    iM.setDisplayName(Text.color("&7Bank &a") + (i + 1));
+                    iM.setLore(Arrays.asList(" ", Text.color("&7Level: " + playerData.getBanks().get(i).getLevel()
+                            .getNameColored()), Text.color("&7Credits: &b" + playerData.getBanks().get(i).getCredits() + " C$")));
+                    bank.setItemMeta(iM);
+                    inv.setItem(slots.get(i), bank);
+                }
+                if (playerData.getBanks().size() != 5) {
+                    inv.setItem(22, new ItemBuilder(Material.LIME_DYE, 0).setName("&7Buy Bank: &b" + (
+                            2500000 * playerData.getBanks().size())).asItem());
+                }
+                p.openInventory(inv);
+            } else if (e.getRightClicked().getCustomName().contains("salesman")) {
+                NpcType salesman = null;
+                Inventory inventory = Bukkit.createInventory(null, 54, "Salesman");
+                if (e.getRightClicked().getCustomName().contains("weaponsalesman")) {
+                    inventory = Bukkit.createInventory(null, 54, "Weapon Salesman");
+                    salesman = NpcType.WEAPON_FORGER_SALESMAN;
+                }
+                List<Integer> outlineSlots = Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53);
+                for (int i : outlineSlots) {
+                    inventory.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
+                }
+                if (salesman != null && salesman.getPurchasableItems() != null) {
 
-                for (PurchasableItem purchasableItem : salesman.getPurchasableItems()) {
-                    boolean found = false;
-                    List<ItemStack> contents = Arrays.asList(inventory.getContents());
-                    for (ItemStack itemStack : contents) {
-                        if (itemStack == null && !found) {
-                            ItemStack itemStackBuild = Items.buildItem(purchasableItem.getItem());
-                            ItemMeta iM = itemStackBuild.getItemMeta();
-                            List<String> lore = iM.getLore();
-                            lore.add(" ");
-                            lore.add(Text.color("&7Cost: &b" + purchasableItem.getCost() + " C$"));
-                            iM.setLore(lore);
-                            itemStackBuild.setItemMeta(iM);
-                            inventory.setItem(contents.indexOf(itemStack), itemStackBuild);
-                            found = true;
+                    for (PurchasableItem purchasableItem : salesman.getPurchasableItems()) {
+                        boolean found = false;
+                        List<ItemStack> contents = Arrays.asList(inventory.getContents());
+                        for (ItemStack itemStack : contents) {
+                            if (itemStack == null && !found) {
+                                ItemStack itemStackBuild = Items.buildItem(purchasableItem.getItem());
+                                ItemMeta iM = itemStackBuild.getItemMeta();
+                                List<String> lore = iM.getLore();
+                                lore.add(" ");
+                                lore.add(Text.color("&7Cost: &b" + purchasableItem.getCost() + " C$"));
+                                iM.setLore(lore);
+                                itemStackBuild.setItemMeta(iM);
+                                inventory.setItem(contents.indexOf(itemStack), itemStackBuild);
+                                found = true;
+                            }
                         }
                     }
                 }
+                p.openInventory(inventory);
+            } else if (e.getRightClicked().getCustomName().equals("tutorialnpc")) {
+                if (playerData.getActiveQuest() != null && playerData.getActiveQuest().equals(Quests.TUTORIAL) && playerData.getQuestPhase() == 2) {
+                    if (p.getInventory().getItemInMainHand().getItemMeta().getDisplayName().equals(Text.color("&fWood"))
+                            && e.getPlayer().getInventory().getItemInMainHand().getAmount() >= 20) {
+                        playerData.getActiveQuest().getQuest().executePhase(3, p, skrpg);
+                    }
+                }
             }
-            p.openInventory(inventory);
         }
     }
     @EventHandler
     public void onDamageEvent(EntityDamageByEntityEvent e) {
 
         if (e.getEntity() instanceof Player) {
-            Entity damager = e.getDamager();
+            Entity damagingEntity = e.getDamager();
+
             if (e.getDamager() instanceof Arrow) {
                 if (((Arrow) e.getDamager()).getShooter() instanceof Skeleton) {
-                    damager = (Entity) ((Arrow) e.getDamager()).getShooter();
+                    damagingEntity = (Entity) ((Arrow) e.getDamager()).getShooter();
+                } else if (((Arrow) e.getDamager()).getShooter() instanceof Player) {
+                    damagingEntity = (Entity) ((Arrow) e.getDamager()).getShooter();
                 }
             }
-            e.setCancelled(true);
-            Player player = (Player) e.getEntity();
-            int damage = 10;
-            for (MobType mob : EnumSet.allOf(MobType.class)) {
-                if (ChatColor.stripColor(damager.getName()).contains(mob.getName())) {
-                    damage = mob.getDamage();
+            e.setDamage(0.1);
+            if (damagingEntity instanceof Player) {
+                int damage = 1;
+                Player damager = (Player) damagingEntity;
+                PlayerData damagerData = skrpg.getPlayerManager().getPlayerData(damager.getUniqueId());
+
+                for (Items items : EnumSet.allOf(Items.class)) {
+                    if (damager.getInventory().getItemInMainHand().getType().equals(Material.AIR)) {
+                        damage = 1 + ((damagerData.getStrength() / 5) *
+                                (1 + damagerData.getStrength() / 100));
+                    } else if (damager.getInventory().getItemInMainHand().getItemMeta().getDisplayName()
+                            .contains(items.getName())) {
+                        damage = (5 + items.getDamage() + ((damagerData.getStrength()) / 5)) *
+                                (1 + damagerData.getStrength() / 100);
+                        if (items.getItemType().equals(ItemType.BOW) && e.getDamager() instanceof Player) {
+                            damage = damage / 10;
+                        }
+                    }
                 }
-            }
-            double damageReduction = (skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getDefence() /
-                    (100.0 + skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getDefence()));
-            int nerfedDamage = (int) Math.round(damage - (damage *
-                    damageReduction));
-            if (skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getHp() - nerfedDamage < 0) {
-                skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setHp(0);
+                skrpg.getPlayerManager().getPlayerData(e.getEntity().getUniqueId()).damagePlayer(damager, damage, skrpg);
             } else {
-                skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setHp(
-                        skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getHp() - nerfedDamage);
+                Player player = (Player) e.getEntity();
+                PlayerData playerData = skrpg.getPlayerManager().getPlayerData(player.getUniqueId());
+                int damage = 10;
+                for (MobType mob : EnumSet.allOf(MobType.class)) {
+                    if (ChatColor.stripColor(damagingEntity.getName()).contains(mob.getName())) {
+                        damage = mob.getDamage();
+                    }
+                }
+                playerData.damage(damage, skrpg);
             }
-
-            if (skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getHp() <= 0) {
-                player.teleport(Bukkit.getWorld(skrpg.getConfig().getString("rpgWorld")).getSpawnLocation());
-                player.playSound(player.getLocation(), Sound.ENTITY_BLAZE_DEATH, 1.0f, 0.5f);
-                player.sendTitle(Text.color("&4&l☠"), Text.color("&c&lYOU DIED"), 40, 100, 10);
-                Text.applyText(player, "&cYou lost &b" + skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getCredits() / 2 + " C$&c!");
-                skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setCredits(skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getCredits() / 2);
-
-                skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setHp(
-                        skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getMaxHP());
-            }
-        }    else {
+        }  else {
             if (skrpg.getMobManager().getMobData(e.getEntity()) != null) {
                 Mob mob = skrpg.getMobManager().getMobData(e.getEntity());
                 int damage = 1;
-                if (e.getDamager() instanceof Player || e.getDamager() instanceof Arrow) {
-                    Player player;
-                    e.setCancelled(true);
-                    if (e.getDamager() instanceof Arrow) {
-                        Arrow arrow = (Arrow) e.getDamager();
-                        if (arrow.getShooter() instanceof Player) {
-                            player = (Player) arrow.getShooter();
-                        } else {
-                            return;
 
-                        }
+
+                Player player;
+                if (e.getDamager() instanceof Arrow) {
+                    Arrow arrow = (Arrow) e.getDamager();
+                    if (arrow.getShooter() instanceof Player) {
+                        player = (Player) arrow.getShooter();
                     } else {
-                        player = (Player) e.getDamager();
+                        return;
                     }
-
-                    PlayerData playerData = skrpg.getPlayerManager().getPlayerData(player.getUniqueId());
-                    for (Items items : EnumSet.allOf(Items.class)) {
-                        if (player.getInventory().getItemInMainHand().getType().equals(Material.AIR)) {
-                            damage = 1 + ((playerData.getStrength() / 5) *
-                            (1 + playerData.getStrength() / 100));
-                        } else if (player.getInventory().getItemInMainHand().getItemMeta().getDisplayName()
-                                .contains(items.getName())) {
-                            damage = (5 + items.getDamage() + ((playerData.getStrength()) / 5)) *
-                                    (1 + playerData.getStrength() / 100);
-                            if (items.getItemType().equals(ItemType.BOW) && e.getDamager() instanceof Player) {
-                                damage = damage / 10;
-                            }
-                        }
-                    }
-
-                    double bonusDamage = 1 + (Integer.parseInt(playerData.getCombat().getLevel().toString()
-                            .replace("_", "")) * 0.02);
-                    damage = (int) Math.round(damage * bonusDamage);
-                    int nerfedDamage;
-                    if (damage * Math.round((mob.getMobType().getDefence() /
-                            (mob.getMobType().getDefence() + 100))) == 0) {
-                        nerfedDamage = damage;
-                    } else {
-                        nerfedDamage = (damage * Math.round(mob.getMobType().getDefence() /
-                                (mob.getMobType().getDefence() + 100)));
-                    }
-                    if (player.getInventory().getItemInMainHand().getType() != Material.AIR && player.getInventory().getItemInMainHand().getItemMeta().getDisplayName()
-                            .contains("Zombie Sword")) {
-                        if (mob.getEnt().getType().equals(EntityType.ZOMBIE)) {
-                            nerfedDamage = (int) Math.round(nerfedDamage * 1.5);
-                        }
-                    }
-                    mob.setCurrentHP(mob.getCurrentHP() - nerfedDamage);
-                    ArmorStand damageIndictator = (ArmorStand) mob.getEnt().getWorld()
-                            .spawnEntity(mob.getEnt().getLocation(), EntityType.ARMOR_STAND);
-                    damageIndictator.setInvisible(true);
-                    damageIndictator.setCustomName(Text.color("&c" + damage + " &4&l☄"));
-                    damageIndictator.setCustomNameVisible(true);
-                    damageIndictator.setSmall(true);
-                    damageIndictator.setVelocity(new Vector(0, 0.5, 0));
-                    new BukkitRunnable() {
-                        int quarterSecondsAlive = 0;
-                        @Override
-                        public void run() {
-                            quarterSecondsAlive++;
-                            if (quarterSecondsAlive == 8) {
-                                damageIndictator.remove();
-                                cancel();
-                            }
-                        }
-                    }.runTaskTimer(skrpg, 0, 5);
-                    if (mob.getEnt() instanceof LivingEntity) {
-                        LivingEntity livingEntity = (LivingEntity) mob.getEnt();
-                        livingEntity.damage(1.0);
-                        livingEntity.setHealth(livingEntity.getMaxHealth());
-                        livingEntity.setVelocity(new Vector(player.getLocation().getDirection().getX() / 3, 0.3, player.getLocation().getDirection().getZ() / 3));
-                    }
-                    if (mob.getCurrentHP() <= 0) {
-                        player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f);
-
-                        for (MobKill mobKill : EnumSet.allOf(MobKill.class)) {
-                            if (mob.getEnt().getCustomName().contains(Text.color(mobKill.getMobType().getName()))) {
-                                if (mobKill.getDrop() != null) {
-                                    player.getInventory().addItem(Items.buildItem(mobKill.getDrop()));
-                                }
-                                for (Collection collection : playerData.getCollections()) {
-                                    if (collection.getCollectionType().getItem().equals(mobKill.getDrop())) {
-                                        collection.setCollectionAmount(collection.getCollectionAmount() + 1);
-                                        if (collection.getCollectionAmount() > Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)).getAmountRequired()) {
-                                            collection.setTier(Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)));
-                                            Text.applyText(player, "&8&m>                                          ");
-                                            Text.applyText(player, "&b&l           TIER UP!");
-                                            Text.applyText(player, " ");
-                                            Text.applyText(player, "&7You tiered up to " + collection.getCollectionType().getItem().getName() + " &b" +
-                                                    Integer.parseInt(collection.getTier().toString()));
-                                            Text.applyText(player, "&7Recipe Unlocked: " + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getRarity().getColor() + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getName());
-                                            Text.applyText(player, "&8&m>                                          ");
-                                        }
-                                    }
-                                }
-                                if (mobKill.getRareDrops() != null) {
-                                    double random = Math.random();
-                                    double random2 = Math.random();
-                                    if (mobKill.getRareDrops() != null) {
-                                        for (Drop drop : mobKill.getRareDrops()) {
-                                            if (drop.getChance() >= random) {
-                                                player.getInventory().addItem(Items.buildItem(drop.getItems()));
-                                                Text.applyText(player, "&r&5&lSPECIAL DROP! &r&8| " + drop.getItems()
-                                                        .getRarity().getColor() + drop.getItems().getName());
-                                                Player finalPlayer = player;
-                                                new BukkitRunnable() {
-                                                    int seconds = 1;
-                                                    @Override
-                                                    public void run() {
-                                                        if (seconds == 1) {
-                                                            finalPlayer.playSound(finalPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f);
-                                                        } else if (seconds == 2) {
-                                                            finalPlayer.playSound(finalPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 0.5f);
-                                                        } else if (seconds == 3) {
-                                                            finalPlayer.playSound(finalPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 2.0f);
-                                                            cancel();
-                                                        }
-                                                        seconds++;
-                                                    }
-                                                }.runTaskTimer(skrpg, 0, 4);
-                                            }
-                                        }
-                                    }
-                                }
-
-                                playerData.getCombat().setXpTillNext(playerData.getCombat().getXpTillNext() +
-                                        mobKill.getXpGiven());
-                                playerData.getCombat().setTotalXP(playerData.getCombat().getTotalXP()
-                                        + mobKill.getXpGiven());
-                                if (playerData.getCombat().getXpTillNext() >= Level.valueOf("_" +
-                                        (Integer.parseInt(playerData.getCombat().getLevel().toString()
-                                                .replace("_", "")) + 1)).getXpRequired()) {
-                                    int creditsEarned = playerData.getCombat().getLevel().getXpRequired() / 2;
-                                    playerData.getCombat().setLevel(Integer.parseInt(playerData.getCombat()
-                                            .getLevel().toString()
-                                            .replace("_", "")) + 1);
-                                    playerData.getCombat().setXpTillNext(playerData.getCombat().getXpTillNext() -
-                                            playerData.getCombat().getLevel().getXpRequired());
-                                    Text.applyText(player, "&8&m>                                          ");
-                                    Text.applyText(player, "&6&l           SKILL UP!");
-                                    Text.applyText(player, " ");
-                                    Text.applyText(player, "&7You leveled up to Combat &e" + playerData.getCombat().getLevel().toString().replace("_", ""));
-                                    Text.applyText(player, "&7Earned &4+2 Strength ☄ &r&7and &c2% more damage!");
-                                    Text.applyText(player, "&7+&b" + creditsEarned + " C$ Credits");
-                                    Text.applyText(player, "&7Total Extra Damage: &c" + (2 *
-                                            Integer.parseInt(playerData.getCombat()
-                                                    .getLevel().toString()
-                                                    .replace("_", ""))) + "%");
-                                    Text.applyText(player, "&8&m>                                          ");
-                                    playerData.setBaseStrength(playerData.getBaseStrength() + 2);
-                                    playerData.setCredits(playerData.getCredits() + creditsEarned);
-                                }
-                                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(
-                                        Text.color("&e+ " + mobKill.getXpGiven() + " Combat XP (" + playerData.getCombat()
-                                                .getXpTillNext() + "/" + Level.valueOf("_" +
-                                                (Integer.parseInt(playerData.getCombat().getLevel().toString()
-                                                        .replace("_", "")) + 1)).getXpRequired() + ")")
-                                ));
-                            }
-                        }
-
-                        LivingEntity deathEntity = (LivingEntity) mob.getEnt().getWorld().spawnEntity(mob.getEnt()
-                                .getLocation(), mob.getEnt().getType());
-                        if (deathEntity instanceof Zombie) {
-                            ((Zombie) deathEntity).setBaby(false);
-                        }
-                        for (MobSpawn mobSpawn : skrpg.getMobSpawnManager().getMobSpawns()) {
-                            if (mobSpawn.getCurrentlySpawnedMobs() != null && mobSpawn.getCurrentlySpawnedMobs().size() != 0) {
-                                mobSpawn.getCurrentlySpawnedMobs()
-                                        .removeIf(mobs -> mob.getEnt().getEntityId() == mobs.getEnt().getEntityId());
-                            }
-
-                        }
-                        mob.getEnt().remove();
-                        deathEntity.setHealth(0.0);
-                        skrpg.getMobManager().removeMob(mob);
-                        skrpg.getLogger().info("Removed mob!");
-                        playerData.setCredits(playerData.getCredits() + mob.getMobType().getLevel());
-
-
-                    }
-
+                } else {
+                    player = (Player) e.getDamager();
                 }
+                PlayerData playerData = skrpg.getPlayerManager().getPlayerData(player.getUniqueId());
+                for (Items items : EnumSet.allOf(Items.class)) {
+                    if (player.getInventory().getItemInMainHand().getType().equals(Material.AIR)) {
+                        damage = 1 + ((playerData.getStrength() / 5) *
+                                (1 + playerData.getStrength() / 100));
+                    } else if (player.getInventory().getItemInMainHand().getItemMeta().getDisplayName()
+                            .contains(items.getName())) {
+                        damage = (5 + items.getDamage() + ((playerData.getStrength()) / 5)) *
+                                (1 + playerData.getStrength() / 100);
+                        if (items.getItemType().equals(ItemType.BOW) && e.getDamager() instanceof Player) {
+                            damage = damage / 10;
+                        }
+                    }
+                }
+
+                e.setDamage(0.1);
+                if (e.getEntity() instanceof LivingEntity) {
+                    ((LivingEntity) e.getEntity()).setHealth(((LivingEntity) e.getEntity()).getMaxHealth());
+                }
+
+                if (skrpg.getRaidManager().isInRaid(player)) {
+                    Text.applyText(player, "&cYou are in a raid!");
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
+                    e.setCancelled(true);
+                    return;
+                }
+                mob.damage(player, damage, skrpg);
+                }
+
             }
         }
-    }
+
     @EventHandler
     public void onUseEvent(PlayerInteractEvent e) {
         Player p = e.getPlayer();
+        if (skrpg.getRaidManager().isInRaid(p)) {
+            Text.applyText(p, "&cYou are in a raid!");
+            p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
+            e.setCancelled(true);
+            return;
+        }
         PlayerData playerData = skrpg.getPlayerManager().getPlayerData(p.getUniqueId());
         if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK)||e.getAction().equals(Action.RIGHT_CLICK_AIR)){
             if(e.getClickedBlock() != null && e.getClickedBlock().getType() == Material.CRAFTING_TABLE){
@@ -375,24 +286,7 @@ public class PlayerListener implements Listener {
         }
         if (!e.getAction().equals(Action.RIGHT_CLICK_AIR) && !e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) { return; }
         if (p.getInventory().getItemInMainHand().getType() != Material.AIR) {
-            if (p.getInventory().getItemInMainHand().getItemMeta().getDisplayName().contains("Starter Sword")) {
-                if (playerData.getEnergy() < 50) {
-                    Text.applyText(p, "&cYou need more Energy to do this!");
-                    p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
-                    return;
-                }
-                Text.applyText(p, "&7Used &eSpeed Boost&7! &7[&e-50 Energy&7]");
-                p.playSound(p.getLocation(), Sound.BLOCK_BREWING_STAND_BREW, 1.0f, 1.0f);
-                playerData.setEnergy(playerData.getEnergy() - 50);
-                playerData.setBaseSpeed(playerData.getBaseSpeed() + 25);
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-
-                        playerData.setBaseSpeed(playerData.getBaseSpeed() - 25);
-                    }
-                }.runTaskLater(skrpg, 200);
-            }
+            Abilities.executeAbility(playerData, skrpg);
         }
     }
     @EventHandler
@@ -418,6 +312,12 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onBreakEvent(BlockBreakEvent e) {
         Player p = e.getPlayer();
+        if (skrpg.getRaidManager().isInRaid(p)) {
+            Text.applyText(p, "&cYou are in a raid!");
+            p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
+            e.setCancelled(true);
+            return;
+        }
         PlayerData playerData = skrpg.getPlayerManager().getPlayerData(p.getUniqueId());
         if (p.getGameMode().equals(GameMode.CREATIVE)) { return; }
         for (MineBlock mineBlock : EnumSet.allOf(MineBlock.class)) {
@@ -426,16 +326,7 @@ public class PlayerListener implements Listener {
                 for (Collection collection : playerData.getCollections()) {
                     if (collection.getCollectionType().getItem().equals(mineBlock.getCommonDrop())) {
                         collection.setCollectionAmount(collection.getCollectionAmount() + 1);
-                        if (collection.getCollectionAmount() > Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)).getAmountRequired()) {
-                            collection.setTier(Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)));
-                            Text.applyText(p, "&8&m>                                          ");
-                            Text.applyText(p, "&b&l           TIER UP!");
-                            Text.applyText(p, " ");
-                            Text.applyText(p, "&7You tiered up to " + collection.getCollectionType().getItem().getName() + " &b" +
-                                    Integer.parseInt(collection.getTier().toString()));
-                            Text.applyText(p, "&7Recipe Unlocked: " + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getRarity().getColor() + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getName());
-                            Text.applyText(p, "&8&m>                                          ");
-                        }
+                        collection.levelUpCollection(p, playerData);
                     }
                 }
                 e.setCancelled(true);
@@ -473,29 +364,8 @@ public class PlayerListener implements Listener {
                         mineBlock.getXpObtained());
                 playerData.getMining().setTotalXP(playerData.getMining().getTotalXP()
                         + mineBlock.getXpObtained());
-                if (playerData.getMining().getXpTillNext() >= Level.valueOf("_" +
-                        (Integer.parseInt(playerData.getMining().getLevel().toString()
-                                .replace("_", "")) + 1)).getXpRequired()) {
-                    int creditsEarned = playerData.getMining().getLevel().getXpRequired() / 2;
-                    playerData.getMining().setLevel(Integer.parseInt(playerData.getMining()
-                            .getLevel().toString()
-                            .replace("_", "")) + 1);
-                    playerData.getMining().setXpTillNext(playerData.getMining().getXpTillNext() -
-                            playerData.getMining().getLevel().getXpRequired());
-                    Text.applyText(p, "&8&m>                                          ");
-                    Text.applyText(p, "&6&l           SKILL UP!");
-                    Text.applyText(p, " ");
-                    Text.applyText(p, "&7You leveled up to Mining &e" + playerData.getMining().getLevel().toString().replace("_", ""));
-                    Text.applyText(p, "&7Earned &a+2 Defence ✿ &r&7and &64% more double drop chance!");
-                    Text.applyText(p, "&7+&b" + creditsEarned + " C$ Credits");
-                    Text.applyText(p, "&7Total Double Drop Chance: &6" + (4 *
-                            Integer.parseInt(playerData.getMining()
-                                    .getLevel().toString()
-                                    .replace("_", ""))) + "%");
-                    Text.applyText(p, "&8&m>                                          ");
-                    playerData.setBaseDefence(playerData.getBaseDefence() + 2);
-                    playerData.setCredits(playerData.getCredits() + creditsEarned);
-                }
+                playerData.getMining().levelUpSkill(p, playerData, skrpg);
+
                 p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(
                         Text.color("&e+ " + mineBlock.getXpObtained() + " Mining XP (" + playerData.getMining()
                                 .getXpTillNext() + "/" + Level.valueOf("_" +
@@ -522,16 +392,7 @@ public class PlayerListener implements Listener {
                 for (Collection collection : playerData.getCollections()) {
                     if (collection.getCollectionType().getItem().equals(minePlant.getObtainedItem())) {
                         collection.setCollectionAmount(collection.getCollectionAmount() + 1);
-                        if (collection.getCollectionAmount() > Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)).getAmountRequired()) {
-                            collection.setTier(Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)));
-                            Text.applyText(p, "&8&m>                                          ");
-                            Text.applyText(p, "&b&l           TIER UP!");
-                            Text.applyText(p, " ");
-                            Text.applyText(p, "&7You tiered up to " + collection.getCollectionType().getItem().getName() + " &b" +
-                                    Integer.parseInt(collection.getTier().toString()));
-                            Text.applyText(p, "&7Recipe Unlocked: " + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getRarity().getColor() + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getName());
-                            Text.applyText(p, "&8&m>                                          ");
-                        }
+                        collection.levelUpCollection(p, playerData);
                     }
                 }
                 int caneHeight = 0;
@@ -601,31 +462,9 @@ public class PlayerListener implements Listener {
                             minePlant.getXpObtained());
                     playerData.getHerbalism().setTotalXP(playerData.getHerbalism().getTotalXP()
                             + minePlant.getXpObtained());
-                }
 
-                if (playerData.getHerbalism().getXpTillNext() >= Level.valueOf("_" +
-                        (Integer.parseInt(playerData.getHerbalism().getLevel().toString()
-                                .replace("_", "")) + 1)).getXpRequired()) {
-                    int creditsEarned = playerData.getHerbalism().getLevel().getXpRequired() / 2;
-                    playerData.getHerbalism().setLevel(Integer.parseInt(playerData.getHerbalism()
-                            .getLevel().toString()
-                            .replace("_", "")) + 1);
-                    playerData.getHerbalism().setXpTillNext(playerData.getHerbalism().getXpTillNext() -
-                            playerData.getHerbalism().getLevel().getXpRequired());
-                    Text.applyText(p, "&8&m>                                          ");
-                    Text.applyText(p, "&6&l           SKILL UP!");
-                    Text.applyText(p, " ");
-                    Text.applyText(p, "&7You leveled up to Herbalism &e" + playerData.getHerbalism().getLevel().toString().replace("_", ""));
-                    Text.applyText(p, "&7Earned &c+2 HP ♥ &r&7and &64% more double drop chance!");
-                    Text.applyText(p, "&7+&b" + creditsEarned + " C$ Credits");
-                    Text.applyText(p, "&7Total Double Drop Chance: &6" + (4 *
-                            Integer.parseInt(playerData.getHerbalism()
-                                    .getLevel().toString()
-                                    .replace("_", ""))) + "%");
-                    Text.applyText(p, "&8&m>                                         ");
-                    playerData.setBaseHP(playerData.getBaseHP() + 2);
-                    playerData.setCredits(playerData.getCredits() + creditsEarned);
                 }
+                playerData.getHerbalism().levelUpSkill(p, playerData, skrpg);
                 p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(
                         Text.color("&e+ " + minePlant.getXpObtained() + " Herbalism XP (" + playerData.getHerbalism()
                                 .getXpTillNext() + "/" + Level.valueOf("_" +
@@ -676,16 +515,7 @@ public class PlayerListener implements Listener {
             for (Collection collection : playerData.getCollections()) {
                 if (collection.getCollectionType().getItem().equals(Items.WOOD)) {
                     collection.setCollectionAmount(collection.getCollectionAmount() + 1);
-                    if (collection.getCollectionAmount() > Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)).getAmountRequired()) {
-                        collection.setTier(Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)));
-                        Text.applyText(p, "&8&m>                                          ");
-                        Text.applyText(p, "&b&l           TIER UP!");
-                        Text.applyText(p, " ");
-                        Text.applyText(p, "&7You tiered up to " + collection.getCollectionType().getItem().getName() + " &b" +
-                                SKRPG.levelToInt(collection.getTier().toString()));
-                        Text.applyText(p, "&7Recipe Unlocked: " + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getRarity().getColor() + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getName());
-                        Text.applyText(p, "&8&m>                                          ");
-                    }
+                    collection.levelUpCollection(p, playerData);
                 }
             }
             e.setCancelled(true);
@@ -693,26 +523,7 @@ public class PlayerListener implements Listener {
                     10);
             playerData.getCrafting().setTotalXP(playerData.getCrafting().getTotalXP()
                     + 10);
-            if (playerData.getCrafting().getXpTillNext() >= Level.valueOf("_" +
-                    (Integer.parseInt(playerData.getCrafting().getLevel().toString()
-                            .replace("_", "")) + 1)).getXpRequired()) {
-                int creditsEarned = playerData.getCrafting().getLevel().getXpRequired() / 2;
-                playerData.getCrafting().setLevel(Integer.parseInt(playerData.getCrafting()
-                        .getLevel().toString()
-                        .replace("_", "")) + 1);
-                playerData.getCrafting().setXpTillNext(playerData.getCrafting().getXpTillNext() -
-                        playerData.getCrafting().getLevel().getXpRequired());
-                Text.applyText(p, "&8&m>                                          ");
-                Text.applyText(p, "&6&l           SKILL UP!");
-                Text.applyText(p, " ");
-                Text.applyText(p, "&7You leveled up to Crafting &e" + playerData.getCrafting().getLevel().toString().replace("_", ""));
-                Text.applyText(p, "&7Earned &a+1 Defence ✿ &r&7and &4+1 Strength ☄");
-                Text.applyText(p, "&7+&b" + creditsEarned + " C$ Credits");
-                Text.applyText(p, "&8&m>                                         ");
-                playerData.setBaseDefence(playerData.getBaseDefence() + 1);
-                playerData.setBaseStrength(playerData.getBaseStrength() + 1);
-                playerData.setCredits(playerData.getCredits() + creditsEarned);
-            }
+            playerData.getCrafting().levelUpSkill(p, playerData, skrpg);
             p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(
                     Text.color("&e+ " + 10 + " Crafting XP (" + playerData.getCrafting()
                             .getXpTillNext() + "/" + Level.valueOf("_" +
@@ -749,6 +560,12 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onInventoryInteract(InventoryInteractEvent e) {
         Player p  = (Player) e.getWhoClicked();
+        if (skrpg.getRaidManager().isInRaid(p)) {
+            Text.applyText(p, "&cYou are in a raid!");
+            p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
+            e.setCancelled(true);
+            return;
+        }
         PlayerData playerData = skrpg.getPlayerManager().getPlayerData(p.getUniqueId());
         if (e.getView().getTitle().equals("Crafting Table")) {
             List<Integer> slots = Arrays.asList(10, 11, 12, 19, 20, 21, 28, 29, 30);
@@ -1275,6 +1092,37 @@ public class PlayerListener implements Listener {
                     Text.applyText(p, "&aCancelled!");
                 }
             }
+        } else if (e.getView().getTitle().contains("Guild Menu")) {
+            e.setCancelled(true);
+        } else if (e.getView().getTitle().equals("Raid Mob Shop")) {
+            e.setCancelled(true);
+            if (e.getCurrentItem() != null) {
+                for (RaidMobs raidMobs : EnumSet.allOf(RaidMobs.class)) {
+                    if (Text.color(raidMobs.getName()).equals(e.getCurrentItem().getItemMeta().getDisplayName())) {
+                        if (playerData.getCredits() < raidMobs.getCreditsCost()) {
+                            Text.applyText(p, "&cYou do not have enough credits to buy this mob!");
+                            p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
+                            return;
+                        }
+                        if (SKRPG.levelToInt(playerData.getCombat().getLevel().toString()) <
+                                raidMobs.getSkillLevelRequired()) {
+                            Text.applyText(p, "&cYou do not have the skill level required to buy this mob!");
+                            p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
+                            return;
+                        }
+                        if (skrpg.getRaidManager().getRaid(p) != null) {
+                            skrpg.getRaidManager().getRaid(p).buyMob(raidMobs);
+                        } else {
+                            p.closeInventory();
+                            Text.applyText(p, "&cYou are not in a raid!");
+                            p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
+                            return;
+                        }
+                    }
+                }
+            }
+        } else if (e.getView().getTitle().contains("Recipe for ")) {
+            e.setCancelled(true);
         }
     }
     @EventHandler

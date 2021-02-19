@@ -1,9 +1,12 @@
 package com.auxdible.skrpg.player;
 
+import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.items.Rarity;
+import com.auxdible.skrpg.mobs.MobType;
 import com.auxdible.skrpg.player.collections.Collection;
 import com.auxdible.skrpg.player.economy.Bank;
 import com.auxdible.skrpg.player.economy.Trade;
+import com.auxdible.skrpg.player.quests.Quests;
 import com.auxdible.skrpg.player.skills.Combat;
 import com.auxdible.skrpg.player.skills.Crafting;
 import com.auxdible.skrpg.player.skills.Herbalism;
@@ -11,9 +14,18 @@ import com.auxdible.skrpg.player.skills.Mining;
 import com.auxdible.skrpg.regions.Region;
 import com.auxdible.skrpg.utils.Text;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Sound;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.UUID;
 
 public class PlayerData {
@@ -42,9 +54,12 @@ public class PlayerData {
     private boolean toggleTrade;
     private Trade trade;
     private ArrayList<Collection> collections;
+    private ArrayList<Quests> completedQuests;
+    private Quests activeQuest;
+    private int questPhase;
     public PlayerData(int maxHP, int maxEnergy, int strength, int defence, int speed, UUID uuid, int credits, Combat combat,
                       Mining mining, Herbalism herbalism, Crafting crafting, ArrayList<Bank> banks,
-                      Date intrestDate, ArrayList<Collection> collections, Rarity sellAboveRarity, boolean toggleTrade) {
+                      Date intrestDate, ArrayList<Collection> collections, Rarity sellAboveRarity, boolean toggleTrade, ArrayList<Quests> quests) {
         this.crafting = crafting;
         this.maxHP = maxHP;
         this.hp = maxHP;
@@ -70,7 +85,15 @@ public class PlayerData {
         this.collections = collections;
         this.toggleTrade = toggleTrade;
         this.sellAboveRarity = sellAboveRarity;
+        this.completedQuests = quests;
+        this.activeQuest = null;
+        this.questPhase = 0;
     }
+    public void setQuestPhase(int questPhase) { this.questPhase = questPhase; }
+    public int getQuestPhase() { return questPhase; }
+    public void setActiveQuest(Quests activeQuest) { this.activeQuest = activeQuest; }
+    public Quests getActiveQuest() { return activeQuest; }
+    public ArrayList<Quests> getCompletedQuests() { return completedQuests; }
     public ArrayList<Collection> getCollections() { return collections; }
     public Rarity getSellAboveRarity() { return sellAboveRarity; }
     public boolean canTrade() { return toggleTrade; }
@@ -150,4 +173,124 @@ public class PlayerData {
     public void setBaseHP(int setBaseHP) { this.baseHP = setBaseHP; this.maxHP = setBaseHP; }
     public void setBaseStrength(int setBaseStrength) { this.baseStrength = setBaseStrength; this.strength = setBaseStrength; }
     public Crafting getCrafting() { return crafting; }
+    public void damage(int damage, SKRPG skrpg) {
+        Player player = Bukkit.getPlayer(uuid);
+        if (skrpg.getRaidManager().isInRaid(player)) {
+            Text.applyText(player, "&cYou deflected a hit because you are in a raid!");
+            player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 1.0f);
+            return;
+        }
+        double damageReduction = (skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getDefence() /
+                (100.0 + skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getDefence()));
+        int nerfedDamage = (int) Math.round(damage - (damage *
+                damageReduction));
+        if (skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getHp() - nerfedDamage < 0) {
+            skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setHp(0);
+        } else {
+            skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setHp(
+                    skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getHp() - nerfedDamage);
+        }
+        if (getHp() <= 0) {
+            kill(player, skrpg);
+        }
+        ArmorStand damageIndictator = (ArmorStand) player.getWorld()
+                .spawnEntity(player.getLocation(), EntityType.ARMOR_STAND);
+        damageIndictator.setInvulnerable(true);
+        damageIndictator.setCollidable(false);
+        damageIndictator.setInvisible(true);
+        damageIndictator.setCustomName(Text.color("&c" + nerfedDamage + " &4&l☄"));
+        damageIndictator.setCustomNameVisible(true);
+        damageIndictator.setSmall(true);
+        damageIndictator.setVelocity(new Vector(0, 0.5, 0));
+        new BukkitRunnable() {
+            int quarterSecondsAlive = 0;
+            @Override
+            public void run() {
+                quarterSecondsAlive++;
+                if (quarterSecondsAlive == 8) {
+                    damageIndictator.remove();
+                    cancel();
+                }
+            }
+        }.runTaskTimer(skrpg, 0, 5);
+    }
+    public void damagePlayer(Player damager, int damage, SKRPG skrpg) {
+        Player player = Bukkit.getPlayer(getUuid());
+        if (player == null) { return; }
+        if (skrpg.getRaidManager().isInRaid(player)) {
+            Text.applyText(player, "&cYou deflected a hit from a player! (" + damager.getDisplayName() + ") because you are in a raid!");
+            player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 1.0f);
+            return;
+        }
+        double damageReduction = (skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getDefence() /
+                (2000.0 + skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getDefence()));
+        int nerfedDamage = (int) Math.round(damage - (damage *
+                damageReduction));
+
+        if (skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getHp() - nerfedDamage < 0) {
+            skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setHp(0);
+        } else {
+            skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setHp(
+                    skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getHp() - nerfedDamage);
+        }
+        Text.applyText(player, "&c" + damager.getDisplayName() + " hit you for " + nerfedDamage + "♥!");
+        Text.applyText(damager, "&cHit " + player.getDisplayName() + " for " + nerfedDamage + "♥!");
+        if (getDefence() > 250 && getHp() > 100) {
+            damager.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 0.5f, 0.4f);
+        }
+        if (getHp() <= 0) {
+            killPlayer(damager, skrpg);
+        }
+        ArmorStand damageIndictator = (ArmorStand) player.getWorld()
+                .spawnEntity(player.getLocation(), EntityType.ARMOR_STAND);
+        damageIndictator.setInvulnerable(true);
+        damageIndictator.setCollidable(false);
+        damageIndictator.setInvisible(true);
+        damageIndictator.setCustomName(Text.color("&c" + nerfedDamage + " &4&l☄"));
+        damageIndictator.setCustomNameVisible(true);
+        damageIndictator.setSmall(true);
+        damageIndictator.setVelocity(new Vector(0, 0.5, 0));
+        new BukkitRunnable() {
+            int quarterSecondsAlive = 0;
+            @Override
+            public void run() {
+                quarterSecondsAlive++;
+                if (quarterSecondsAlive == 8) {
+                    damageIndictator.remove();
+                    cancel();
+                }
+            }
+        }.runTaskTimer(skrpg, 0, 5);
+
+
+    }
+    public void kill(Player player, SKRPG skrpg) {
+
+            if (skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getRegion() != null) {
+                player.teleport(skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getRegion().getSpawnLocation());
+            } else {
+                player.teleport(Bukkit.getWorld(skrpg.getConfig().getString("rpgWorld")).getSpawnLocation());
+            }
+            player.playSound(player.getLocation(), Sound.ENTITY_BLAZE_DEATH, 1.0f, 0.5f);
+            player.sendTitle(Text.color("&4&l☠"), Text.color("&c&lYOU DIED"), 40, 100, 10);
+            Text.applyText(player, "&cYou lost &b" + skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getCredits() / 2 + " C$&c!");
+            skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setCredits(skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getCredits() / 2);
+
+            skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setHp(
+                    skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getMaxHP());
+    }
+    public void killPlayer(Player killer, SKRPG skrpg) {
+        Player player = Bukkit.getPlayer(uuid);
+        if (skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getRegion() != null) {
+            player.teleport(skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getRegion().getSpawnLocation());
+        } else {
+            player.teleport(Bukkit.getWorld(skrpg.getConfig().getString("rpgWorld")).getSpawnLocation());
+        }
+        player.playSound(player.getLocation(), Sound.ENTITY_BLAZE_DEATH, 1.0f, 0.5f);
+        player.sendTitle(Text.color("&4&l☠"), Text.color("&c&lYOU DIED"), 40, 100, 10);
+        Text.applyText(player, "&cYou were killed by " + killer.getDisplayName() + "&c!");
+
+        skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setHp(
+                skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getMaxHP());
+    }
 }

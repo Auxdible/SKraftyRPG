@@ -39,6 +39,10 @@ public class TradeCommand implements CommandExecutor {
                 playerData.getTrade().start(skrpg);
                 Text.applyText(player, "&aTrade accepted!");
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+            } else {
+                Text.applyText(player, "&cThere is no active trade invite!");
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
+                return false;
             }
         } else if (args[0].equals("deny")) {
             if (skrpg.getTradeManager().getTrade(player) != null) {
@@ -47,6 +51,10 @@ public class TradeCommand implements CommandExecutor {
                 Text.applyText(player, "&cTrade denied!");
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
 
+            } else {
+                Text.applyText(player, "&cThere is no active trade invite!");
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
+                return false;
             }
         } else if (Bukkit.getPlayer(args[0]) != null) {
             if (!skrpg.getPlayerManager().getPlayerData(Bukkit.getPlayer(args[0]).getUniqueId()).canTrade()) {

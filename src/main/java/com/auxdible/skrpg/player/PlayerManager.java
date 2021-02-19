@@ -8,7 +8,10 @@ import com.auxdible.skrpg.player.collections.CollectionType;
 import com.auxdible.skrpg.player.collections.Tiers;
 import com.auxdible.skrpg.player.economy.Bank;
 import com.auxdible.skrpg.player.economy.BankLevel;
+import com.auxdible.skrpg.player.quests.Quest;
+import com.auxdible.skrpg.player.quests.Quests;
 import com.auxdible.skrpg.player.skills.*;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import sun.util.resources.cldr.aa.CalendarData_aa_ER;
 
@@ -32,7 +35,8 @@ public class PlayerManager {
         players = new ArrayList<>();
         this.skrpg = skrpg;
     }
-    public void loadMySQLPlayerData(Player player) {
+    public PlayerData loadMySQLPlayerData(Player player) {
+        PlayerData playerData = null;
         try {
             ResultSet rs = SKRPG.prepareStatement("SELECT COUNT(UUID) FROM stat_table WHERE UUID = '" + player.getUniqueId() + "';").executeQuery();
             rs.next();
@@ -71,19 +75,102 @@ public class PlayerManager {
                 if (rsStats.getString("raritySell").isEmpty()) {
                     rarityValue = "LEGENDARY";
                 }
-                players.add(new PlayerData(rsStats.getInt("baseHP"), rsStats.getInt("baseEnergy"),
+                List<String> completedQuests = Arrays.asList(rsStats.getString("questsCompleted").split(","));
+                List<String> allQuests = new ArrayList<>();
+                ArrayList<Quests> processedQuests = new ArrayList<>();
+                for (Quests quests : EnumSet.allOf(Quests.class)) {
+                    allQuests.add(quests.toString());
+                }
+                for (String quests : completedQuests) {
+                    if (allQuests.contains(quests)) {
+                         processedQuests.add(Quests.valueOf(quests));
+                    }
+                }
+
+                playerData = new PlayerData(rsStats.getInt("baseHP"), rsStats.getInt("baseEnergy"),
                         rsStats.getInt("baseStrength"), rsStats.getInt("baseDefence"), rsStats.getInt("baseSpeed"),
                         player.getUniqueId(), rsStats.getInt("credits"),
                         new Combat(Level.valueOf("_" + rsSkills.getInt("combatLevel")), rsSkills.getInt("combatXpTotal"), rsSkills.getInt("combatXpTill")),
                         new Mining(Level.valueOf("_" + rsSkills.getInt("miningLevel")), rsSkills.getInt("miningXpTotal"), rsSkills.getInt("miningXpTill")),
                         new Herbalism(Level.valueOf("_" + rsSkills.getInt("herbalismLevel")), rsSkills.getInt("herbalismXpTotal"), rsSkills.getInt("herbalismXpTill")),
                         new Crafting(Level.valueOf("_" + rsSkills.getInt("craftingLevel")), rsSkills.getInt("craftingXpTotal"), rsSkills.getInt("craftingXpTill")),
-                        playerBanks, calendar.getTime(), collections, Rarity.valueOf(rarityValue), rsStats.getBoolean("canTrade")));
+                        playerBanks, calendar.getTime(), collections, Rarity.valueOf(rarityValue), rsStats.getBoolean("canTrade"), processedQuests);
+                if (getPlayerData(playerData.getUuid()) == null) {
+                    players.add(playerData);
+                }
             }
         } catch (SQLException | ParseException x) {
             x.printStackTrace();
         }
-
+        return playerData;
+    }
+    public PlayerData loadOfflineMySQLData(OfflinePlayer player) {
+        PlayerData playerData = null;
+        try {
+            ResultSet rs = SKRPG.prepareStatement("SELECT COUNT(UUID) FROM stat_table WHERE UUID = '" + player.getUniqueId() + "';").executeQuery();
+            rs.next();
+            if (rs.getInt(1) == 0) {
+                createPlayer(player.getUniqueId());
+            } else {
+                ResultSet rsStats = SKRPG.prepareStatement("SELECT * FROM stat_table WHERE " +
+                        "UUID = '" + player.getUniqueId() + "';").executeQuery();
+                rsStats.next();
+                ResultSet rsSkills = SKRPG.prepareStatement("SELECT * FROM skills_table WHERE " +
+                        "UUID = '" + player.getUniqueId() + "';").executeQuery();
+                rsSkills.next();
+                ResultSet rsBank = SKRPG.prepareStatement("SELECT * FROM banks_table WHERE " +
+                        "UUID = '" + player.getUniqueId() + "';").executeQuery();
+                rsBank.next();
+                ResultSet rsCollection = SKRPG.prepareStatement("SELECT * FROM collection_table WHERE " +
+                        "UUID = '" + player.getUniqueId() + "';").executeQuery();
+                rsCollection.next();
+                ArrayList<Bank> playerBanks = new ArrayList<>();
+                for (int i = 1; i <= rsBank.getInt("bankAmount"); i++) {
+                    playerBanks.add(new Bank(rsBank.getInt("bank" + i + "Credits"), BankLevel.valueOf(rsBank.getString("bank" + i + "Level"))));
+                }
+                Calendar calendar = Calendar.getInstance();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-DD");
+                calendar.setTime(sdf.parse(rsStats.getString("interest")));
+                calendar.add(Calendar.MONTH, 1);
+                List<String> tiers = Arrays.asList(rsCollection.getString("collectionsTier").split(","));
+                List<String> amounts = Arrays.asList(rsCollection.getString("collectionsAmount").split(","));
+                ArrayList<Collection> collections = new ArrayList<>();
+                List<CollectionType> collectionTypes = Arrays.asList(CollectionType.values());
+                for (int i = 0; i < collectionTypes.size(); i++) {
+                    collections.add(new Collection(Integer.parseInt(amounts.get(i)), Tiers.valueOf("_" + tiers.get(i)), collectionTypes.get(i)));
+                    skrpg.getLogger().info("Collection added!" + collectionTypes.get(i));
+                }
+                String rarityValue = rsStats.getString("raritySell");
+                if (rsStats.getString("raritySell").isEmpty()) {
+                    rarityValue = "LEGENDARY";
+                }
+                List<String> completedQuests = Arrays.asList(rsStats.getString("questsCompleted").split(","));
+                List<String> allQuests = new ArrayList<>();
+                ArrayList<Quests> processedQuests = new ArrayList<>();
+                for (Quests quests : EnumSet.allOf(Quests.class)) {
+                    allQuests.add(quests.toString());
+                }
+                for (String quests : completedQuests) {
+                    if (allQuests.contains(quests)) {
+                        processedQuests.add(Quests.valueOf(quests));
+                    }
+                }
+                playerData = new PlayerData(rsStats.getInt("baseHP"), rsStats.getInt("baseEnergy"),
+                        rsStats.getInt("baseStrength"), rsStats.getInt("baseDefence"), rsStats.getInt("baseSpeed"),
+                        player.getUniqueId(), rsStats.getInt("credits"),
+                        new Combat(Level.valueOf("_" + rsSkills.getInt("combatLevel")), rsSkills.getInt("combatXpTotal"), rsSkills.getInt("combatXpTill")),
+                        new Mining(Level.valueOf("_" + rsSkills.getInt("miningLevel")), rsSkills.getInt("miningXpTotal"), rsSkills.getInt("miningXpTill")),
+                        new Herbalism(Level.valueOf("_" + rsSkills.getInt("herbalismLevel")), rsSkills.getInt("herbalismXpTotal"), rsSkills.getInt("herbalismXpTill")),
+                        new Crafting(Level.valueOf("_" + rsSkills.getInt("craftingLevel")), rsSkills.getInt("craftingXpTotal"), rsSkills.getInt("craftingXpTill")),
+                        playerBanks, calendar.getTime(), collections, Rarity.valueOf(rarityValue), rsStats.getBoolean("canTrade"), processedQuests);
+                if (getPlayerData(playerData.getUuid()) == null) {
+                    players.add(playerData);
+                }
+            }
+        } catch (SQLException | ParseException x) {
+            x.printStackTrace();
+        }
+        return playerData;
     }
     public ArrayList<PlayerData> getPlayers() { return players; }
     public PlayerData getPlayerData(UUID uuid) {
@@ -116,14 +203,13 @@ public class PlayerManager {
         banks.add(new Bank(0, BankLevel.FREE));
         PlayerData playerData = new PlayerData(100, 100, 1, 1, 100, uuid, 0,
                 new Combat(Level._0, 0, 0), new Mining(Level._0, 0, 0),
-                new Herbalism(Level._0, 0, 0), new Crafting(Level._0, 0, 0), banks, calendar.getTime(), collectionsGenerated, Rarity.LEGENDARY, true);
+                new Herbalism(Level._0, 0, 0), new Crafting(Level._0, 0, 0), banks, calendar.getTime(), collectionsGenerated, Rarity.LEGENDARY, true, new ArrayList<>());
         players.add(playerData);
         int canTrade = 0;
         if (playerData.canTrade()) {
             canTrade = 1;
         }
         int bankAmount = playerData.getBanks().size();
-
         Bank bank1Object = new Bank(-1, BankLevel.NULL), bank2Object = new Bank(-1, BankLevel.NULL), bank3Object = new Bank(-1, BankLevel.NULL), bank4Object = new Bank(-1, BankLevel.NULL), bank5Object = new Bank(-1, BankLevel.NULL);
         for (int i = 0; i < playerData.getBanks().size(); i++) {
             if (i + 1 == 1) {
@@ -189,7 +275,6 @@ public class PlayerManager {
         HashSet<PlayerData> playerDataDupe = new HashSet<>(players);
         players = new ArrayList<>(playerDataDupe);
         for (PlayerData playerData : players) {
-            skrpg.getLogger().info(playerData.getUuid().toString());
             try {
                 ResultSet rs = SKRPG.prepareStatement("SELECT COUNT(UUID) FROM stat_table WHERE UUID = '" + playerData.getUuid().toString() + "';").executeQuery();
                 rs.next();
@@ -199,13 +284,16 @@ public class PlayerManager {
                 if (playerData.canTrade()) {
                     canTrade = 1;
                 }
-                skrpg.getLogger().info(calendar.getTime() + "");
+                StringJoiner questsCompletedJoiner = new StringJoiner(",");
+                for (Quests quests : playerData.getCompletedQuests()) {
+                    questsCompletedJoiner.add(quests.toString());
+                }
                 if (rs.getInt(1) == 0) {
-                    SKRPG.prepareStatement("INSERT INTO stat_table(UUID, baseHP, baseDefence, baseStrength, baseEnergy, baseSpeed, credits, interest, canTrade, raritySell)" +
+                    SKRPG.prepareStatement("INSERT INTO stat_table(UUID, baseHP, baseDefence, baseStrength, baseEnergy, baseSpeed, credits, interest, canTrade, raritySell, questsCompleted)" +
                             " VALUES ('" + playerData.getUuid().toString() + "','" + playerData.getBaseHP() + "','" +
                             playerData.getBaseDefence() + "','" + playerData.getBaseStrength() + "','" + playerData.getBaseEnergy() + "','" + playerData.getBaseSpeed() + "','" +
                             playerData.getCredits() + "','" + calendar.get(Calendar.YEAR) + "-"
-                            + calendar.get(Calendar.MONTH) + "-" + calendar.get(Calendar.DAY_OF_MONTH) + "','" + canTrade + "','" + playerData.getSellAboveRarity().toString()  + "');").executeUpdate();
+                            + calendar.get(Calendar.MONTH) + "-" + calendar.get(Calendar.DAY_OF_MONTH) + "','" + canTrade + "','" + playerData.getSellAboveRarity().toString()  + "','" + questsCompletedJoiner.toString() + "');").executeUpdate();
                 } else {
                     SKRPG.prepareStatement("UPDATE stat_table SET baseHP = '" + playerData.getBaseHP() + "'," +
                             " baseDefence = '" + playerData.getBaseDefence() + "'," +
@@ -216,7 +304,8 @@ public class PlayerManager {
                             " interest = '" + calendar.get(Calendar.YEAR) + "-"
                             + calendar.get(Calendar.MONTH) + "-" + calendar.get(Calendar.DAY_OF_MONTH) +  "'," +
                             " canTrade = '" + canTrade + "'," +
-                            " raritySell = '" + playerData.getSellAboveRarity().toString() + "' WHERE UUID = '" + playerData.getUuid().toString() + "';").executeUpdate();
+                            " raritySell = '" + playerData.getSellAboveRarity().toString() + "'," +
+                            " questsCompleted = '" + questsCompletedJoiner.toString() + "' WHERE UUID = '" + playerData.getUuid().toString() + "';").executeUpdate();
 
                 }
                 ResultSet rsSkills = SKRPG.prepareStatement("SELECT COUNT(UUID) FROM skills_table WHERE UUID = '" + playerData.getUuid().toString() + "';").executeQuery();
@@ -302,14 +391,11 @@ public class PlayerManager {
                 for (String count : amounts) {
                     stringJoinerCollections.add(count);
                 }
-                skrpg.getLogger().info(stringJoinerTiers.toString());
-                skrpg.getLogger().info(stringJoinerCollections.toString());
                 if (rsCollections.getInt(1) == 0) {
                     SKRPG.prepareStatement("INSERT INTO collection_table(UUID, collectionsTier, collectionsAmount)" +
                             " VALUES ('" + playerData.getUuid().toString() + "','" +
                             stringJoinerTiers.toString() + "','" + stringJoinerCollections.toString()  + "');").executeUpdate();
                 } else {
-                    skrpg.getLogger().info("updating...");
                     SKRPG.prepareStatement("UPDATE collection_table SET collectionsTier = '" + stringJoinerTiers.toString() + "'," +
                             " collectionsAmount = '" + stringJoinerCollections.toString() + "' WHERE UUID = '" + playerData.getUuid().toString() + "';").executeUpdate();
                 }

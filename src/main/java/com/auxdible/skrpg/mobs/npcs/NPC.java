@@ -152,6 +152,38 @@ public class NPC {
             slime.setCustomName("weaponsalesman");
             slime.setRemoveWhenFarAway(false);
             entity = villager;
+        } else if (npcType == NpcType.TUTORIAL_NPC_VILLAGER) {
+            Villager villager = (Villager) Bukkit.getWorld(skrpg.getConfig().getString("rpgWorld")).spawnEntity(location, EntityType.VILLAGER);
+            villager.setAI(false);
+            villager.setProfession(Villager.Profession.NITWIT);
+            villager.teleport(location);
+            Location entLoc = new Location(Bukkit.getWorld(skrpg.getConfig().getString("rpgWorld")),
+                    location.getX(), location.getY() - 0.3, location.getZ());
+            ArmorStand nameStand = (ArmorStand) Bukkit.getWorld(skrpg.getConfig().getString("rpgWorld"))
+                    .spawnEntity(location, EntityType.ARMOR_STAND);
+            nameStand.teleport(location);
+            nameStand.setInvisible(true);
+            nameStand.setGravity(false);
+            nameStand.setCustomName(Text.color("&aTutorial NPC"));
+            nameStand.setCustomNameVisible(true);
+            ArmorStand clickStand = (ArmorStand) Bukkit.getWorld(skrpg.getConfig().getString("rpgWorld"))
+                    .spawnEntity(entLoc, EntityType.ARMOR_STAND);
+            clickStand.teleport(entLoc);
+            clickStand.setInvisible(true);
+            clickStand.setGravity(false);
+            clickStand.setCustomName(Text.color("&e&lTALK"));
+            clickStand.setCustomNameVisible(true);
+            Slime slime = (Slime) Bukkit.getWorld(skrpg.getConfig().getString("rpgWorld"))
+                    .spawnEntity(location, EntityType.SLIME);
+            slime.setSize(4);
+            slime.setAI(false);
+            slime.setInvisible(true);
+            slime.setInvulnerable(true);
+            slime.setGravity(false);
+            slime.setCollidable(false);
+            slime.setCustomName("tutorialnpc");
+            slime.setRemoveWhenFarAway(false);
+            entity = villager;
         }
 
         }

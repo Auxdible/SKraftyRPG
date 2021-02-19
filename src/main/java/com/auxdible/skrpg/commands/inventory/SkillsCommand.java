@@ -1,4 +1,4 @@
-package com.auxdible.skrpg.commands;
+package com.auxdible.skrpg.commands.inventory;
 
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.player.PlayerData;
@@ -31,33 +31,69 @@ public class SkillsCommand implements CommandExecutor {
         for (int i = 0; i <= 35; i++) {
             inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
         }
+        Level levelCombat;
+        String xpTillCombat;
+        if (playerData.getCombat().getLevel() != Level._50) {
+            levelCombat = Level.valueOf("_" +
+                    (Integer.parseInt(playerData.getCombat().getLevel().toString()
+                            .replace("_", "")) + 1));
+            xpTillCombat = "" + levelCombat.getXpRequired();
+        } else {
+            levelCombat = Level._50;
+            xpTillCombat = "&6&lCOMBAT SKILL COMPLETE!";
+        }
+        Level levelMining;
+        String xpTillMining;
+        if (playerData.getMining().getLevel() != Level._50) {
+            levelMining = Level.valueOf("_" +
+                    (Integer.parseInt(playerData.getMining().getLevel().toString()
+                            .replace("_", "")) + 1));
+            xpTillMining = "" + levelMining.getXpRequired();
+        } else {
+            levelMining = Level._50;
+            xpTillMining = "&6&lMINING SKILL COMPLETE!";
+        }
+        Level levelHerbalism;
+        String xpTillHerbalism;
+        if (playerData.getHerbalism().getLevel() != Level._50) {
+            levelHerbalism = Level.valueOf("_" +
+                    (Integer.parseInt(playerData.getHerbalism().getLevel().toString()
+                            .replace("_", "")) + 1));
+            xpTillHerbalism = "" + levelHerbalism.getXpRequired();
+        } else {
+            levelHerbalism = Level._50;
+            xpTillHerbalism = "&6&lHERBALISM SKILL COMPLETE!";
+        }
+        Level levelCrafting;
+        String xpTillCrafting;
+        if (playerData.getCrafting().getLevel() != Level._50) {
+            levelCrafting = Level.valueOf("_" +
+                    (Integer.parseInt(playerData.getCrafting().getLevel().toString()
+                            .replace("_", "")) + 1));
+            xpTillCrafting = "" + levelCrafting.getXpRequired();
+        } else {
+            levelCrafting = Level._50;
+            xpTillCrafting = "&6&lCRAFTING SKILL COMPLETE!";
+        }
         inv.setItem(13, new ItemBuilder(Material.DIAMOND_SWORD, 0).setName("&7Combat &6" +
-                playerData.getCombat().getLevel().toString().replace("_", "")).setLore(
+                levelCombat.toString().replace("_", "")).setLore(
                 Arrays.asList(Text.color("&6" + playerData.getCombat().getXpTillNext() + "&7/&6" +
-                        Level.valueOf("_" +
-                                (Integer.parseInt(playerData.getCombat().getLevel().toString()
-                                        .replace("_", "")) + 1)).getXpRequired()),
+                        xpTillCombat),
                         Text.color("&7Total Combat XP: &6" + playerData.getCombat().getTotalXP()))).asItem());
         inv.setItem(12, new ItemBuilder(Material.DIAMOND_PICKAXE, 0).setName("&7Mining &6" +
-                playerData.getMining().getLevel().toString().replace("_", "")).setLore(
+                levelMining.toString().replace("_", "")).setLore(
                 Arrays.asList(Text.color("&6" + playerData.getMining().getXpTillNext() + "&7/&6" +
-                                Level.valueOf("_" +
-                                        (Integer.parseInt(playerData.getMining().getLevel().toString()
-                                                .replace("_", "")) + 1)).getXpRequired()),
+                        xpTillMining),
                         Text.color("&7Total Mining XP: &6" + playerData.getMining().getTotalXP()))).asItem());
         inv.setItem(14, new ItemBuilder(Material.WHEAT, 0).setName("&7Herbalism &6" +
-                playerData.getHerbalism().getLevel().toString().replace("_", "")).setLore(
+                levelHerbalism.toString().replace("_", "")).setLore(
                 Arrays.asList(Text.color("&6" + playerData.getHerbalism().getXpTillNext() + "&7/&6" +
-                                Level.valueOf("_" +
-                                        (Integer.parseInt(playerData.getHerbalism().getLevel().toString()
-                                                .replace("_", "")) + 1)).getXpRequired()),
+                                xpTillHerbalism),
                         Text.color("&7Total Herbalism XP: &6" + playerData.getHerbalism().getTotalXP()))).asItem());
         inv.setItem(22, new ItemBuilder(Material.CRAFTING_TABLE, 0).setName("&7Crafting &6" +
-                playerData.getCrafting().getLevel().toString().replace("_", "")).setLore(
+                levelCrafting.toString().replace("_", "")).setLore(
                 Arrays.asList(Text.color("&6" + playerData.getCrafting().getXpTillNext() + "&7/&6" +
-                                Level.valueOf("_" +
-                                        (Integer.parseInt(playerData.getCrafting().getLevel().toString()
-                                                .replace("_", "")) + 1)).getXpRequired()),
+                                xpTillCrafting),
                         Text.color("&7Total Crafting XP: &6" + playerData.getCrafting().getTotalXP()))).asItem());
         inv.setItem(27, new ItemBuilder(Material.ARROW, 0).setName("&aBack to Menu").asItem());
         p.openInventory(inv);

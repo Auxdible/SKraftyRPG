@@ -64,6 +64,14 @@ public enum Items {
             0, 0, 0, 0, 0, 0, "ROTTEN_FLESH", ItemType.MATERIAL, null,  5, false),
     ZOMBIE_FRAGMENT(Rarity.RARE, "Zombie Fragment", new ItemBuilder(Material.ZOMBIE_HEAD, 0).asItem(),
             0,  0,0, 0, 0, 0, "ZOMBIE_FRAGMENT", ItemType.MATERIAL, null, 10000, false),
+    CRYSTALLITE(Rarity.UNCOMMON, "Crystalite", new ItemBuilder(Material.QUARTZ, 0).asItem(), 0, 0, 0, 0, 0, 0, "CRYSTALLITE", ItemType.MATERIAL,
+            Arrays.asList(Text.color("&dCrystalite, &7&oa mysterious resource, has unknown origins."),
+                    Text.color("&7&oAll we know is that the townspeople use it for their windows.")), 100, true),
+    NETHERRACK(Rarity.COMMON, "Netherrack", new ItemBuilder(Material.NETHERRACK, 0).asItem(), 0, 0, 0, 0, 0, 0, "NETHERRACK", ItemType.MATERIAL, null, 10, false),
+    END_STONE(Rarity.UNCOMMON, "End Stone", new ItemBuilder(Material.END_STONE, 0).asItem(), 0, 0, 0, 0, 0, 0, "END_STONE", ItemType.MATERIAL, null, 120, false),
+    CORRUPTED_ROOT(Rarity.RARE, "Corrupted Root", new ItemBuilder(Material.PURPLE_DYE, 0).asItem(),
+            5, 0, 0, 0, 0, 0, "CORRUPTED_ROOT", ItemType.ITEM,
+            Arrays.asList(Text.color("&7&oHow did we get here?")), 150, true),
     /* ------ MERCHANT ITEMS ------*/
     STARTER_SWORD(Rarity.COMMON, "Starter Sword", new ItemBuilder(Material.GOLDEN_SWORD, 0).asItem(), 35, 5, 10, 0, 0, 0, "STARTER_SWORD", ItemType.SWORD,
             Arrays.asList(Text.color("&8&l[&e&lABILITY&8&l] &r&e10 Energy"), Text.color("&7Gain a temporary &f+25 Speed")), 10, false),
@@ -221,8 +229,9 @@ public enum Items {
     GOLD_BOOTS(Rarity.UNCOMMON, "Gold Boots", new ItemBuilder(Material.GOLDEN_BOOTS, 0).asItem(), 0, 0, 30, 0, 25, 0, "GOLDEN_BOOTS", ItemType.ARMOR, null,
             Arrays.asList(new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.NONE, 0),
                     new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.GOLD_INGOT, 1),
-                    new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.GOLD_INGOT, 1)), 1, 30, 20, false);
-
+                    new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.GOLD_INGOT, 1)), 1, 30, 20, false),
+    /* ---- MISC ---- */
+    NATURE_STAFF(Rarity.RARE, "Nature Staff", new ItemBuilder(Material.STICK, 0).asItem(), 50, 30, 0, 50, 0, 100, "NATURE_STAFF", ItemType.ITEM, null, 20, true);
     private Rarity rarity;
     private String name;
     private ItemStack itemStack;
@@ -297,7 +306,9 @@ public enum Items {
     public int getCraftingXPGained() { return craftingXPGained; }
     public static ItemStack buildItem(Items items) {
         ItemStack itemStack = items.getItemStack();
-        ItemMeta iM = itemStack.getItemMeta();
+        if (items == Items.NONE) {
+            return itemStack;
+        }
         ArrayList<String> lore = new ArrayList<>();
         if (items.getDamage() != 0) {
             lore.add(Text.color("&7Damage: &c+" + items.getDamage()));
@@ -326,9 +337,11 @@ public enum Items {
                 lore.add(Text.color(items.getLore().get(i)));
             }
         }
+
         lore.add(" ");
         lore.add(" ");
         lore.add(Text.color(items.getRarity().getNameColored() + " " + items.getItemType()));
+        ItemMeta iM = itemStack.getItemMeta();
         iM.setDisplayName(Text.color(items.getRarity().getColor() + items.getName()));
         iM.setLore(lore);
         if (items.doesGlow()) {
@@ -336,6 +349,7 @@ public enum Items {
         }
         iM.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         iM.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
+        iM.setUnbreakable(true);
         iM.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         itemStack.setItemMeta(iM);
         ItemStack item = itemStack;

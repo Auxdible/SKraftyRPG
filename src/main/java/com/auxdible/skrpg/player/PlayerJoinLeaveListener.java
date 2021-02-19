@@ -3,6 +3,7 @@ package com.auxdible.skrpg.player;
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.mobs.npcs.NPC;
 import com.auxdible.skrpg.player.economy.Bank;
+import com.auxdible.skrpg.player.quests.Quests;
 import com.auxdible.skrpg.utils.Text;
 import net.minecraft.server.v1_16_R3.*;
 import org.bukkit.Bukkit;
@@ -14,6 +15,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.*;
 import org.bukkit.scoreboard.Scoreboard;
@@ -31,6 +34,7 @@ public class PlayerJoinLeaveListener implements Listener {
     @EventHandler
     public void onJoinEvent(PlayerJoinEvent e) {
         skrpg.getPlayerManager().loadMySQLPlayerData(e.getPlayer());
+
         PlayerData playerData = skrpg.getPlayerManager().getPlayerData(e.getPlayer().getUniqueId());
         buildScoreboard(e.getPlayer());
         playerData.setRegion(null);
@@ -55,13 +59,22 @@ public class PlayerJoinLeaveListener implements Listener {
                 DataWatcher watcher = npc.getEntityPlayer().getDataWatcher();
                 Integer byteInt = 127;
                 watcher.set(new DataWatcherObject<>(16, DataWatcherRegistry.a), byteInt.byteValue());
-
                 playerConnection.sendPacket(new PacketPlayOutEntityMetadata(npc.getEntityPlayer().getId(),
                         npc.getEntityPlayer().getDataWatcher(), true));
                 playerConnection.sendPacket(new PacketPlayOutEntityHeadRotation(npc.getEntityPlayer(), (byte) (
                         npc.getLocation().getYaw() * 256 / 360)));
                 e.getPlayer().getScoreboard().getTeam("npcs").addEntry(npc.getEntityPlayer().getName());
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, npc.getEntityPlayer()));
+                    }
+                }.runTaskLater(skrpg ,50);
+
             }
+        }
+        if (!playerData.getCompletedQuests().contains(Quests.TUTORIAL)) {
+            Quests.startQuest(Quests.TUTORIAL, e.getPlayer(), playerData, skrpg);
         }
         LocalDate localDate = LocalDate.now();
         Calendar calendar = Calendar.getInstance();
@@ -95,19 +108,30 @@ public class PlayerJoinLeaveListener implements Listener {
         }
         skrpg.getLogger().info(calendar.getTime() + "");
     }
+    @EventHandler
+    public void playerLeaveEvent(PlayerQuitEvent e) {
+        PlayerData playerData = skrpg.getPlayerManager().getPlayerData(e.getPlayer().getUniqueId());
+        e.setQuitMessage(Text.color("&8[&c-&8] &r&7" + e.getPlayer().getDisplayName()));
+        playerData.setActiveQuest(null);
+        playerData.setTrade(null);
+    }
     public void buildScoreboard(Player player) {
         Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-        Objective objective = scoreboard.registerNewObjective(Text.color("SKRPG"), "dummy");
-        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-        objective.setDisplayName(Text.color("&e&lSKRPG"));
         Team npcs = scoreboard.registerNewTeam("npcs");
         npcs.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
+        Objective objective = scoreboard.registerNewObjective(Text.color("SKRPG"), "dummy");
+        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+        objective.setDisplayName(Text.color("&b⚔ &r&e&lSKRPG &r&b⚔"));
         Score score = objective.getScore(" ");
-        score.setScore(5);
+        score.setScore(6);
         Team region = scoreboard.registerNewTeam("region");
         region.addEntry(ChatColor.GREEN.toString());
         region.setPrefix(Text.color("&aRegion&f: ۩ "));
-        objective.getScore(ChatColor.GREEN.toString()).setScore(4);
+        objective.getScore(ChatColor.GREEN.toString()).setScore(5);
+        Team regionOwner = scoreboard.registerNewTeam("regionOwner");
+        regionOwner.addEntry(ChatColor.GOLD.toString());
+        regionOwner.setPrefix(Text.color("&7Owned By: "));
+        objective.getScore(ChatColor.GOLD.toString()).setScore(4);
         Score score3 = objective.getScore("   ");
         score3.setScore(3);
         Team team = scoreboard.registerNewTeam("credits");
@@ -117,7 +141,7 @@ public class PlayerJoinLeaveListener implements Listener {
         objective.getScore(ChatColor.AQUA.toString()).setScore(2);
         Score score1 = objective.getScore("  ");
         score1.setScore(1);
-        Score score2 = objective.getScore(Text.color("&eEnjoy the test! :)"));
+        Score score2 = objective.getScore(Text.color("&eminecraft.skrafty.com"));
         score2.setScore(0);
         player.setScoreboard(scoreboard);
     }

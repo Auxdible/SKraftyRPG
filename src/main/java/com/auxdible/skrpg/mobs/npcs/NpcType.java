@@ -8,7 +8,8 @@ import java.util.List;
 
 public enum NpcType {
     PLAYER_EXPORT_MERCHANT, PLAYER_BANKER, WEAPON_FORGER_SALESMAN(Arrays.asList(new PurchasableItem(Items.BASIC_HILT, 50),
-            new PurchasableItem(Items.ADVANCED_HILT, 100), new PurchasableItem(Items.STARTER_SWORD, 150), new PurchasableItem(Items.ZOMBIE_SWORD, 300)));
+            new PurchasableItem(Items.ADVANCED_HILT, 100), new PurchasableItem(Items.STARTER_SWORD, 150), new PurchasableItem(Items.ZOMBIE_SWORD, 300))),
+    TUTORIAL_NPC_VILLAGER();
     private List<PurchasableItem> purchasableItems;
     NpcType() {
 
