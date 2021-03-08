@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public enum CollectionType {
-    WOOD(Items.WOOD, Arrays.asList(Tiers._1, Tiers._2, Tiers._3), Arrays.asList(Items.BASIC_HILT, Items.ADVANCED_HILT, Items.COMPACT_WOOD)),
+    WOOD(Items.WOOD, Arrays.asList(Tiers._1, Tiers._2, Tiers._3, Tiers._4), Arrays.asList(Items.BASIC_HILT, Items.ADVANCED_HILT, Items.COMPACT_WOOD, Items.EXPERTISE_HILT)),
     STONE(Items.STONE, Arrays.asList(Tiers._1), Arrays.asList(Items.STONE_SWORD));
     /*IRON(Items.IRON_INGOT, Arrays.asList(Tiers._1, Tiers._2, Tiers._3, Tiers._4, Tiers._5)),
     GOLD(Items.GOLD_INGOT, Arrays.asList(Tiers._1, Tiers._2, Tiers._3, Tiers._4, Tiers._5)),

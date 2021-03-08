@@ -47,6 +47,7 @@ public class Combat {
             player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 0.4f);
             playerData.setBaseStrength(playerData.getBaseStrength() + 2);
             playerData.setCredits(playerData.getCredits() + creditsEarned);
+            player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 0.4f);
         }
     }
 }

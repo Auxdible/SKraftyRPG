@@ -8,7 +8,8 @@ public enum ItemType {
     MATERIAL(" CRAFTING MATERIAL"),
     PICKAXE(" PICKAXE"),
     AXE(" AXE"),
-    HOE(" HOE");
+    HOE(" HOE"),
+    WEAPON(" WEAPON");
     private String name;
     ItemType(String name) {
         this.name = name;

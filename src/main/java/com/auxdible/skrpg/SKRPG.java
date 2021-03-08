@@ -82,6 +82,20 @@ public class SKRPG extends JavaPlugin {
             x.printStackTrace();
         }
 
+        try {
+            prepareStatement("CREATE TABLE IF NOT EXISTS stat_table(" +
+                    "UUID varchar(36), baseHP int(11), baseDefence int(11), baseStrength int(11), " +
+                    "baseEnergy int(11), baseSpeed int(11), credits int(11), interest varchar(36), canTrade tinyint(1), raritySell varchar(36), questsCompleted longtext);").executeUpdate();
+            prepareStatement("CREATE TABLE IF NOT EXISTS skills_table(UUID varchar(36), miningLevel int(11), miningXpTill int(11), miningXpTotal int(11), herbalismLevel int(11), herbalismXpTill int(11), " +
+                    "herbalismXpTotal int(11), craftingLevel int(11), craftingXpTill int(11), craftingXpTotal int(11), combatLevel int(11), combatXpTill int(11), combatXpTotal int(11));").executeUpdate();
+            prepareStatement("CREATE TABLE IF NOT EXISTS banks_table(bank1Level varchar(36), bank1Credits int(11), bank2Level varchar(36)," +
+                    "bank2Credits int(11), bank3Level varchar(36), bank3Credits int(11), bank4Level varchar(36), bank4Credits int(11), bank5Level varchar(36)," +
+                    "bank5Credits int(11), bankAmount int(11), UUID varchar(36));").executeUpdate();
+            prepareStatement("CREATE TABLE IF NOT EXISTS collection_table(UUID varchar(36), collectionsTier longtext, collectionsAmount longtext);").executeUpdate();
+            prepareStatement("CREATE TABLE IF NOT EXISTS guilds_table(ID int(11), NAME varchar(16), MEMBERS longtext, RANKS longtext, PERMISSIONS longtext, REGIONS longtext);").executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         playerManager = new PlayerManager(this);
         mobManager = new MobManager(this);
         regionManager = new RegionManager(this);

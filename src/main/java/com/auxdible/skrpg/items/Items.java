@@ -42,6 +42,11 @@ public enum Items {
             0, 0, 0, "EMERALD", ItemType.MATERIAL, null, 15, false),
     OBSIDIAN(Rarity.UNCOMMON, "Obsidian", new ItemBuilder(Material.OBSIDIAN, 0).asItem(), 0, 0, 0, 0, 0, 0,
             "OBSIDIAN", ItemType.MATERIAL, null, 20, false),
+    COMPACT_OBSIDIAN(Rarity.RARE, "Compact Obsidian", new ItemBuilder(Material.OBSIDIAN, 0).asItem(),
+            0, 0, 0, 0, 0, 0, "COMPACT_OBSIDIAN", ItemType.MATERIAL, null, Arrays.asList(
+            new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.OBSIDIAN, 32), new CraftingIngrediant(Items.NONE, 0),
+            new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.OBSIDIAN, 32), new CraftingIngrediant(Items.NONE, 0),
+            new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.OBSIDIAN, 32), new CraftingIngrediant(Items.NONE, 0)), 1, 100, 1000, true),
     WHEAT(Rarity.COMMON, "Wheat", new ItemBuilder(Material.WHEAT, 0).asItem(), 0, 0, 0, 0, 0, 0,
             "WHEAT", ItemType.MATERIAL, null, 1, false),
     CARROT(Rarity.COMMON, "Carrot", new ItemBuilder(Material.CARROT, 0).asItem(), 0, 0, 0, 0, 0, 0,
@@ -97,6 +102,11 @@ public enum Items {
             Arrays.asList(Text.color("&7Used to craft a &aUncommon &7tool.")), Arrays.asList(new CraftingIngrediant(Items.IRON_INGOT, 4), new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.IRON_INGOT, 4),
             new CraftingIngrediant(Items.IRON_INGOT, 4), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.IRON_INGOT, 4),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.PLANK, 4), new CraftingIngrediant(Items.NONE, 0)), 1, 40, 20, false),
+    EXPERTISE_HILT(Rarity.RARE, "Expertise Hilt", new ItemBuilder(Material.STICK, 0).asItem(), 0, 0, 0, 0, 0, 0, "EXPERTISE_HILT", ItemType.ITEM,
+            Arrays.asList(Text.color("&7Used to craft a &1Rare &7tool.")),
+            Arrays.asList(new CraftingIngrediant(Items.OBSIDIAN, 16), new CraftingIngrediant(Items.COMPACT_WOOD, 8), new CraftingIngrediant(Items.OBSIDIAN, 16),
+            new CraftingIngrediant(Items.OBSIDIAN, 16), new CraftingIngrediant(Items.ADVANCED_HILT, 1), new CraftingIngrediant(Items.OBSIDIAN, 16),
+            new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.COMPACT_WOOD, 8), new CraftingIngrediant(Items.NONE, 0)), 1, 200, 1000, false),
     /* ------ WOOD TOOLS ------ */
     WOODEN_PICKAXE(Rarity.COMMON, "Wooden Pickaxe", new ItemBuilder(Material.WOODEN_PICKAXE, 0).asItem(), 2, 0, 0, 0, 0, 0, "WOODEN_PICKAXE", ItemType.PICKAXE,
             null, Arrays.asList(new CraftingIngrediant(Items.PLANK, 1), new CraftingIngrediant(Items.PLANK, 1), new CraftingIngrediant(Items.PLANK, 1),
@@ -109,6 +119,10 @@ public enum Items {
     WOODEN_HOE(Rarity.COMMON, "Wooden Hoe", new ItemBuilder(Material.WOODEN_HOE, 0).asItem(), 2, 0, 0, 0, 0, 0, "WOODEN_HOE", ItemType.HOE,
             null, Arrays.asList(new CraftingIngrediant(Items.PLANK, 1), new CraftingIngrediant(Items.PLANK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
+            new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 22, 15, false),
+    WOODEN_AXE(Rarity.COMMON, "Wooden Axe", new ItemBuilder(Material.WOODEN_AXE, 0).asItem(), 10, 0, 0, 0, 0, 0, "WOODEN_AXE", ItemType.AXE, null, Arrays.asList(
+            new CraftingIngrediant(Items.PLANK, 1), new CraftingIngrediant(Items.PLANK, 1), new CraftingIngrediant(Items.NONE, 0),
+            new CraftingIngrediant(Items.PLANK, 1), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 22, 15, false),
     /* ----- STONE TOOLS ----- */
     STONE_PICKAXE(Rarity.COMMON, "Stone Pickaxe", new ItemBuilder(Material.STONE_PICKAXE, 0).asItem(), 4, 0, 0, 0, 0, 0, "STONE_PICKAXE", ItemType.PICKAXE,
@@ -123,6 +137,10 @@ public enum Items {
             null, Arrays.asList(new CraftingIngrediant(Items.STONE, 1), new CraftingIngrediant(Items.STONE, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 24, 15, false),
+    STONE_AXE(Rarity.COMMON, "Stone Axe", new ItemBuilder(Material.STONE_AXE, 0).asItem(), 15, 5, 0, 0, 0, 0, "STONE_AXE", ItemType.AXE, null, Arrays.asList(
+            new CraftingIngrediant(Items.STONE, 1), new CraftingIngrediant(Items.STONE, 1), new CraftingIngrediant(Items.NONE, 0),
+            new CraftingIngrediant(Items.STONE, 1), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
+            new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 24, 15, false),
     /* ----- IRON TOOLS ----- */
     IRON_PICKAXE(Rarity.COMMON, "Iron Pickaxe", new ItemBuilder(Material.IRON_PICKAXE, 0).asItem(), 6, 0, 0, 0, 0, 0, "IRON_PICKAXE", ItemType.PICKAXE,
             null, Arrays.asList(new CraftingIngrediant(Items.IRON_INGOT, 1), new CraftingIngrediant(Items.IRON_INGOT, 1), new CraftingIngrediant(Items.IRON_INGOT, 1),
@@ -136,6 +154,10 @@ public enum Items {
             null, Arrays.asList(new CraftingIngrediant(Items.IRON_INGOT, 1), new CraftingIngrediant(Items.IRON_INGOT, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 24, 20, false),
+    IRON_AXE(Rarity.COMMON, "Iron Axe", new ItemBuilder(Material.IRON_AXE, 0).asItem(), 20, 10, 0, 0, 0, 0, "IRON_AXE", ItemType.AXE, null, Arrays.asList(
+            new CraftingIngrediant(Items.IRON_INGOT, 1), new CraftingIngrediant(Items.IRON_INGOT, 1), new CraftingIngrediant(Items.NONE, 0),
+            new CraftingIngrediant(Items.IRON_INGOT, 1), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
+            new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 24, 15, false),
     /* ----- GOLDEN TOOLS ----- */
     GOLDEN_PICKAXE(Rarity.UNCOMMON, "Golden Pickaxe", new ItemBuilder(Material.GOLDEN_PICKAXE, 0).asItem(), 1, 0, 0, 0, 0, 0, "GOLDEN_PICKAXE", ItemType.PICKAXE,
             null, Arrays.asList(new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.GOLD_INGOT, 1),
@@ -149,6 +171,10 @@ public enum Items {
             null, Arrays.asList(new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.ADVANCED_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 24, 25, false),
+    GOLDEN_AXE(Rarity.UNCOMMON, "Golden Axe", new ItemBuilder(Material.GOLDEN_AXE, 0).asItem(), 4, 0, 0, 0, 0, 0, "GOLDEN_AXE", ItemType.AXE, null, Arrays.asList(
+            new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.NONE, 0),
+            new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
+            new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.ADVANCED_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 26, 25, false),
     /* ----- DIAMOND TOOLS  -----*/
     DIAMOND_PICKAXE(Rarity.UNCOMMON, "Diamond Pickaxe", new ItemBuilder(Material.DIAMOND_PICKAXE, 0).asItem(), 10, 0, 0, 0, 0, 0, "DIAMOND_PICKAXE", ItemType.PICKAXE,
             null, Arrays.asList(new CraftingIngrediant(Items.DIAMOND, 1), new CraftingIngrediant(Items.DIAMOND, 1), new CraftingIngrediant(Items.DIAMOND, 1),
@@ -161,6 +187,10 @@ public enum Items {
     DIAMOND_HOE(Rarity.UNCOMMON, "Diamond Hoe", new ItemBuilder(Material.DIAMOND_HOE, 0).asItem(), 10, 0, 0, 0,  0,0, "DIAMOND_HOE", ItemType.HOE,
             null, Arrays.asList(new CraftingIngrediant(Items.DIAMOND, 1), new CraftingIngrediant(Items.DIAMOND, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
+            new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.ADVANCED_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 30, 30, false),
+    DIAMOND_AXE(Rarity.UNCOMMON, "Diamond Axe", new ItemBuilder(Material.DIAMOND_AXE, 0).asItem(), 30, 10, 10, 0, 0, 0, "DIAMOND_AXE", ItemType.AXE, null, Arrays.asList(
+            new CraftingIngrediant(Items.DIAMOND, 1), new CraftingIngrediant(Items.DIAMOND, 1), new CraftingIngrediant(Items.NONE, 0),
+            new CraftingIngrediant(Items.DIAMOND, 1), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.ADVANCED_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 30, 30, false),
     /* ----- IRON ARMOR ------ */
     IRON_HELMET(Rarity.COMMON, "Iron Helmet", new ItemBuilder(Material.IRON_HELMET, 0).asItem(), 0, 0, 20, 0, 0, 0, "IRON_HELMET", ItemType.ARMOR, null,
@@ -231,7 +261,7 @@ public enum Items {
                     new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.GOLD_INGOT, 1),
                     new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.GOLD_INGOT, 1)), 1, 30, 20, false),
     /* ---- MISC ---- */
-    NATURE_STAFF(Rarity.RARE, "Nature Staff", new ItemBuilder(Material.STICK, 0).asItem(), 50, 30, 0, 50, 0, 100, "NATURE_STAFF", ItemType.ITEM, null, 20, true);
+    NATURE_STAFF(Rarity.RARE, "Nature Staff", new ItemBuilder(Material.STICK, 0).asItem(), 100, 50, 0, 50, 0, 50, "NATURE_STAFF", ItemType.WEAPON, null, 10000, true);
     private Rarity rarity;
     private String name;
     private ItemStack itemStack;
@@ -339,6 +369,7 @@ public enum Items {
         }
 
         lore.add(" ");
+        lore.add(Text.color("&7NO ENCHANTMENTS"));
         lore.add(" ");
         lore.add(Text.color(items.getRarity().getNameColored() + " " + items.getItemType()));
         ItemMeta iM = itemStack.getItemMeta();

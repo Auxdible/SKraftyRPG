@@ -91,8 +91,8 @@ public class TutorialQuest implements Quest {
                     @Override
                     public void run() {
                         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_AMBIENT, 1.0f, 1.0f);
-                        Text.applyText(player, "&e&lNPC &r&8| &7You can use your wood to craft planks, and make sticks to craft a basic hilt. Use this to craft tools." +
-                                "Here's the recipe. Take this &fWooden Sword&7.");
+                        Text.applyText(player, "&e&lNPC &r&8| &7You can use your wood to craft planks, and make sticks to craft a basic hilt. Use this to craft tools. " +
+                                "I will show you the recipe. Take this &fWooden Sword&7 to defend yourself.");
                         player.performCommand("recipe BASIC_HILT");
                         player.getInventory().addItem(Items.buildItem(Items.WOODEN_SWORD));
                     }
