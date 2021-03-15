@@ -1,13 +1,8 @@
 package com.auxdible.skrpg.mobs;
 
 import com.auxdible.skrpg.SKRPG;
-import com.auxdible.skrpg.mobs.npcs.NPC;
-import com.auxdible.skrpg.mobs.npcs.NpcType;
-import net.minecraft.server.v1_16_R3.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
-import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 

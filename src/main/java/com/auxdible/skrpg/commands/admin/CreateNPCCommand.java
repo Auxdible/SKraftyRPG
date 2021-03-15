@@ -29,13 +29,25 @@ public class CreateNPCCommand implements CommandExecutor {
             return false;
         }
         if (skrpg.getNpcManager().getNpcs() == null) {
-            skrpg.getNpcManager().addNpc(0, NpcType.valueOf(args[0]),
-                    player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ(),
-                    player.getLocation().getYaw(), player.getLocation().getPitch());
+            try {
+                skrpg.getNpcManager().addNpc(args[0], 0,
+                        player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ(),
+                        player.getLocation().getYaw(), player.getLocation().getPitch());
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            }
         } else {
-            skrpg.getNpcManager().addNpc(skrpg.getNpcManager().getNpcs().size(), NpcType.valueOf(args[0]),
-                    player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ(),
-                    player.getLocation().getYaw(), player.getLocation().getPitch());
+            try {
+                skrpg.getNpcManager().addNpc(args[0], skrpg.getNpcManager().getNpcs().size(),
+                        player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ(),
+                        player.getLocation().getYaw(), player.getLocation().getPitch());
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            }
         }
 
         Text.applyText(player, "&aNPC Created!");

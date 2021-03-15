@@ -35,13 +35,12 @@ public class Crafting {
             Text.applyText(player, " ");
             Text.applyText(player, "&7You leveled up to Crafting &e" + playerData.getCrafting().getLevel().toString().replace("_", ""));
             Text.applyText(player, "&7Earned &a+1 Defence ✿ &r&7and &4+1 Strength ☄");
-            Text.applyText(player, "&7+&b" + creditsEarned + " C$ Credits");
+            Text.applyText(player, "&7+ &6" + creditsEarned + " Nuggets");
             Text.applyText(player, "&8&m>                                         ");
-            player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 0.4f);
             playerData.setBaseDefence(playerData.getBaseDefence() + 1);
             playerData.setBaseStrength(playerData.getBaseStrength() + 1);
             playerData.setCredits(playerData.getCredits() + creditsEarned);
-            player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 0.4f);
+            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f);
         }
     }
 }

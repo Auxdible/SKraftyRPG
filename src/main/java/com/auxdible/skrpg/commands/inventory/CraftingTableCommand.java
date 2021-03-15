@@ -22,7 +22,7 @@ public class CraftingTableCommand implements CommandExecutor {
             return false;
         }
         Player p = (Player) sender;
-        Inventory inventory = Bukkit.createInventory(null, 45, "Crafting Table");
+        Inventory inventory = Bukkit.createInventory(p, 45, "Crafting Table");
         for (int i = 0; i <= 44; i++) {
             inventory.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
         }

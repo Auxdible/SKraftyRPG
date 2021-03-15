@@ -57,6 +57,11 @@ public class TradeCommand implements CommandExecutor {
                 return false;
             }
         } else if (Bukkit.getPlayer(args[0]) != null) {
+            if (player.getUniqueId() == Bukkit.getPlayer(args[0]).getUniqueId()) {
+                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                Text.applyText(player, "&cYou cannot trade yourself!");
+                return false;
+            }
             if (!skrpg.getPlayerManager().getPlayerData(Bukkit.getPlayer(args[0]).getUniqueId()).canTrade()) {
                 player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
                 Text.applyText(player, "&cThis player has trades disabled!");

@@ -387,7 +387,7 @@ public class GuildCommand implements CommandExecutor {
                         List<RaidMobs> raidMobsList = Arrays.asList(RaidMobs.values());
                             for (RaidMobs raidMobs : raidMobsList) {
                                 inv.setItem(raidMobsList.indexOf(raidMobs), new ItemBuilder(Material.ROTTEN_FLESH, 0)
-                                        .setName(raidMobs.getName()).setLore(Arrays.asList(" ", Text.color("&7Cost: &b" + raidMobs.getCreditsCost()),
+                                        .setName(raidMobs.getName()).setLore(Arrays.asList(" ", Text.color("&7Cost: &6" + raidMobs.getCreditsCost()),
                                                 Text.color("&7Skill Level Required: &c" + raidMobs.getSkillLevelRequired()), " ")).asItem());
                             }
                             p.openInventory(inv);

@@ -1,21 +1,33 @@
 package com.auxdible.skrpg.mobs.npcs;
 
 import com.auxdible.skrpg.items.Items;
+import com.auxdible.skrpg.mobs.npcs.npcs.*;
+import com.auxdible.skrpg.player.economy.Bank;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public enum NpcType {
-    PLAYER_EXPORT_MERCHANT, PLAYER_BANKER, WEAPON_FORGER_SALESMAN(Arrays.asList(new PurchasableItem(Items.BASIC_HILT, 50),
-            new PurchasableItem(Items.ADVANCED_HILT, 100), new PurchasableItem(Items.STARTER_SWORD, 150), new PurchasableItem(Items.ZOMBIE_SWORD, 300))),
-    TUTORIAL_NPC_VILLAGER();
-    private List<PurchasableItem> purchasableItems;
-    NpcType() {
+    BANKER(Banker.class), WEAPON_FORGER_SALESMAN(WeaponForgerSalesman.class),
+    TUTORIAL_NPC_VILLAGER(TutorialNPCVillager.class),
+    CITY_GUARD(CityGuard.class),
+    BEACHMASTER(Beachmaster.class),
+    HILTCRAFTER(Hiltcrafter.class),
+    FARMER_SELLER(FarmerSeller.class),
+    COMBAT_SELLER(CombatSeller.class),
+    WOODCUTTING_SELLER(WoodcuttingSeller.class),
+    MINING_SELLER(MiningSeller.class);
 
+    private Class npc;
+
+    NpcType(Class npc) {
+        this.npc = npc;
     }
-    NpcType(List<PurchasableItem> purchasableItems) {
-        this.purchasableItems = purchasableItems;
+
+    public Class getNpc() {
+        return npc;
     }
-    public List<PurchasableItem> getPurchasableItems() { return purchasableItems; }
 }

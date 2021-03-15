@@ -34,8 +34,8 @@ public class Herbalism {
             Text.applyText(player, "&6&l           SKILL UP!");
             Text.applyText(player, " ");
             Text.applyText(player, "&7You leveled up to Herbalism &e" + playerData.getHerbalism().getLevel().toString().replace("_", ""));
-            Text.applyText(player, "&7Earned &c+2 HP ♥ &r&7and &64% more double drop chance!");
-            Text.applyText(player, "&7+&b" + creditsEarned + " C$ Credits");
+            Text.applyText(player, "&7Earned &c+2 HP ♥ &r&7and &64% more double drop chance from crops!");
+            Text.applyText(player, "&7+ &6" + creditsEarned + " Nuggets");
             Text.applyText(player, "&7Total Double Drop Chance: &6" + (4 *
                     Integer.parseInt(playerData.getHerbalism()
                             .getLevel().toString()
@@ -43,7 +43,7 @@ public class Herbalism {
             Text.applyText(player, "&8&m>                                         ");
             playerData.setBaseHP(playerData.getBaseHP() + 2);
             playerData.setCredits(playerData.getCredits() + creditsEarned);
-            player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 0.4f);
+            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f);
         }
     }
 }

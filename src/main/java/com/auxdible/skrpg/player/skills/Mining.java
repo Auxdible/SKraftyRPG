@@ -35,7 +35,7 @@ public class Mining {
             Text.applyText(player, " ");
             Text.applyText(player, "&7You leveled up to Mining &e" + playerData.getMining().getLevel().toString().replace("_", ""));
             Text.applyText(player, "&7Earned &a+2 Defence ✿ &r&7and &64% more double drop chance!");
-            Text.applyText(player, "&7+&b" + creditsEarned + " C$ Credits");
+            Text.applyText(player, "&7+ &6" + creditsEarned + " Nuggets");
             Text.applyText(player, "&7Total Double Drop Chance: &6" + (4 *
                     Integer.parseInt(playerData.getMining()
                             .getLevel().toString()

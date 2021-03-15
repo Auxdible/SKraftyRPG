@@ -9,7 +9,24 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum MobKill {
-    ZOMBIE(MobType.ZOMBIE, 10, Items.ROTTEN_FLESH, Arrays.asList(Drop.ZOMBIE_FRAGMENT));
+    ZOMBIE(MobType.ZOMBIE, 5, Items.ROTTEN_FLESH, Arrays.asList(Drop.ZOMBIE_FRAGMENT)),
+    SKELETON(MobType.SKELETON, 5, Items.BONE, null),
+    CHICKEN(MobType.CHICKEN, 0, Items.RAW_CHICKEN, null),
+    COW(MobType.COW, 0, Items.RAW_BEEF, null),
+    PIG(MobType.PIG, 0, Items.RAW_PORK, null),
+    CRAB_KING(MobType.CRAB_KING, 2500, null, null),
+    NATURE_ZOMBIE(MobType.NATURE_ZOMBIE, 7, Items.WOOD, null),
+    CAMO_SKELETON(MobType.CAMO_SKELETON, 7, Items.WOOD, null),
+    SPIDER(MobType.SPIDER, 5, Items.STRING, null),
+    SILVERFISH(MobType.SILVERFISH, 2, Items.COAL, null),
+    IRON_CONSTRUCT(MobType.IRON_CONSTRUCT, 9, Items.IRON_INGOT, Arrays.asList(Drop.GEMSTONE)),
+    ANCIENT_PROSPECTOR(MobType.ANCIENT_PROSPECTOR, 10, Items.GOLD_INGOT, Arrays.asList(Drop.PREMIUM_GOLD_EXTRACT, Drop.GEMSTONE)),
+    LAPIS_ZOMBIE(MobType.LAPIS_ZOMBIE, 11, Items.LAPIS_LAZULI, Arrays.asList(Drop.GEMSTONE)),
+    MECHANICAL_ARCHER(MobType.MECHANICAL_ARCHER, 12, Items.REDSTONE, Arrays.asList(Drop.GEMSTONE)),
+    CRYSTALLITE_ZOMBIE(MobType.CRYSTALLITE_ZOMBIE, 12, Items.CRYSTALLITE, Arrays.asList(Drop.GEMSTONE)),
+    DIAMOND_REGENT(MobType.DIAMOND_REGENT, 14, Items.DIAMOND, Arrays.asList(Drop.GEMSTONE)),
+    OBSIDIAN_TITAN(MobType.OBSIDIAN_TITAN, 16, Items.OBSIDIAN, Arrays.asList(Drop.GEMSTONE)),
+    CRAB_ZOMBIE(MobType.CRAB_ZOMBIE, 20, Items.ROTTEN_FLESH, Arrays.asList(Drop.CRAB_FRAGMENT));
     private MobType mobType;
     private int xpGiven;
     private Items commonDrop;

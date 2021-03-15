@@ -39,7 +39,7 @@ public class MenuCommand implements CommandExecutor {
                         Text.color("&fStrength: &4" + playerData.getStrength() + " ☄"),
                         Text.color("&fMax Energy: &e" + playerData.getMaxEnergy() + " ☢"),
                         Text.color("&fSpeed: &f" + playerData.getSpeed() + " ≈"),
-                        Text.color("&fCredits: &b" + playerData.getCredits() + " C$"),
+                        Text.color("&fNuggets: &6" + playerData.getCredits()),
                         Text.color("&8&m>               <")
                 )).asItem());
         inv.setItem(30, new ItemBuilder(Material.STONE_SWORD, 0).setName("&aSkills")

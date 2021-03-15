@@ -122,11 +122,8 @@ public class Raid {
                 for (int i = 0; i < raidMobs.size() / 2; i++) {
                     RaidMob raidMob = raidMobs.get(random.nextInt(raidMobs.size()));
                     if (raidMob != null) {
-                        if (regionStrength * 20 > 2000) {
-                            raidMob.setCurrentHp(raidMob.getCurrentHp() - 2000);
-                        } else {
-                            raidMob.setCurrentHp(raidMob.getCurrentHp() - regionStrength * 50);
-                        }
+                        raidMob.setCurrentHp(raidMob.getCurrentHp() - regionStrength * 50);
+
 
                         raidMob.getEnt().damage(0.1);
                         raidMob.getEnt().setHealth(raidMob.getEnt().getMaxHealth());
@@ -163,7 +160,7 @@ public class Raid {
             zomb.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).setBaseValue(10000.0);
         }
         playerData.setCredits(playerData.getCredits() - raidMobType.getCreditsCost());
-        raidMobs.add(new RaidMob((Creature) ent, raidMobType, raidMobType.getHp()));
+        raidMobs.add(new RaidMob((Creature) ent, raidMobType, raidMobType.getHp() * raidingGuild.getPowerLevel()));
     }
     public void fail(SKRPG skrpg) {
         for (RaidMob raidMob : raidMobs) {

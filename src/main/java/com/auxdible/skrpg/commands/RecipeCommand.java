@@ -11,7 +11,6 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.libs.it.unimi.dsi.fastutil.Hash;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -32,7 +31,16 @@ public class RecipeCommand implements CommandExecutor {
             Text.applyText(player, "&cPlease name an item!");
             return false;
         }
+        if (args[0].equals("list")) {
+            StringJoiner items = new StringJoiner(",");
+            for (Items items1 : EnumSet.allOf(Items.class)) {
+                if (items1.getCraftingRecipe() != null) {
+                    items.add(items1.getId());
+                }
 
+            }
+            player.sendMessage("Recipes in SKRPG: " + items.toString());
+        }
         for (Items items : EnumSet.allOf(Items.class)) {
             if (args[0].equalsIgnoreCase(items.getId()) && items.getCraftingRecipe() != null) {
                 Inventory inventory = Bukkit.createInventory(null, 45, Text.color("Recipe for " + items.getRarity().getColor() + items.getName()));

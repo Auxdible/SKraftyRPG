@@ -1,13 +1,12 @@
 package com.auxdible.skrpg.player;
 
 import com.auxdible.skrpg.SKRPG;
-import com.auxdible.skrpg.items.CraftingIngrediant;
-import com.auxdible.skrpg.items.ItemType;
-import com.auxdible.skrpg.items.Rarity;
+import com.auxdible.skrpg.items.*;
 import com.auxdible.skrpg.items.abilities.Abilities;
 import com.auxdible.skrpg.mobs.MobSpawn;
 import com.auxdible.skrpg.mobs.npcs.NpcType;
 import com.auxdible.skrpg.mobs.npcs.PurchasableItem;
+import com.auxdible.skrpg.mobs.npcs.NPC;
 import com.auxdible.skrpg.player.collections.Collection;
 import com.auxdible.skrpg.player.collections.CollectionType;
 import com.auxdible.skrpg.player.collections.Tiers;
@@ -17,8 +16,8 @@ import com.auxdible.skrpg.player.guilds.raid.Raid;
 import com.auxdible.skrpg.player.guilds.raid.RaidMob;
 import com.auxdible.skrpg.player.guilds.raid.RaidMobs;
 import com.auxdible.skrpg.player.quests.Quests;
+import com.auxdible.skrpg.player.quests.TutorialQuest;
 import com.auxdible.skrpg.player.skills.*;
-import com.auxdible.skrpg.items.Items;
 import com.auxdible.skrpg.mobs.Mob;
 import com.auxdible.skrpg.mobs.MobType;
 import com.auxdible.skrpg.utils.ItemBuilder;
@@ -34,6 +33,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
@@ -44,6 +44,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class PlayerListener implements Listener {
@@ -54,6 +55,9 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void raidTargetEvent(EntityTargetLivingEntityEvent e) {
         if (e.getTarget() instanceof Villager) {
+            e.setCancelled(true);
+        }
+        if (e.getTarget() instanceof Monster) {
             e.setCancelled(true);
         }
         if (e.getTarget() instanceof Player) {
@@ -87,92 +91,23 @@ public class PlayerListener implements Listener {
             return;
         }
         if (e.getRightClicked() instanceof Slime) {
-            if (e.getRightClicked().getCustomName().contains("exportmerchant")) {
-            /* if (!(Integer.parseInt(playerData.getCombat().getLevel().toString().replace("_", "")) >= 7) ||
-                    !(Integer.parseInt(playerData.getMining().getLevel().toString().replace("_", "")) >= 7) ||
-                    !(Integer.parseInt(playerData.getCrafting().getLevel().toString().replace("_", "")) >= 7) ||
-                    !(Integer.parseInt(playerData.getHerbalism().getLevel().toString().replace("_", "")) >= 7)) {
-            Text.applyText(p, "&cYou must have Combat 7, Mining 7, Herbalism 7 and Crafting 7 &cin order to use the Export Merchant!");
-            return;
-            } */
-                Inventory inv = Bukkit.createInventory(null, 54, "Export Merchant");
-                for (int i = 0; i <= 53; i++) {
-                    inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
+            for (NpcType npcType : EnumSet.allOf(NpcType.class)) {
+                Class npcClass = npcType.getNpc();
+                NPC npc = null;
+                try {
+                    Class[] cArg = new Class[2];
+                    cArg[0] = int.class;
+                    cArg[1] = Location.class;
+                    npc = (NPC) npcClass.getDeclaredConstructor(cArg).newInstance(-1, null);
+                } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException x) {
+                    x.printStackTrace();
                 }
-                inv.setItem(49, null);
-                inv.setItem(40, new ItemBuilder(Material.LIGHT_BLUE_STAINED_GLASS_PANE, 0)
-                        .setName("&bPlease insert an item.").asItem());
-                inv.setItem(31, new ItemBuilder(Material.LIGHT_BLUE_STAINED_GLASS_PANE, 0)
-                        .setName("&bPlease insert an item.").asItem());
-                ItemStack creditsHead = ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA" +
-                                "6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmQzNzI2YzFiMzY4OTNmZ" +
-                                "TMzNDQ5Mzk1ODQ0ZGJhMTZlZjIyNDFkZGI1MzM1NWMyOTdmMDQxMzhmZWJjY2FmIn19fQ==",
-                        "8fa29c20-1475-44c7-a77b-1c87bc10b3b2");
-                ItemMeta itemMeta = creditsHead.getItemMeta();
-                itemMeta.setDisplayName(Text.color("Please put in an item..."));
-                creditsHead.setItemMeta(itemMeta);
-                inv.setItem(22, creditsHead);
-                e.getPlayer().openInventory(inv);
-            } else if (e.getRightClicked().getCustomName().contains("banker")) {
-                Inventory inv = Bukkit.createInventory(null, 27, "Banker");
-                for (int i = 0; i <= 26; i++) {
-                    inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
+                if (e.getRightClicked().getCustomName().equals(npc.getTypeID())) {
+                    npc.onInteract(p, playerData, skrpg);
                 }
-                List<Integer> slots = Arrays.asList(11, 12, 13, 14, 15);
-                for (int i = 0; i < playerData.getBanks().size(); i++) {
-                    ItemStack bank = ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmY3NWQxYjc4NWQxOGQ0N2IzZWE4ZjBhN2UwZmQ0YTFmYWU5ZTdkMzIzY2YzYjEzOGM4Yzc4Y2ZlMjRlZTU5In19fQ==", "1d2bf3fe-1b67-495f-995d-435693e90fa0");
-                    ItemMeta iM = bank.getItemMeta();
-                    iM.setDisplayName(Text.color("&7Bank &a") + (i + 1));
-                    iM.setLore(Arrays.asList(" ", Text.color("&7Level: " + playerData.getBanks().get(i).getLevel()
-                            .getNameColored()), Text.color("&7Credits: &b" + playerData.getBanks().get(i).getCredits() + " C$")));
-                    bank.setItemMeta(iM);
-                    inv.setItem(slots.get(i), bank);
-                }
-                if (playerData.getBanks().size() != 5) {
-                    inv.setItem(22, new ItemBuilder(Material.LIME_DYE, 0).setName("&7Buy Bank: &b" + (
-                            2500000 * playerData.getBanks().size())).asItem());
-                }
-                p.openInventory(inv);
-            } else if (e.getRightClicked().getCustomName().contains("salesman")) {
-                NpcType salesman = null;
-                Inventory inventory = Bukkit.createInventory(null, 54, "Salesman");
-                if (e.getRightClicked().getCustomName().contains("weaponsalesman")) {
-                    inventory = Bukkit.createInventory(null, 54, "Weapon Salesman");
-                    salesman = NpcType.WEAPON_FORGER_SALESMAN;
-                }
-                List<Integer> outlineSlots = Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53);
-                for (int i : outlineSlots) {
-                    inventory.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
-                }
-                if (salesman != null && salesman.getPurchasableItems() != null) {
 
-                    for (PurchasableItem purchasableItem : salesman.getPurchasableItems()) {
-                        boolean found = false;
-                        List<ItemStack> contents = Arrays.asList(inventory.getContents());
-                        for (ItemStack itemStack : contents) {
-                            if (itemStack == null && !found) {
-                                ItemStack itemStackBuild = Items.buildItem(purchasableItem.getItem());
-                                ItemMeta iM = itemStackBuild.getItemMeta();
-                                List<String> lore = iM.getLore();
-                                lore.add(" ");
-                                lore.add(Text.color("&7Cost: &b" + purchasableItem.getCost() + " C$"));
-                                iM.setLore(lore);
-                                itemStackBuild.setItemMeta(iM);
-                                inventory.setItem(contents.indexOf(itemStack), itemStackBuild);
-                                found = true;
-                            }
-                        }
-                    }
-                }
-                p.openInventory(inventory);
-            } else if (e.getRightClicked().getCustomName().equals("tutorialnpc")) {
-                if (playerData.getActiveQuest() != null && playerData.getActiveQuest().equals(Quests.TUTORIAL) && playerData.getQuestPhase() == 2) {
-                    if (p.getInventory().getItemInMainHand().getItemMeta().getDisplayName().equals(Text.color("&fWood"))
-                            && e.getPlayer().getInventory().getItemInMainHand().getAmount() >= 20) {
-                        playerData.getActiveQuest().getQuest().executePhase(3, p, skrpg);
-                    }
-                }
             }
+
         }
     }
     @EventHandler
@@ -207,7 +142,9 @@ public class PlayerListener implements Listener {
                         }
                     }
                 }
-                skrpg.getPlayerManager().getPlayerData(e.getEntity().getUniqueId()).damagePlayer(damager, damage, skrpg);
+                if (damagerData.getRegion().getName().contains("(PVP)")) {
+                    skrpg.getPlayerManager().getPlayerData(e.getEntity().getUniqueId()).damagePlayer(damager, damage, skrpg);
+                }
             } else {
                 Player player = (Player) e.getEntity();
                 PlayerData playerData = skrpg.getPlayerManager().getPlayerData(player.getUniqueId());
@@ -220,6 +157,7 @@ public class PlayerListener implements Listener {
                 playerData.damage(damage, skrpg);
             }
         }  else {
+
             if (skrpg.getMobManager().getMobData(e.getEntity()) != null) {
                 Mob mob = skrpg.getMobManager().getMobData(e.getEntity());
                 int damage = 1;
@@ -241,8 +179,8 @@ public class PlayerListener implements Listener {
                     if (player.getInventory().getItemInMainHand().getType().equals(Material.AIR)) {
                         damage = 1 + ((playerData.getStrength() / 5) *
                                 (1 + playerData.getStrength() / 100));
-                    } else if (player.getInventory().getItemInMainHand().getItemMeta().getDisplayName()
-                            .contains(items.getName())) {
+                    } else if (ChatColor.stripColor(player.getInventory().getItemInMainHand().getItemMeta().getDisplayName())
+                            .equals(ChatColor.stripColor(items.getName()))) {
                         damage = (5 + items.getDamage() + ((playerData.getStrength()) / 5)) *
                                 (1 + playerData.getStrength() / 100);
                         if (items.getItemType().equals(ItemType.BOW) && e.getDamager() instanceof Player) {
@@ -543,6 +481,7 @@ public class PlayerListener implements Listener {
                 }
             }.runTaskTimer(skrpg, 0, 20);
         }
+        e.setCancelled(true);
     }
     @EventHandler
     public void onCloseEvent(InventoryCloseEvent e) {
@@ -555,10 +494,29 @@ public class PlayerListener implements Listener {
                     e.getInventory().removeItem(e.getInventory().getItem(slot));
                 }
             }
+        } else if (e.getView().getTitle().equals("Give Nuggets")) {
+            Player p  = (Player) e.getPlayer();
+            PlayerData playerData = skrpg.getPlayerManager().getPlayerData(p.getUniqueId());
+            if (playerData.getTrade() != null) {
+                p.openInventory(playerData.getTrade().getInv(p));
+            }
+        } else if (e.getView().getTitle().equals("Trade")) {
+            Player p  = (Player) e.getPlayer();
+            PlayerData playerData = skrpg.getPlayerManager().getPlayerData(p.getUniqueId());
+            new BukkitRunnable() {
+
+                @Override
+                public void run() {
+                    if (playerData.getTrade() != null && p.getOpenInventory().getTitle().equals("Give Nuggets")) {
+                        p.openInventory(playerData.getTrade().getInv(p));
+                    }
+                }
+            }.runTaskLater(skrpg, 10);
+
         }
     }
     @EventHandler
-    public void onInventoryInteract(InventoryInteractEvent e) {
+    public void onInventoryDrag(InventoryDragEvent e) {
         Player p  = (Player) e.getWhoClicked();
         if (skrpg.getRaidManager().isInRaid(p)) {
             Text.applyText(p, "&cYou are in a raid!");
@@ -568,86 +526,16 @@ public class PlayerListener implements Listener {
         }
         PlayerData playerData = skrpg.getPlayerManager().getPlayerData(p.getUniqueId());
         if (e.getView().getTitle().equals("Crafting Table")) {
-            List<Integer> slots = Arrays.asList(10, 11, 12, 19, 20, 21, 28, 29, 30);
-            HashMap<Integer, CraftingIngrediant> craftingItems = new HashMap<>();
-            int slot = 0;
-
-            for (int integer : slots) {
-                if (e.getInventory().getItem(integer) != null && e.getInventory().getItem(integer)
-                        .getType() != Material.AIR) {
-
-                    for (Items items : EnumSet.allOf(Items.class)) {
-                        if (ChatColor.stripColor(
-                                e.getInventory().getItem(integer).getItemMeta().getDisplayName()).contains(items.getName())) {
-                            if (e.getInventory().getItem(integer).getAmount() == 1) {
-                                craftingItems.put(slot, new CraftingIngrediant(items,
-                                        1));
-
-                            } else {
-                                craftingItems.put(slot, new CraftingIngrediant(items,
-                                        e.getInventory().getItem(integer).getAmount()));
-
-                            }
-
-
-                        }
-                    }
-                } else {
-                    craftingItems.put(slot, new CraftingIngrediant(Items.NONE, 0));
-                }
-                slot++;
-            }
-            Items recipeItem = null;
-            if (craftingItems.size() == 9) {
-                for (Items items : EnumSet.allOf(Items.class)) {
-                    int correctCraftingParts = 0;
-                    if (items.getCraftingRecipe() != null) {
-                        for (int b = 0; b < items.getCraftingRecipe().size(); b++) {
-                            if (items.getCraftingRecipe().get(b).getItems().equals(craftingItems.get(b).getItems()) &&
-                                    items.getCraftingRecipe().get(b).getAmount() <= craftingItems.get(b).getAmount()) {
-                                correctCraftingParts++;
-                            }
-                            if (correctCraftingParts == 9) {
-                                boolean collectionFound = false;
-                                for (Collection collection : playerData.getCollections()) {
-                                    for (int i = 0; i < CollectionType.generateRewardsMap(collection.getCollectionType()).size(); i++) {
-                                        if (CollectionType.generateRewardsMap(collection.getCollectionType()).get(Tiers.valueOf("_" + (i + 1))).getId().equals(items.getId())) {
-                                            collectionFound = true;
-                                            if (i + 1 > SKRPG.levelToInt(collection.getTier().toString())) {
-                                                Text.applyText(p, "You do not have a high enough collection level to use this!");
-                                            } else {
-                                                recipeItem = items;
-                                            }
-                                        }
-                                    }
-                                }
-                                if (!collectionFound) {
-                                    recipeItem = items;
-                                }
-                            }
-                        }
-
-                    }
-
-                }
-
-            }
-            if (recipeItem != null) {
-                e.getInventory().setItem(25, Items.buildItem(recipeItem));
-                e.getInventory().getItem(25).setAmount(recipeItem.getCraftingAmount());
-
-            } else {
-                e.getInventory().setItem(25, null);
-            }
             new BukkitRunnable() {
-
                 @Override
                 public void run() {
-                    p.updateInventory();
+                    craftingTableUpdate(e.getInventory(), p, playerData);
                 }
             }.runTaskLater(skrpg, 1);
+
         }
     }
+
     @EventHandler
     public void onInventoryEvent(InventoryClickEvent e) {
         Player p  = (Player) e.getWhoClicked();
@@ -659,18 +547,39 @@ public class PlayerListener implements Listener {
         List<Integer> slots = Arrays.asList(10, 11, 12, 19, 20, 21, 28, 29, 30);
 
         if (e.getView().getTitle().equals("Crafting Table")) {
-            if (e.getSlot() == 25 && e.getAction().equals(InventoryAction.PLACE_ALL)) {
-                e.setCancelled(true);
-            }
-
             if (e.getCurrentItem() != null) {
                 if (e.getCurrentItem().getType() == Material.BLACK_STAINED_GLASS_PANE ||
                         e.getCurrentItem().getType() == Material.ARROW) {
-
-                    e.setCancelled(true);
+                    if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Your Crafting Result") || e.getCurrentItem().getItemMeta().getDisplayName().equals(" ")) {
+                        e.setCancelled(true);
+                        return;
+                    }
                 }
             }
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+
+                    if (e.getSlot() == 25 && e.getAction().equals(InventoryAction.PLACE_ALL) || e.getSlot() == 25 && e.getAction().equals(InventoryAction.PLACE_ONE)) {
+                        e.getInventory().setContents(e.getInventory().getContents());
+
+                        p.getInventory().addItem(e.getCurrentItem());
+                        p.getItemOnCursor().setType(Material.AIR);
+                        return;
+                    }
+                    if (e.getAction().equals(InventoryAction.MOVE_TO_OTHER_INVENTORY)) {
+                        e.getInventory().setContents(e.getInventory().getContents());
+                        p.getInventory().setContents(p.getInventory().getContents());
+                        return;
+                    }
+
+
+                    craftingTableUpdate(e.getInventory(), p, playerData);
+
+                }
+            }.runTaskLater(skrpg, 1);
             if (e.getSlot() == 25 && e.getInventory().getItem(25) != null) {
+
                 for (Items items : EnumSet.allOf(Items.class)) {
                     if (ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName()).contains(items.getName())) {
                         for (int integer : slots) {
@@ -688,26 +597,7 @@ public class PlayerListener implements Listener {
                                 items.getCraftingXPGained());
                         playerData.getCrafting().setTotalXP(playerData.getCrafting().getTotalXP()
                                 + items.getCraftingXPGained());
-                        if (playerData.getCrafting().getXpTillNext() >= Level.valueOf("_" +
-                                (Integer.parseInt(playerData.getCrafting().getLevel().toString()
-                                        .replace("_", "")) + 1)).getXpRequired()) {
-                            int creditsEarned = playerData.getCrafting().getLevel().getXpRequired() / 2;
-                            playerData.getCrafting().setLevel(Integer.parseInt(playerData.getCrafting()
-                                    .getLevel().toString()
-                                    .replace("_", "")) + 1);
-                            playerData.getCrafting().setXpTillNext(playerData.getCrafting().getXpTillNext() -
-                                    playerData.getCrafting().getLevel().getXpRequired());
-                            Text.applyText(p, "&8&m>                                          ");
-                            Text.applyText(p, "&6&l           SKILL UP!");
-                            Text.applyText(p, " ");
-                            Text.applyText(p, "&7You leveled up to Crafting &e" + playerData.getCrafting().getLevel().toString().replace("_", ""));
-                            Text.applyText(p, "&7Earned &a+1 Defence ✿ &r&7and &4+1 Strength ☄");
-                            Text.applyText(p, "&7+&b" + creditsEarned + " C$ Credits");
-                            Text.applyText(p, "&8&m>                                         ");
-                            playerData.setBaseDefence(playerData.getBaseDefence() + 1);
-                            playerData.setBaseStrength(playerData.getBaseStrength() + 1);
-                            playerData.setCredits(playerData.getCredits() + creditsEarned);
-                        }
+                        playerData.getCrafting().levelUpSkill(p, playerData, skrpg);
                         p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(
                                 Text.color("&e+ " + items.getCraftingXPGained() + " Crafting XP (" + playerData.getCrafting()
                                         .getXpTillNext() + "/" + Level.valueOf("_" +
@@ -721,87 +611,7 @@ public class PlayerListener implements Listener {
 
                 p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 0.5f);
 
-                e.setCancelled(true);
-            }
-            if (e.getInventory().equals(p.getOpenInventory().getTopInventory())) {
-
-                HashMap<Integer, CraftingIngrediant> craftingItems = new HashMap<>();
-                int slot = 0;
-
-                for (int integer : slots) {
-                    if (e.getInventory().getItem(integer) != null && e.getInventory().getItem(integer)
-                            .getType() != Material.AIR) {
-
-                        for (Items items : EnumSet.allOf(Items.class)) {
-                            if (ChatColor.stripColor(
-                                    e.getInventory().getItem(integer).getItemMeta().getDisplayName()).contains(items.getName())) {
-                                if (e.getInventory().getItem(integer).getAmount() == 1) {
-                                    craftingItems.put(slot, new CraftingIngrediant(items,
-                                            1));
-
-                                } else {
-                                    craftingItems.put(slot, new CraftingIngrediant(items,
-                                            e.getInventory().getItem(integer).getAmount()));
-
-                                }
-
-
-                            }
-                        }
-                    } else {
-                        craftingItems.put(slot, new CraftingIngrediant(Items.NONE, 0));
-                    }
-                    slot++;
-                }
-                Items recipeItem = null;
-                if (craftingItems.size() == 9) {
-                    for (Items items : EnumSet.allOf(Items.class)) {
-                        int correctCraftingParts = 0;
-                        if (items.getCraftingRecipe() != null) {
-                            for (int b = 0; b < items.getCraftingRecipe().size(); b++) {
-                                if (items.getCraftingRecipe().get(b).getItems().equals(craftingItems.get(b).getItems()) &&
-                                        items.getCraftingRecipe().get(b).getAmount() <= craftingItems.get(b).getAmount()) {
-                                    correctCraftingParts++;
-                                }
-                                if (correctCraftingParts == 9) {
-                                    boolean collectionFound = false;
-                                    for (Collection collection : playerData.getCollections()) {
-                                        for (int i = 0; i < CollectionType.generateRewardsMap(collection.getCollectionType()).size(); i++) {
-                                            if (CollectionType.generateRewardsMap(collection.getCollectionType()).get(Tiers.valueOf("_" + (i + 1))).getId().equals(items.getId())) {
-                                                collectionFound = true;
-                                                if (i + 1 > SKRPG.levelToInt(collection.getTier().toString())) {
-                                                    Text.applyText(p, "You do not have a high enough collection level to use this!");
-                                                } else {
-                                                    recipeItem = items;
-                                                }
-                                            }
-                                        }
-                                    }
-                                    if (!collectionFound) {
-                                        recipeItem = items;
-                                    }
-                                }
-                            }
-
-                        }
-
-                    }
-
-                }
-                if (recipeItem != null) {
-                    e.getInventory().setItem(25, Items.buildItem(recipeItem));
-                    e.getInventory().getItem(25).setAmount(recipeItem.getCraftingAmount());
-
-                } else {
-                    e.getInventory().setItem(25, null);
-                }
-                new BukkitRunnable() {
-
-                    @Override
-                    public void run() {
-                        p.updateInventory();
-                    }
-                }.runTaskLater(skrpg, 1);
+                p.getInventory().remove(p.getItemOnCursor());
             }
         } else if (e.getView().getTitle().equals("SKRPG Menu")) {
             e.setCancelled(true);
@@ -817,22 +627,55 @@ public class PlayerListener implements Listener {
                 p.performCommand("settings");
             }
         } else if (e.getView().getTitle().equals("Your Skills")) {
+            if (e.getCurrentItem() != null) {
+                if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Combat")) {
+                    p.performCommand("skills combat");
+                } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Herbalism")) {
+                    p.performCommand("skills herbalism");
+                } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Crafting")) {
+                    p.performCommand("skills crafting");
+                } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Mining")) {
+                    p.performCommand("skills mining");
+                }
+            }
             e.setCancelled(true);
-        } else if (e.getView().getTitle().equals("Export Merchant")) {
+        } else if (e.getView().getTitle().equals("Miner") || e.getView().getTitle().equals("Adventurer") || e.getView().getTitle().equals("Farmer") ||
+        e.getView().getTitle().equals("Woodcutter")) {
+            SellMerchant sellMerchant = null;
+            if (e.getView().getTitle().equals("Miner")) {
+                sellMerchant = SellMerchant.MINING;
+            } else if (e.getView().getTitle().equals("Adventurer")) {
+                sellMerchant = SellMerchant.COMBAT;
+            } else if (e.getView().getTitle().equals("Woodcutter")) {
+                sellMerchant = SellMerchant.WOODCUTTING;
+            } else if (e.getView().getTitle().equals("Farmer")) {
+                sellMerchant = SellMerchant.FARMING;
+            }
             for (Items items : EnumSet.allOf(Items.class)) {
                 if (e.getCurrentItem() != null) {
                     if (e.getCurrentItem().getItemMeta().getDisplayName() != null) {
                         if (e.getCurrentItem().getItemMeta().getDisplayName().contains(items.getName())) {
+                            if (playerData.getSellAboveRarity().getPriority() < items.getRarity().getPriority() || playerData.getSellAboveRarity() == Rarity.COMMON) {
+                                Text.applyText(p, "&cYour sell above rarity setting prevented you from selling this!");
+                                p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
 
-                            playerData.setCredits(playerData.getCredits() + items.getSellPrice());
-                            p.playSound(p.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 1.0f, 2.0f);
-                            e.getCurrentItem().setAmount(e.getCurrentItem().getAmount() - 1);
+                            } else {
+                                if (items.getSellMerchant() == sellMerchant) {
+                                    playerData.setCredits(playerData.getCredits() + items.getSellPrice());
+                                    p.playSound(p.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 1.0f, 2.0f);
+                                    e.getCurrentItem().setAmount(e.getCurrentItem().getAmount() - 1);
 
-                            Text.applyText(p, "&7+ &b" + items.getSellPrice() + " C$ Credits &r&7from " +
-                                    items.getRarity().getColor() + items.getName());
-                            ItemMeta iM = e.getView().getTopInventory().getItem(22).getItemMeta();
-                            iM.setDisplayName(Text.color("&7Sold for +&b" + items.getSellPrice() + " C$"));
-                            e.getView().getTopInventory().getItem(22).setItemMeta(iM);
+                                    Text.applyText(p, "&7+ &6" + items.getSellPrice() + " Nuggets &r&7from " +
+                                            items.getRarity().getColor() + items.getName());
+                                    ItemMeta iM = e.getView().getTopInventory().getItem(22).getItemMeta();
+                                    iM.setDisplayName(Text.color("&7Sold for +&6" + items.getSellPrice() + " Nuggets"));
+                                    e.getView().getTopInventory().getItem(22).setItemMeta(iM);
+                                } else {
+                                    Text.applyText(p, "&e&l" + e.getView().getTitle() + " &r&8| &cI can't buy this from you. Try asking another merchant.");
+                                    p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+
+                                }
+                            }
                         }
                     }
                 }
@@ -851,7 +694,7 @@ public class PlayerListener implements Listener {
                         } else {
                             p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0f, 0.25f);
                             p.closeInventory();
-                            Text.applyText(p, "&aYou bought a bank for &b" + (250000 * playerData.getBanks().size()) + " C$");
+                            Text.applyText(p, "&aYou bought a bank for &6" + (250000 * playerData.getBanks().size()) + " Nuggets");
                             playerData.setCredits(playerData.getCredits() - (250000 * playerData.getBanks().size()));
                             p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_YES, 2.0f, 0.25f);
                             playerData.getBanks().add(new Bank(0, BankLevel.FREE));
@@ -864,18 +707,18 @@ public class PlayerListener implements Listener {
                         for (int i = 0; i <= 53; i++) {
                             inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
                         }
-                        inv.setItem(10, new ItemBuilder(Material.CHEST, 0).setName("&7Deposit All").asItem());
-                        inv.setItem(12, new ItemBuilder(Material.CHEST, 0).setName("&7Deposit &b1000000 C$").asItem());
-                        inv.setItem(14, new ItemBuilder(Material.CHEST, 0).setName("&7Deposit &b100000 C$").asItem());
-                        inv.setItem(16, new ItemBuilder(Material.CHEST, 0).setName("&7Deposit &b10000 C$").asItem());
-                        inv.setItem(20, new ItemBuilder(Material.CHEST, 0).setName("&7Deposit &b100 C$").asItem());
-                        inv.setItem(24, new ItemBuilder(Material.CHEST, 0).setName("&7Deposit &b10 C$").asItem());
-                        inv.setItem(28, new ItemBuilder(Material.HOPPER, 0).setName("&7Withdraw All").asItem());
-                        inv.setItem(30, new ItemBuilder(Material.HOPPER, 0).setName("&7Withdraw &b1000000 C$").asItem());
-                        inv.setItem(32, new ItemBuilder(Material.HOPPER, 0).setName("&7Withdraw &b100000 C$").asItem());
-                        inv.setItem(34, new ItemBuilder(Material.HOPPER, 0).setName("&7Withdraw &b10000 C$").asItem());
-                        inv.setItem(38, new ItemBuilder(Material.HOPPER, 0).setName("&7Withdraw &b100 C$").asItem());
-                        inv.setItem(42, new ItemBuilder(Material.HOPPER, 0).setName("&7Withdraw &b10 C$").asItem());
+                        inv.setItem(10, new ItemBuilder(Material.GOLD_BLOCK, 0).setName("&7Deposit &6All").asItem());
+                        inv.setItem(12, new ItemBuilder(Material.GOLD_BLOCK, 0).setName("&7Deposit &61000000 Nuggets").asItem());
+                        inv.setItem(14, new ItemBuilder(Material.GOLD_INGOT, 0).setName("&7Deposit &6100000 Nuggets").asItem());
+                        inv.setItem(16, new ItemBuilder(Material.GOLD_INGOT, 0).setName("&7Deposit &610000 Nuggets").asItem());
+                        inv.setItem(20, new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&7Deposit &6100 Nuggets").asItem());
+                        inv.setItem(24, new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&7Deposit &610 Nuggets").asItem());
+                        inv.setItem(28, new ItemBuilder(Material.GOLD_BLOCK, 0).setName("&7Withdraw &6All").asItem());
+                        inv.setItem(30, new ItemBuilder(Material.GOLD_BLOCK, 0).setName("&7Withdraw &61000000 Nuggets").asItem());
+                        inv.setItem(32, new ItemBuilder(Material.GOLD_INGOT, 0).setName("&7Withdraw &6100000 Nuggets").asItem());
+                        inv.setItem(34, new ItemBuilder(Material.GOLD_INGOT, 0).setName("&7Withdraw &610000 Nuggets").asItem());
+                        inv.setItem(38, new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&7Withdraw &6100 Nuggets").asItem());
+                        inv.setItem(42, new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&7Withdraw &610 Nuggets").asItem());
                         if (!bank.getLevel().equals(BankLevel.SUPER_DELUXE)) {
                             BankLevel bankLevel = null;
                             for (BankLevel bankLevel1 : EnumSet.allOf(BankLevel.class)) {
@@ -884,7 +727,7 @@ public class PlayerListener implements Listener {
                                 }
                             }
                             inv.setItem(22, new ItemBuilder(Material.EMERALD_BLOCK, 0).setName("&aUpgrade to " + bankLevel.getNameColored()).setLore(Arrays.asList(" ",
-                                    Text.color("&7Cost: &b" + bankLevel.getCost() + " C$"))).asItem());
+                                    Text.color("&7Cost: &6" + bankLevel.getCost() + " Nuggets"))).asItem());
                         }
                         p.openInventory(inv);
                     }
@@ -911,14 +754,14 @@ public class PlayerListener implements Listener {
                             }
 
                             playerData.setCredits(playerData.getCredits() - amount);
-                            Text.applyText(p, "&aDeposited &b" + amount + " C$&7!");
+                            Text.applyText(p, "&aDeposited &6" + amount + " Nuggets&7!");
                             bank.deposit(amount);
                             p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 2.0f, 2.0f);
                         } else {
                             int amount = Integer.parseInt(ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName()
-                                    .replace("Deposit", "").replace("C$", "").replace(" ", "")));
+                                    .replace("Deposit", "").replace("Nuggets", "").replace(" ", "")));
                             if (amount > playerData.getCredits()) {
-                                Text.applyText(p, "&cYou don't have enough credits!");
+                                Text.applyText(p, "&cYou don't have enough Nuggets!");
                                 p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 2.0f, 1.0f);
                             } else {
                                 if (bank.getCredits() == bank.getLevel().getMaxCredits()) {
@@ -932,28 +775,28 @@ public class PlayerListener implements Listener {
                                 }
                                 bank.deposit(amount);
                                 playerData.setCredits(playerData.getCredits() - amount);
-                                Text.applyText(p, "&aDeposited &b" + amount + " C$&7!");
+                                Text.applyText(p, "&aDeposited &6" + amount + " Nuggets&7!");
                                 p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 2.0f, 2.0f);
                             }
                         }
                     } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Withdraw")) {
                         if (e.getCurrentItem().getItemMeta().getDisplayName().contains("All")) {
                             p.playSound(p.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 2.0f, 2.0f);
-                            Text.applyText(p, "&aWithdrew &b" + bank.getCredits() + " C$&7!");
+                            Text.applyText(p, "&aWithdrew &6" + bank.getCredits() + " Nuggets&7!");
                             playerData.setCredits(playerData.getCredits() + bank.getCredits());
                             bank.withdraw(bank.getCredits());
 
                         } else {
                             int amount = Integer.parseInt(ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName()
-                                    .replace("Withdraw", "").replace("C$", "").replace(" ", "")));
+                                    .replace("Withdraw", "").replace("Nuggets", "").replace(" ", "")));
                             if (amount > bank.getCredits()) {
-                                Text.applyText(p, "&cYour bank doesn't have enough credits!");
+                                Text.applyText(p, "&cYour bank doesn't have enough Nuggets!");
                                 p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 2.0f, 1.0f);
                             } else {
                                 p.playSound(p.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 2.0f, 2.0f);
                                 playerData.setCredits(playerData.getCredits() + amount);
                                 bank.withdraw(amount);
-                                Text.applyText(p, "&aWithdrew &b" + amount + " C$&7!");
+                                Text.applyText(p, "&aWithdrew &6" + amount + " Nuggets&7!");
                             }
                         }
                     } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Upgrade")) {
@@ -964,7 +807,7 @@ public class PlayerListener implements Listener {
                             }
                         }
                         if (playerData.getCredits() < nextLevel.getCost()) {
-                            Text.applyText(p, "&cYou don't have enough credits to upgrade this account!");
+                            Text.applyText(p, "&cYou don't have enough Nuggets to upgrade this account!");
                             p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 2.0f, 0.1f);
                             return;
                         }
@@ -978,7 +821,7 @@ public class PlayerListener implements Listener {
                     }
                 }
             }
-        } else if (e.getView().getTitle().contains("Salesman")) {
+        } else if (e.getView().getTitle().contains("Salesman") || e.getView().getTitle().equals("Hiltcrafter")) {
             e.setCancelled(true);
             if (e.getCurrentItem() != null) {
                 if (e.getCurrentItem().getItemMeta() != null) {
@@ -987,14 +830,14 @@ public class PlayerListener implements Listener {
                         if (lore.contains("Cost:")) {
                             skrpg.getLogger().info("Cost");
                             cost = Integer.parseInt(ChatColor.stripColor(lore).replace("Cost:", "")
-                            .replace("C$", "").replace(" ", ""));
+                            .replace("Nuggets", "").replace(" ", ""));
                         }
                     }
                     for (Items items : EnumSet.allOf(Items.class)) {
                         if (items.getName().contains(ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName()))) {
 
                             if (cost > playerData.getCredits()) {
-                                Text.applyText(p, "&cYou don't have enough credits to buy this!");
+                                Text.applyText(p, "&cYou don't have enough Nuggets to buy this!");
                                 p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
                                 return;
                             }
@@ -1006,7 +849,7 @@ public class PlayerListener implements Listener {
                             playerData.setCredits(playerData.getCredits() - cost);
                             p.getInventory().addItem(Items.buildItem(items));
                             p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 2.0f);
-                            Text.applyText(p, "&aYou purchased " + Items.buildItem(items).getItemMeta().getDisplayName() + " for &b" + cost + " C$");
+                            Text.applyText(p, "&aYou purchased " + Items.buildItem(items).getItemMeta().getDisplayName() + " for &6" + cost + " Nuggets");
                         }
                     }
                 }
@@ -1034,11 +877,25 @@ public class PlayerListener implements Listener {
                     } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains("DENY")) {
                         e.setCancelled(true);
                         playerData.getTrade().deny();
+                    } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Pay Nuggets")) {
+                        Inventory inv = Bukkit.createInventory(null, 36, "Pay Nuggets");
+                        for (int i = 0; i <= 35; i++) {
+                            inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
+                        }
+                        inv.setItem(10, new ItemBuilder(Material.GOLD_BLOCK, 0).setName("&7Give &6All").asItem());
+                        inv.setItem(12, new ItemBuilder(Material.GOLD_BLOCK, 0).setName("&7Give &61000000 Nuggets").asItem());
+                        inv.setItem(14, new ItemBuilder(Material.GOLD_INGOT, 0).setName("&7Give &6100000 Nuggets").asItem());
+                        inv.setItem(16, new ItemBuilder(Material.GOLD_INGOT, 0).setName("&7Give &610000 Nuggets").asItem());
+                        inv.setItem(20, new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&7Give &6100 Nuggets").asItem());
+                        inv.setItem(24, new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&7Give &610 Nuggets").asItem());
+                        p.openInventory(inv);
                     }
                 }
-
+                e.setCancelled(true);
             }
-        } else if (e.getView().getTitle().equals("Your Statistics") || e.getView().getTitle().equals("Your Collections")) {
+        } else if (e.getView().getTitle().equals("Your Statistics") ||
+                e.getView().getTitle().equals("Your Combat") || e.getView().getTitle().equals("Your Herbalism") ||
+        e.getView().getTitle().equals("Your Crafting") || e.getView().getTitle().equals("Your Mining") || e.getView().getTitle().contains("| Collection Viewer")) {
             e.setCancelled(true);
         } else if (e.getView().getTitle().equals("Settings")) {
             e.setCancelled(true);
@@ -1047,7 +904,7 @@ public class PlayerListener implements Listener {
                     playerData.setToggleTrade(!playerData.canTrade());
                     p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f);
                     Text.applyText(p, Text.color("&aToggled trading has been set to " + playerData.canTrade() + "."));
-                    p.closeInventory();
+
                     p.performCommand("settings");
                 } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Do not Sell Beyond This Rarity")) {
                     if (playerData.getSellAboveRarity() != Rarity.LEGENDARY) {
@@ -1060,7 +917,6 @@ public class PlayerListener implements Listener {
                                 } else {
                                     Text.applyText(p, "&aAll rarities enabled!");
                                 }
-                                p.closeInventory();
                                 p.performCommand("settings");
                                 return;
                             }
@@ -1070,7 +926,6 @@ public class PlayerListener implements Listener {
                         p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f);
                         Text.applyText(p, "&aDisabled selling!");
                     }
-                    p.closeInventory();
                     p.performCommand("settings");
                 } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Reset My Stats")) {
                     Inventory inv = Bukkit.createInventory(null, 27, "Confirm Deletion");
@@ -1100,7 +955,7 @@ public class PlayerListener implements Listener {
                 for (RaidMobs raidMobs : EnumSet.allOf(RaidMobs.class)) {
                     if (Text.color(raidMobs.getName()).equals(e.getCurrentItem().getItemMeta().getDisplayName())) {
                         if (playerData.getCredits() < raidMobs.getCreditsCost()) {
-                            Text.applyText(p, "&cYou do not have enough credits to buy this mob!");
+                            Text.applyText(p, "&cYou do not have enough Nuggets to buy this mob!");
                             p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
                             return;
                         }
@@ -1123,13 +978,132 @@ public class PlayerListener implements Listener {
             }
         } else if (e.getView().getTitle().contains("Recipe for ")) {
             e.setCancelled(true);
+        } else if (e.getView().getTitle().equals("Pay Nuggets")) {
+            if (e.getCurrentItem() != null) {
+                e.setCancelled(true);
+                if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Give")) {
+                    if (e.getCurrentItem().getItemMeta().getDisplayName().contains("All")) {
+                        int amount = playerData.getCredits();
+                        playerData.getTrade().addCredits(p, amount);
+                        p.openInventory(playerData.getTrade().getInv(p));
+                    } else {
+                        int amount = Integer.parseInt(ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName()
+                                .replace("Give", "").replace("Nuggets", "").replace(" ", "")));
+                        if (amount > playerData.getCredits()) {
+                            Text.applyText(p, "&cYou don't have enough Nuggets!");
+                            p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 2.0f, 1.0f);
+                        } else {
+                            if (playerData.getTrade() != null) {
+                                playerData.getTrade().addCredits(p, amount);
+                                p.openInventory(playerData.getTrade().getInv(p));
+                            }
+                        }
+                    }
+                }
+
+            }
+
+        } else if (e.getView().getTitle().equals("Your Collections")) {
+            for (CollectionType collectionType : EnumSet.allOf(CollectionType.class)) {
+                if (e.getCurrentItem().getItemMeta().getDisplayName().contains(collectionType.getItem().getName())) {
+                    p.performCommand("collections " + collectionType.toString());
+                }
+            }
         }
+    }
+    public void craftingTableUpdate(Inventory inv, Player p, PlayerData playerData) {
+        HashMap<Integer, CraftingIngrediant> craftingItems = new HashMap<>();
+        int slot = 0;
+        List<Integer> slots = Arrays.asList(10, 11, 12, 19, 20, 21, 28, 29, 30);
+        for (int integer : slots) {
+            if (inv.getItem(integer) != null && inv.getItem(integer)
+                    .getType() != Material.AIR) {
+
+                for (Items items : EnumSet.allOf(Items.class)) {
+                    if (ChatColor.stripColor(
+                            inv.getItem(integer).getItemMeta().getDisplayName()).contains(items.getName())) {
+                        if (inv.getItem(integer).getAmount() == 1) {
+                            craftingItems.put(slot, new CraftingIngrediant(items,
+                                    1));
+
+                        } else {
+                            craftingItems.put(slot, new CraftingIngrediant(items,
+                                    inv.getItem(integer).getAmount()));
+
+                        }
+
+
+                    }
+                }
+            } else {
+                craftingItems.put(slot, new CraftingIngrediant(Items.NONE, 0));
+            }
+            slot++;
+        }
+        Items recipeItem = null;
+        if (craftingItems.size() == 9) {
+            for (Items items : EnumSet.allOf(Items.class)) {
+                int correctCraftingParts = 0;
+                if (items.getCraftingRecipe() != null) {
+                    for (int b = 0; b < items.getCraftingRecipe().size(); b++) {
+                        if (items.getCraftingRecipe().get(b).getItems().equals(craftingItems.get(b).getItems()) &&
+                                items.getCraftingRecipe().get(b).getAmount() <= craftingItems.get(b).getAmount()) {
+                            correctCraftingParts++;
+                        }
+                        if (correctCraftingParts == 9) {
+                            boolean collectionFound = false;
+                            for (Collection collection : playerData.getCollections()) {
+                                HashMap<Tiers, List<Items>> rewardsMap = CollectionType.generateRewardsMap(collection.getCollectionType());
+                                for (int i = 0; i < rewardsMap.size(); i++) {
+                                    for (Items items1 : rewardsMap.get(Tiers.valueOf("_" + (i + 1)))) {
+                                        if (items1.getId().equals(items.getId())) {
+                                            collectionFound = true;
+                                            if (i + 1 > SKRPG.levelToInt(collection.getTier().toString())) {
+                                                Text.applyText(p, "You do not have a high enough collection level to use this!");
+                                            } else {
+                                                recipeItem = items;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (!collectionFound) {
+                                recipeItem = items;
+                            }
+                        }
+                    }
+
+                }
+
+            }
+
+        }
+        if (recipeItem != null) {
+            inv.setItem(25, Items.buildItem(recipeItem));
+            inv.getItem(25).setAmount(recipeItem.getCraftingAmount());
+            p.getInventory().setContents(p.getInventory().getContents());
+        } else {
+            if (inv.getItem(25) != null) {
+                inv.setItem(25, null);
+                p.getInventory().setContents(p.getInventory().getContents());
+
+            }
+
+        }
+        skrpg.getServer().getScheduler().scheduleSyncDelayedTask(skrpg, () -> {
+            for (HumanEntity he : inv.getViewers()) {
+                Player p1 = (Player) he;
+                p1.updateInventory();
+            }
+        }, 1L);
     }
     @EventHandler
     public void onInventoryOpen(InventoryOpenEvent e) {
         if (e.getInventory().getType().equals(InventoryType.WORKBENCH)) {
             Player player = (Player) e.getPlayer();
             player.performCommand("ct");
+        } else if (e.getInventory().getType().equals(InventoryType.MERCHANT)) {
+            e.setCancelled(true);
         }
     }
     @EventHandler
@@ -1137,5 +1111,43 @@ public class PlayerListener implements Listener {
         if(event.getEntity() instanceof Zombie){
             event.setCancelled(true);
         }
+    }
+    @EventHandler
+    public void onPlaceEvent(BlockPlaceEvent e) {
+        if (e.getPlayer().getGameMode() != GameMode.CREATIVE) {
+            e.setCancelled(true);
+        }
+    }
+    @EventHandler
+    public void onEntityChangeBlockEvent(EntityChangeBlockEvent e) {
+        if (e.getEntity().getType().equals(EntityType.SILVERFISH)) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onDrownedEvent(EntityTransformEvent e) {
+        if (e.getTransformReason().equals(EntityTransformEvent.TransformReason.DROWNED)) { e.setCancelled(true); }
+    }
+    @EventHandler
+    public void noUproot(PlayerInteractEvent event)
+    {
+        if(event.getAction() == Action.PHYSICAL && event.getClickedBlock().getType() == Material.FARMLAND) {event.setCancelled(true); }
+    }
+    @EventHandler
+    public void onHit(ProjectileHitEvent e) {
+        Projectile p = e.getEntity();
+        if(p instanceof Arrow)
+        {
+            p.remove();
+        }
+        return;
+    }
+    @EventHandler
+    public void onPlayerCraft(CraftItemEvent e) {
+        Player p = (Player) e.getWhoClicked();
+        e.setCancelled(true);
+        Text.applyText(p, "&cYou cannot use your own crafting inventory in SKRPG! &cUse /ct instead.");
+        p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
     }
 }

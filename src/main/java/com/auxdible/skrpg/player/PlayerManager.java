@@ -54,38 +54,67 @@ public class PlayerManager {
                 rsBank.next();
                 ResultSet rsCollection = SKRPG.prepareStatement("SELECT * FROM collection_table WHERE " +
                         "UUID = '" + player.getUniqueId() + "';").executeQuery();
-                rsCollection.next();
                 ArrayList<Bank> playerBanks = new ArrayList<>();
                 for (int i = 1; i <= rsBank.getInt("bankAmount"); i++) {
                     playerBanks.add(new Bank(rsBank.getInt("bank" + i + "Credits"), BankLevel.valueOf(rsBank.getString("bank" + i + "Level"))));
                 }
                 Calendar calendar = Calendar.getInstance();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-DD");
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 calendar.setTime(sdf.parse(rsStats.getString("interest")));
                 calendar.add(Calendar.MONTH, 1);
-                List<String> tiers = Arrays.asList(rsCollection.getString("collectionsTier").split(","));
-                List<String> amounts = Arrays.asList(rsCollection.getString("collectionsAmount").split(","));
+                LocalDate localDate = LocalDate.now();
+                ZoneId zoneId = ZoneId.systemDefault();
+                if (calendar.getTime().before(Date.from(localDate.atStartOfDay(zoneId).toInstant()))) {
+                    calendar.setTime(Date.from(localDate.atStartOfDay(zoneId).toInstant()));
+                    skrpg.getLogger().info(calendar.getTime() + "");
+                }
                 ArrayList<Collection> collections = new ArrayList<>();
-                List<CollectionType> collectionTypes = Arrays.asList(CollectionType.values());
-                for (int i = 0; i < collectionTypes.size(); i++) {
-                    collections.add(new Collection(Integer.parseInt(amounts.get(i)), Tiers.valueOf("_" + tiers.get(i)), collectionTypes.get(i)));
-                    skrpg.getLogger().info("Collection added!" + collectionTypes.get(i));
+                boolean collectionsFound = false;
+                if (rsCollection.next()) {
+                    skrpg.getLogger().info("Can see collections.");
+                    collectionsFound = true;
+                    List<String> tiers = Arrays.asList(rsCollection.getString("collectionsTier").split(","));
+                    List<String> amounts = Arrays.asList(rsCollection.getString("collectionsAmount").split(","));
+
+                    List<CollectionType> collectionTypes = Arrays.asList(CollectionType.values());
+                    for (int i = 0; i < collectionTypes.size(); i++) {
+                        try {
+                            collections.add(new Collection(Integer.parseInt(amounts.get(i)), Tiers.valueOf("_" + tiers.get(i)), collectionTypes.get(i)));
+                            skrpg.getLogger().info("Collection added!" + collectionTypes.get(i));
+                        } catch (ArrayIndexOutOfBoundsException e) {
+                            skrpg.getLogger().info("Out of bounds.");
+                            collections.add(new Collection(0, Tiers._0, collectionTypes.get(i)));
+                        }
+
+                    }
+                }
+
+
+                if (!collectionsFound) {
+                    List<CollectionType> collectionTypes = Arrays.asList(CollectionType.values());
+                    for (int i = 0; i < collectionTypes.size(); i++) {
+                        collections.add(new Collection(0, Tiers._0, collectionTypes.get(i)));
+                    }
                 }
                 String rarityValue = rsStats.getString("raritySell");
                 if (rsStats.getString("raritySell").isEmpty()) {
                     rarityValue = "LEGENDARY";
                 }
-                List<String> completedQuests = Arrays.asList(rsStats.getString("questsCompleted").split(","));
+                List<String> completedQuests = new ArrayList<>();
                 List<String> allQuests = new ArrayList<>();
                 ArrayList<Quests> processedQuests = new ArrayList<>();
-                for (Quests quests : EnumSet.allOf(Quests.class)) {
-                    allQuests.add(quests.toString());
-                }
-                for (String quests : completedQuests) {
-                    if (allQuests.contains(quests)) {
-                         processedQuests.add(Quests.valueOf(quests));
+                if (!rsStats.getString("questsCompleted").isEmpty()) {
+                    completedQuests = Arrays.asList(rsStats.getString("questsCompleted").split(","));
+                    for (Quests quests : EnumSet.allOf(Quests.class)) {
+                        allQuests.add(quests.toString());
+                    }
+                    for (String quests : completedQuests) {
+                        if (allQuests.contains(quests)) {
+                            processedQuests.add(Quests.valueOf(quests));
+                        }
                     }
                 }
+
 
                 playerData = new PlayerData(rsStats.getInt("baseHP"), rsStats.getInt("baseEnergy"),
                         rsStats.getInt("baseStrength"), rsStats.getInt("baseDefence"), rsStats.getInt("baseSpeed"),
@@ -123,22 +152,48 @@ public class PlayerManager {
                 rsBank.next();
                 ResultSet rsCollection = SKRPG.prepareStatement("SELECT * FROM collection_table WHERE " +
                         "UUID = '" + player.getUniqueId() + "';").executeQuery();
-                rsCollection.next();
+
                 ArrayList<Bank> playerBanks = new ArrayList<>();
                 for (int i = 1; i <= rsBank.getInt("bankAmount"); i++) {
                     playerBanks.add(new Bank(rsBank.getInt("bank" + i + "Credits"), BankLevel.valueOf(rsBank.getString("bank" + i + "Level"))));
                 }
                 Calendar calendar = Calendar.getInstance();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-DD");
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 calendar.setTime(sdf.parse(rsStats.getString("interest")));
                 calendar.add(Calendar.MONTH, 1);
-                List<String> tiers = Arrays.asList(rsCollection.getString("collectionsTier").split(","));
-                List<String> amounts = Arrays.asList(rsCollection.getString("collectionsAmount").split(","));
+                LocalDate localDate = LocalDate.now();
+                ZoneId zoneId = ZoneId.systemDefault();
+                if (calendar.getTime().before(Date.from(localDate.atStartOfDay(zoneId).toInstant()))) {
+                    calendar.setTime(Date.from(localDate.atStartOfDay(zoneId).toInstant()));
+                }
                 ArrayList<Collection> collections = new ArrayList<>();
-                List<CollectionType> collectionTypes = Arrays.asList(CollectionType.values());
-                for (int i = 0; i < collectionTypes.size(); i++) {
-                    collections.add(new Collection(Integer.parseInt(amounts.get(i)), Tiers.valueOf("_" + tiers.get(i)), collectionTypes.get(i)));
-                    skrpg.getLogger().info("Collection added!" + collectionTypes.get(i));
+
+                boolean collectionsFound = false;
+                if (rsCollection.next()) {
+                    skrpg.getLogger().info("Can see collections.");
+                    collectionsFound = true;
+                    List<String> tiers = Arrays.asList(rsCollection.getString("collectionsTier").split(","));
+                    List<String> amounts = Arrays.asList(rsCollection.getString("collectionsAmount").split(","));
+
+                    List<CollectionType> collectionTypes = Arrays.asList(CollectionType.values());
+                    for (int i = 0; i < collectionTypes.size(); i++) {
+                        try {
+                            collections.add(new Collection(Integer.parseInt(amounts.get(i)), Tiers.valueOf("_" + tiers.get(i)), collectionTypes.get(i)));
+                            skrpg.getLogger().info("Collection added!" + collectionTypes.get(i));
+                        } catch (ArrayIndexOutOfBoundsException e) {
+                            skrpg.getLogger().info("Out of bounds.");
+                            collections.add(new Collection(0, Tiers._0, collectionTypes.get(i)));
+                        }
+
+                    }
+                }
+
+
+                if (!collectionsFound) {
+                    List<CollectionType> collectionTypes = Arrays.asList(CollectionType.values());
+                    for (int i = 0; i < collectionTypes.size(); i++) {
+                        collections.add(new Collection(0, Tiers._0, collectionTypes.get(i)));
+                    }
                 }
                 String rarityValue = rsStats.getString("raritySell");
                 if (rsStats.getString("raritySell").isEmpty()) {

@@ -10,18 +10,17 @@ import java.util.List;
 
 public enum MineBlock {
     STONE(Items.STONE, null, Material.STONE, 1),
-    COAL(Items.COAL, null, Material.COAL_ORE, 5),
-    IRON(Items.IRON_INGOT, null, Material.IRON_ORE, 5),
-    GOLD(Items.GOLD_INGOT, null, Material.GOLD_ORE, 5),
-    REDSTONE(Items.REDSTONE, null, Material.REDSTONE_ORE, 7),
-    LAPIS_LAZULI(Items.LAPIS_LAZULI, null, Material.LAPIS_ORE, 8),
-    DIAMOND(Items.DIAMOND, null, Material.DIAMOND_ORE, 10),
-    EMERALD(Items.EMERALD, null, Material.EMERALD_ORE, 10),
-    OBSIDIAN(Items.OBSIDIAN, null, Material.OBSIDIAN, 50),
-    CRYSTALITE(Items.CRYSTALLITE, null, Material.WHITE_STAINED_GLASS, 25),
-    NETHERRRACK(Items.NETHERRACK, null, Material.NETHERRACK, 2),
-    END_STONE(Items.END_STONE, null, Material.END_STONE, 27),
-    CORRUPTED_ROOT(Items.CORRUPTED_ROOT, null, Material.MYCELIUM, 30);
+    COAL(Items.COAL, Arrays.asList(Drop.GEMSTONE), Material.COAL_ORE, 5),
+    IRON(Items.IRON_INGOT, Arrays.asList(Drop.GEMSTONE), Material.IRON_ORE, 5),
+    GOLD(Items.GOLD_INGOT, Arrays.asList(Drop.PREMIUM_GOLD_EXTRACT, Drop.GEMSTONE), Material.GOLD_ORE, 5),
+    REDSTONE(Items.REDSTONE, Arrays.asList(Drop.GEMSTONE), Material.REDSTONE_ORE, 5),
+    LAPIS_LAZULI(Items.LAPIS_LAZULI, Arrays.asList(Drop.GEMSTONE), Material.LAPIS_ORE, 8),
+    DIAMOND(Items.DIAMOND, Arrays.asList(Drop.GEMSTONE), Material.DIAMOND_ORE, 10),
+    EMERALD(Items.EMERALD, Arrays.asList(Drop.GEMSTONE), Material.EMERALD_ORE, 12),
+    OBSIDIAN(Items.OBSIDIAN, Arrays.asList(Drop.GEMSTONE), Material.OBSIDIAN, 50),
+    CRYSTALITE(Items.CRYSTALLITE, Arrays.asList(Drop.GEMSTONE), Material.WHITE_STAINED_GLASS, 14),
+    NETHERRRACK(Items.NETHERRACK, Arrays.asList(Drop.GEMSTONE), Material.NETHERRACK, 1),
+    END_STONE(Items.END_STONE, Arrays.asList(Drop.GEMSTONE), Material.END_STONE, 16);
     private Items commonDrop;
 
     private Material blockObtainedFrom;

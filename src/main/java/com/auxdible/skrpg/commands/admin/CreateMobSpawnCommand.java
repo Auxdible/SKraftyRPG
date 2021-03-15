@@ -33,7 +33,7 @@ public class CreateMobSpawnCommand implements CommandExecutor {
             skrpg.getMobSpawnManager().addMobSpawn(0, MobType.valueOf(args[0]),
                     player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ());
         } else {
-            skrpg.getMobSpawnManager().addMobSpawn(skrpg.getNpcManager().getNpcs().size(), MobType.valueOf(args[0]),
+            skrpg.getMobSpawnManager().addMobSpawn(skrpg.getMobSpawnManager().getMobSpawns().size(), MobType.valueOf(args[0]),
                     player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ());
         }
 

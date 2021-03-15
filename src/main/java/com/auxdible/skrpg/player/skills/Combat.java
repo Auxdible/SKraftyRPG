@@ -39,15 +39,14 @@ public class Combat {
             Text.applyText(player, " ");
             Text.applyText(player, "&7You leveled up to Combat &e" + getLevel().toString().replace("_", ""));
             Text.applyText(player, "&7Earned &4+2 Strength ☄ &r&7and &c2% more damage!");
-            Text.applyText(player, "&7+&b" + creditsEarned + " C$ Credits");
+            Text.applyText(player, "&7+ &6" + creditsEarned + " Nuggets");
             Text.applyText(player, "&7Total Extra Damage: &c" + (2 *
                     Integer.parseInt(getLevel().toString()
                             .replace("_", ""))) + "%");
             Text.applyText(player, "&8&m>                                          ");
-            player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 0.4f);
             playerData.setBaseStrength(playerData.getBaseStrength() + 2);
             playerData.setCredits(playerData.getCredits() + creditsEarned);
-            player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 0.4f);
+            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f);
         }
     }
 }

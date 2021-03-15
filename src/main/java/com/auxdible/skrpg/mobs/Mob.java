@@ -37,6 +37,7 @@ public class Mob {
     public MobType getMobType() { return mobType; }
     public void damage(Player player, int damage, SKRPG skrpg) {
         PlayerData playerData = skrpg.getPlayerManager().getPlayerData(player.getUniqueId());
+        damage = damage + 30;
         double bonusDamage = 1 + (Integer.parseInt(playerData.getCombat().getLevel().toString()
                 .replace("_", "")) * 0.02);
         damage = (int) Math.round(damage * bonusDamage);
@@ -50,17 +51,31 @@ public class Mob {
         }
         if (player.getInventory().getItemInMainHand().getType() != Material.AIR && player.getInventory().getItemInMainHand().getItemMeta().getDisplayName()
                 .contains("Zombie Sword")) {
-            if (getEnt().getType().equals(EntityType.ZOMBIE)) {
+            if (getEnt().getType().equals(EntityType.ZOMBIE) && getMobType() != MobType.CRAB_KING) {
                 nerfedDamage = (int) Math.round(nerfedDamage * 1.5);
             }
         }
-        setCurrentHP(getCurrentHP() - nerfedDamage);
+        if (player.getInventory().getHelmet() != null && player.getInventory().getHelmet().getType() != Material.AIR) {
+            if (player.getInventory().getHelmet().getItemMeta().getDisplayName().contains("Crab Crown")) {
+                nerfedDamage = nerfedDamage * 2;
+            }
+
+        }
+        if (skrpg.getScrollBossManager().getBoss(this) != null) {
+            skrpg.getScrollBossManager().getBoss(this).damage(nerfedDamage, player);
+        }
+        if (getCurrentHP() - nerfedDamage < 0) {
+            setCurrentHP(0);
+        } else {
+            setCurrentHP(getCurrentHP() - nerfedDamage);
+        }
+
         ArmorStand damageIndictator = (ArmorStand) getEnt().getWorld()
                 .spawnEntity(getEnt().getLocation(), EntityType.ARMOR_STAND);
         damageIndictator.setInvulnerable(true);
         damageIndictator.setCollidable(false);
         damageIndictator.setInvisible(true);
-        damageIndictator.setCustomName(Text.color("&c" + damage + " &4&l☄"));
+        damageIndictator.setCustomName(Text.color("&c" + nerfedDamage + " &4&l☄"));
         damageIndictator.setCustomNameVisible(true);
         damageIndictator.setSmall(true);
         damageIndictator.setVelocity(new Vector(0, 0.5, 0));
@@ -76,33 +91,18 @@ public class Mob {
                 }
             }
         }.runTaskTimer(skrpg, 0, 5);
-        if (getEnt() instanceof LivingEntity) {
-            LivingEntity livingEntity = (LivingEntity) getEnt();
-            livingEntity.damage(1.0);
-            livingEntity.setHealth(livingEntity.getMaxHealth());
-            livingEntity.setVelocity(new Vector(player.getLocation().getDirection().getX() / 3, 0.3, player.getLocation().getDirection().getZ() / 3));
-        }
         if (getCurrentHP() <= 0) {
             player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f);
 
             for (MobKill mobKill : EnumSet.allOf(MobKill.class)) {
-                if (getEnt().getCustomName().contains(Text.color(mobKill.getMobType().getName()))) {
+                if (getMobType().getName().equals(mobKill.getMobType().getName())) {
                     if (mobKill.getDrop() != null) {
                         player.getInventory().addItem(Items.buildItem(mobKill.getDrop()));
                     }
                     for (Collection collection : playerData.getCollections()) {
                         if (collection.getCollectionType().getItem().equals(mobKill.getDrop())) {
                             collection.setCollectionAmount(collection.getCollectionAmount() + 1);
-                            if (collection.getCollectionAmount() > Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)).getAmountRequired()) {
-                                collection.setTier(Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1)));
-                                Text.applyText(player, "&8&m>                                          ");
-                                Text.applyText(player, "&b&l           TIER UP!");
-                                Text.applyText(player, " ");
-                                Text.applyText(player, "&7You tiered up to " + collection.getCollectionType().getItem().getName() + " &b" +
-                                        Integer.parseInt(collection.getTier().toString()));
-                                Text.applyText(player, "&7Recipe Unlocked: " + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getRarity().getColor() + CollectionType.generateRewardsMap(collection.getCollectionType()).get(collection.getTier()).getName());
-                                Text.applyText(player, "&8&m>                                          ");
-                            }
+                            collection.levelUpCollection(player, playerData);
                         }
                     }
                     if (mobKill.getRareDrops() != null) {

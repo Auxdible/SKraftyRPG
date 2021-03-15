@@ -42,7 +42,7 @@ public enum Quests {
             }
         }
         if (quest.getQuest().getCreditsReward() != 0) {
-            Text.applyText(player, "&f+ &b" + quest.getQuest().getCreditsReward() + " Credits C$");
+            Text.applyText(player, "&f+ &6" + quest.getQuest().getCreditsReward() + " Nuggets");
             playerData.setCredits(playerData.getCredits() + quest.getQuest().getCreditsReward());
         }
         if (quest.getQuest().xpRewards() != null) {

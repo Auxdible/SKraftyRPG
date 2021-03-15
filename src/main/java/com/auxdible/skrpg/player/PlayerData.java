@@ -3,6 +3,7 @@ package com.auxdible.skrpg.player;
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.items.Rarity;
 import com.auxdible.skrpg.mobs.MobType;
+import com.auxdible.skrpg.mobs.npcs.NPC;
 import com.auxdible.skrpg.player.collections.Collection;
 import com.auxdible.skrpg.player.economy.Bank;
 import com.auxdible.skrpg.player.economy.Trade;
@@ -14,19 +15,14 @@ import com.auxdible.skrpg.player.skills.Mining;
 import com.auxdible.skrpg.regions.Region;
 import com.auxdible.skrpg.utils.Text;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.*;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
+
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.UUID;
+import java.util.*;
 
 public class PlayerData {
     private int speed;
@@ -57,6 +53,7 @@ public class PlayerData {
     private ArrayList<Quests> completedQuests;
     private Quests activeQuest;
     private int questPhase;
+    private List<NPC> renderedNPCs;
     public PlayerData(int maxHP, int maxEnergy, int strength, int defence, int speed, UUID uuid, int credits, Combat combat,
                       Mining mining, Herbalism herbalism, Crafting crafting, ArrayList<Bank> banks,
                       Date intrestDate, ArrayList<Collection> collections, Rarity sellAboveRarity, boolean toggleTrade, ArrayList<Quests> quests) {
@@ -88,7 +85,9 @@ public class PlayerData {
         this.completedQuests = quests;
         this.activeQuest = null;
         this.questPhase = 0;
+        this.renderedNPCs = new ArrayList<>();
     }
+    public List<NPC> getRenderedNPCs() { return renderedNPCs; }
     public void setQuestPhase(int questPhase) { this.questPhase = questPhase; }
     public int getQuestPhase() { return questPhase; }
     public void setActiveQuest(Quests activeQuest) { this.activeQuest = activeQuest; }
@@ -273,7 +272,7 @@ public class PlayerData {
             }
             player.playSound(player.getLocation(), Sound.ENTITY_BLAZE_DEATH, 1.0f, 0.5f);
             player.sendTitle(Text.color("&4&l☠"), Text.color("&c&lYOU DIED"), 40, 100, 10);
-            Text.applyText(player, "&cYou lost &b" + skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getCredits() / 2 + " C$&c!");
+            Text.applyText(player, "&cYou lost &6" + skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getCredits() / 2 + " Nuggets&c!");
             skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setCredits(skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getCredits() / 2);
 
             skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setHp(

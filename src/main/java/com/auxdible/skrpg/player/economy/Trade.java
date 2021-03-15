@@ -27,6 +27,8 @@ public class Trade {
     private ArrayList<CraftingIngrediant> player2Offer;
     private Inventory tradeInv1;
     private Inventory tradeInv2;
+    private int player1CreditsOffer;
+    private int player2CreditsOffer;
     private boolean player1Accepted;
     private boolean player2Accepted;
     public Trade(Player player1, Player player2) {
@@ -38,11 +40,36 @@ public class Trade {
         this.playerData2 = null;
         this.player1Offer = new ArrayList<>();
         this.player2Offer = new ArrayList<>();
+        this.player1CreditsOffer = 0;
+        this.player2CreditsOffer = 0;
     }
     public Player getPlayer1() { return player1; }
     public Player getPlayer2() { return player2; }
     public void setPlayer2(Player player2) { this.player2 = player2; }
-
+    public void addCredits(Player player, int creditsOffered) {
+        if (player == player1) {
+            player1CreditsOffer = player1CreditsOffer + creditsOffered;
+            tradeInv1.setItem(4, new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&7Your Offer: &6" + player1CreditsOffer).asItem());
+            tradeInv2.setItem(22, new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&7" +
+                    player1.getDisplayName() + "'s Offer: &6" + player1CreditsOffer).asItem());
+            Text.applyText(player, "&aAdded &6" + creditsOffered + " Nuggets &ato the trade!");
+            Text.applyText(player2, "&a" + player.getDisplayName() + "added &6" + creditsOffered + " Nuggets &ato the trade!");
+        } else {
+            player2CreditsOffer = player2CreditsOffer + creditsOffered;
+            tradeInv2.setItem(4, new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&7Your Offer: &6" + player2CreditsOffer).asItem());
+            tradeInv1.setItem(22, new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&7" +
+                    player2.getDisplayName() + "'s Offer: &6" + player2CreditsOffer).asItem());
+            Text.applyText(player, "&aAdded &6" + creditsOffered + " Nuggets &ato the trade!");
+            Text.applyText(player1, "&a" + player.getDisplayName() + "added &6" + creditsOffered + " Nuggets &ato the trade!");
+        }
+    }
+    public Inventory getInv(Player p) {
+        if (p == player1) {
+            return tradeInv1;
+        } else {
+            return tradeInv2;
+        }
+    }
     public PlayerData getPlayerData1() { return playerData1; }
     public Inventory getTradeInv1() { return tradeInv1; }
     public Inventory getTradeInv2() { return tradeInv2; }
@@ -65,9 +92,10 @@ public class Trade {
         }
         tradeInv1.setItem(0, new ItemBuilder(Material.RED_CONCRETE, 0).setName("&c&lDENY").asItem());
         tradeInv1.setItem(18, new ItemBuilder(Material.LIME_CONCRETE, 0).setName("&a&lACCEPT").asItem());
+        tradeInv1.setItem(9, new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&6Pay Nuggets").asItem());
         tradeInv2.setItem(0, new ItemBuilder(Material.RED_CONCRETE, 0).setName("&c&lDENY").asItem());
         tradeInv2.setItem(18, new ItemBuilder(Material.LIME_CONCRETE, 0).setName("&a&lACCEPT").asItem());
-
+        tradeInv2.setItem(9, new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&6Pay Nuggets").asItem());
         player1.openInventory(tradeInv1);
         player2.openInventory(tradeInv2);
     }
@@ -172,6 +200,22 @@ public class Trade {
                         item.getItems().getRarity().getColor() + item.getItems().getName());
                 Text.applyText(player1, "&a&l+ &r" +
                         item.getItems().getRarity().getColor() + item.getItems().getName());
+            }
+            if (player1CreditsOffer != 0) {
+                playerData1.setCredits(playerData1.getCredits() - player1CreditsOffer);
+                playerData2.setCredits(playerData2.getCredits() + player1CreditsOffer);
+                Text.applyText(player1, "&c&l- &6" +
+                        player1CreditsOffer + " Nuggets");
+                Text.applyText(player2, "&a&l+ &6" +
+                        player1CreditsOffer + " Nuggets");
+            }
+            if (player2CreditsOffer != 0) {
+                playerData1.setCredits(playerData1.getCredits() + player1CreditsOffer);
+                playerData2.setCredits(playerData2.getCredits() - player1CreditsOffer);
+                Text.applyText(player2, "&c&l- &6" +
+                        player2CreditsOffer + " Nuggets");
+                Text.applyText(player1, "&a&l+ &6" +
+                        player2CreditsOffer + " Nuggets");
             }
             player1.playSound(player1.getLocation(), Sound.ENTITY_VILLAGER_CELEBRATE, 1.0f, 0.5f);
             player2.playSound(player2.getLocation(), Sound.ENTITY_VILLAGER_CELEBRATE, 1.0f, 0.5f);

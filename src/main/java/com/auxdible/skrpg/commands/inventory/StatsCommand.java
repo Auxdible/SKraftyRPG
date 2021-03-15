@@ -62,12 +62,12 @@ public class StatsCommand implements CommandExecutor {
                         playerData.getBaseEnergy() + " ☢")));
         energyHead.setItemMeta(energyMeta);
         inv.setItem(13, energyHead);
-        ItemStack creditsHead = ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA" +
-                "6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmQzNzI2YzFiMzY4OTNmZ" +
-                "TMzNDQ5Mzk1ODQ0ZGJhMTZlZjIyNDFkZGI1MzM1NWMyOTdmMDQxMzhmZWJjY2FmIn19fQ==",
-                "8fa29c20-1475-44c7-a77b-1c87bc10b3b2");
+        ItemStack creditsHead = ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dH" +
+                        "A6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTIzMjI" +
+                        "5ZjZlNjA2ZDkxYjdlNjdhMmJjZjNlMmEzMzMzYmE2MTNiNmQ2NDA5MTk5YjcxNjljMDYzODliMCJ9fX0=",
+                "3b6d37b3-ba3b-4036-bd36-86184315578d");
         ItemMeta creditsMeta = creditsHead.getItemMeta();
-        creditsMeta.setDisplayName(Text.color("&7Your Credits: &b" + playerData.getCredits() + " C$"));
+        creditsMeta.setDisplayName(Text.color("&7Your Nuggets: &6" + playerData.getCredits()));
         creditsHead.setItemMeta(creditsMeta);
         inv.setItem(14, creditsHead);
         inv.setItem(15, new ItemBuilder(Material.SUGAR, 0).setName("&fYour Speed ≈")
