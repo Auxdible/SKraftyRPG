@@ -3,6 +3,8 @@ package com.auxdible.skrpg.player;
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.items.*;
 import com.auxdible.skrpg.items.abilities.Abilities;
+import com.auxdible.skrpg.items.enchantments.Enchantment;
+import com.auxdible.skrpg.items.enchantments.Enchantments;
 import com.auxdible.skrpg.mobs.MobSpawn;
 import com.auxdible.skrpg.mobs.npcs.NpcType;
 import com.auxdible.skrpg.mobs.npcs.PurchasableItem;
@@ -36,6 +38,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.*;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
@@ -220,12 +223,47 @@ public class PlayerListener implements Listener {
             if(e.getClickedBlock() != null && e.getClickedBlock().getType() == Material.CRAFTING_TABLE){
                 e.setCancelled(true);
                 p.performCommand("ct");
+            } else if (e.getClickedBlock() != null && e.getClickedBlock().getType() == Material.ENCHANTING_TABLE) {
+                e.setCancelled(true);
+                buildRunicTable(p, playerData);
             }
         }
         if (!e.getAction().equals(Action.RIGHT_CLICK_AIR) && !e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) { return; }
         if (p.getInventory().getItemInMainHand().getType() != Material.AIR) {
             Abilities.executeAbility(playerData, skrpg);
         }
+    }
+    public static void buildRunicTable(Player p, PlayerData playerData) {
+        Inventory inv = Bukkit.createInventory(null, 54, Text.color("&5&k=Auxd &r&8Runic Table &r&5&kible="));
+        for (int i = 0; i <= 8; i++) {
+            inv.setItem(i, new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE, 0).asItem());
+        }
+        for (int i = 9; i <= 17; i++) {
+            inv.setItem(i, new ItemBuilder(Material.WHITE_STAINED_GLASS_PANE, 0).asItem());
+        }
+        for (int i = 18; i <= 26; i++) {
+            inv.setItem(i, new ItemBuilder(Material.PINK_STAINED_GLASS_PANE, 0).asItem());
+        }
+        for (int i = 27; i <= 44; i++) {
+            inv.setItem(i, new ItemBuilder(Material.MAGENTA_STAINED_GLASS_PANE, 0).asItem());
+        }
+        for (int i = 45; i <= 53; i++) {
+            inv.setItem(i, new ItemBuilder(Material.PURPLE_STAINED_GLASS_PANE, 0).asItem());
+        }
+        inv.setItem(19, new ItemBuilder(Material.ENCHANTED_BOOK, 0).setName("&5Enchant Item").setLore(Arrays.asList(
+                " ", Text.color("&7Enchant your item with new &5Enchantments&7."),
+                Text.color("&7But it comes at a &5cost&7..."), " ")).asItem());
+        inv.setItem(22, new ItemBuilder(Material.ANVIL, 0).setName("&5Apply Runic Stone").setLore(
+                Arrays.asList(" ", Text.color("&7Apply a &5Runic Stone &7found around the world of SKRPG."),
+                        Text.color("&7You will gain &5buffs &7on the item it is applied to."), " ")).asItem());
+        inv.setItem(25, new ItemBuilder(Material.DRAGON_BREATH, 0).setName("&5Spend Runic Points").setLore(
+                Arrays.asList(" ", Text.color("&7Spend your &5Runic Points &7on &5Permanent Upgrades&7, &7or &5Runic Point Buffs&7."), " ")).asItem());
+        inv.setItem(40, new ItemBuilder(Material.NETHERITE_AXE, 0).setName("&5Destroy an Item").setLore(
+                Arrays.asList(" ", Text.color("&7Destroy one of your &5items &7to recieve &5Runic Points"),
+                        Text.color("&7in return."))
+        ).asItem());
+        inv.setItem(4, new ItemBuilder(Material.PURPLE_DYE, 0).setName("&7Runic Points: &5" + playerData.getRunicPoints() + " ஐ").asItem());
+        p.openInventory(inv);
     }
     @EventHandler
     public void onEntityDeathEvent(EntityDeathEvent e) {
@@ -297,7 +335,9 @@ public class PlayerListener implements Listener {
                 if (Integer.parseInt(playerData.getMining().getLevel().toString()
                         .replace("_", "")) * 0.04 >= random2) {
                     p.getInventory().addItem(Items.buildItem(mineBlock.getCommonDrop()));
+                    playerData.addRunicPoints(1, skrpg);
                 }
+                playerData.addRunicPoints(1, skrpg);
                 playerData.getMining().setXpTillNext(playerData.getMining().getXpTillNext() +
                         mineBlock.getXpObtained());
                 playerData.getMining().setTotalXP(playerData.getMining().getTotalXP()
@@ -364,6 +404,7 @@ public class PlayerListener implements Listener {
                 if (Integer.parseInt(playerData.getHerbalism().getLevel().toString()
                         .replace("_", "")) * 0.04 >= random2) {
                     p.getInventory().addItem(Items.buildItem(minePlant.getObtainedItem()));
+                    playerData.addRunicPoints(1, skrpg);
                 }
                 if (e.getBlock().getType().equals(Material.SUGAR_CANE)) {
                     if (e.getBlock().getRelative(BlockFace.UP).getType().equals(Material.SUGAR_CANE)) {
@@ -376,6 +417,7 @@ public class PlayerListener implements Listener {
                                     (minePlant.getXpObtained() * 3));
                             playerData.getHerbalism().setTotalXP(playerData.getHerbalism().getTotalXP()
                                     + (minePlant.getXpObtained() * 3));
+                            playerData.addRunicPoints(1, skrpg);
                             p.getInventory().addItem(Items.buildItem(minePlant.getObtainedItem()));
                             p.getInventory().addItem(Items.buildItem(minePlant.getObtainedItem()));
                         } else {
@@ -384,10 +426,12 @@ public class PlayerListener implements Listener {
                                     (minePlant.getXpObtained() * 2));
                             playerData.getHerbalism().setTotalXP(playerData.getHerbalism().getTotalXP()
                                     + (minePlant.getXpObtained() * 2));
+                            playerData.addRunicPoints(1, skrpg);
                             caneHeight = 2;
                             p.getInventory().addItem(Items.buildItem(minePlant.getObtainedItem()));
                         }
                     } else {
+                        playerData.addRunicPoints(1, skrpg);
                         playerData.getHerbalism().setXpTillNext(playerData.getHerbalism().getXpTillNext() +
                                 minePlant.getXpObtained());
                         playerData.getHerbalism().setTotalXP(playerData.getHerbalism().getTotalXP()
@@ -456,6 +500,7 @@ public class PlayerListener implements Listener {
                     collection.levelUpCollection(p, playerData);
                 }
             }
+            playerData.addRunicPoints(1, skrpg);
             e.setCancelled(true);
             playerData.getCrafting().setXpTillNext(playerData.getCrafting().getXpTillNext() +
                     10);
@@ -493,6 +538,22 @@ public class PlayerListener implements Listener {
                     p.getInventory().addItem(e.getInventory().getItem(slot));
                     e.getInventory().removeItem(e.getInventory().getItem(slot));
                 }
+            }
+        } else if (e.getView().getTitle().equals("Enchant Item")) {
+            Player p  = (Player) e.getPlayer();
+            if (e.getInventory().getItem(13) != null) {
+                p.getInventory().addItem(e.getInventory().getItem(13));
+                e.getInventory().removeItem(e.getInventory().getItem(13));
+            }
+        } else if (e.getView().getTitle().equals("Apply Runic Stone")) {
+            Player p  = (Player) e.getPlayer();
+            if (e.getInventory().getItem(30) != null) {
+                p.getInventory().addItem(e.getInventory().getItem(30));
+                e.getInventory().removeItem(e.getInventory().getItem(30));
+            }
+            if (e.getInventory().getItem(32) != null) {
+                p.getInventory().addItem(e.getInventory().getItem(32));
+                e.getInventory().removeItem(e.getInventory().getItem(32));
             }
         } else if (e.getView().getTitle().equals("Give Nuggets")) {
             Player p  = (Player) e.getPlayer();
@@ -580,37 +641,35 @@ public class PlayerListener implements Listener {
             }.runTaskLater(skrpg, 1);
             if (e.getSlot() == 25 && e.getInventory().getItem(25) != null) {
 
-                for (Items items : EnumSet.allOf(Items.class)) {
-                    if (ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName()).contains(items.getName())) {
-                        for (int integer : slots) {
-                            if (e.getInventory().getItem(integer) != null) {
-                                if (e.getInventory().getItem(integer).getAmount() == 1 || e.getInventory().getItem(integer).getAmount() <= items.getCraftingRecipe().get(slots.indexOf(integer)).getAmount()) {
-                                    e.getInventory().setItem(integer, null);
-                                } else {
-                                    e.getInventory().getItem(integer).setAmount(e.getInventory().getItem(integer).getAmount() -
-                                            items.getCraftingRecipe().get(slots.indexOf(integer)).getAmount());
-                                }
+                ItemInfo itemInfo = ItemInfo.parseItemInfo(e.getCurrentItem());
+                if (itemInfo != null) {
+                    Items items = itemInfo.getItem();
+                    for (int integer : slots) {
+                        if (e.getInventory().getItem(integer) != null) {
+                            if (e.getInventory().getItem(integer).getAmount() == 1 || e.getInventory().getItem(integer).getAmount() <= items.getCraftingRecipe().get(slots.indexOf(integer)).getAmount()) {
+                                e.getInventory().setItem(integer, null);
+                            } else {
+                                e.getInventory().getItem(integer).setAmount(e.getInventory().getItem(integer).getAmount() -
+                                        items.getCraftingRecipe().get(slots.indexOf(integer)).getAmount());
                             }
-
                         }
-                        playerData.getCrafting().setXpTillNext(playerData.getCrafting().getXpTillNext() +
-                                items.getCraftingXPGained());
-                        playerData.getCrafting().setTotalXP(playerData.getCrafting().getTotalXP()
-                                + items.getCraftingXPGained());
-                        playerData.getCrafting().levelUpSkill(p, playerData, skrpg);
-                        p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(
-                                Text.color("&e+ " + items.getCraftingXPGained() + " Crafting XP (" + playerData.getCrafting()
-                                        .getXpTillNext() + "/" + Level.valueOf("_" +
-                                        (Integer.parseInt(playerData.getCrafting().getLevel().toString()
-                                                .replace("_", "")) + 1)).getXpRequired() + ")")));
-                        p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f);
+
                     }
+                    playerData.getCrafting().setXpTillNext(playerData.getCrafting().getXpTillNext() +
+                            items.getCraftingXPGained());
+                    playerData.getCrafting().setTotalXP(playerData.getCrafting().getTotalXP()
+                            + items.getCraftingXPGained());
+                    playerData.getCrafting().levelUpSkill(p, playerData, skrpg);
+                    p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(
+                            Text.color("&e+ " + items.getCraftingXPGained() + " Crafting XP (" + playerData.getCrafting()
+                                    .getXpTillNext() + "/" + Level.valueOf("_" +
+                                    (Integer.parseInt(playerData.getCrafting().getLevel().toString()
+                                            .replace("_", "")) + 1)).getXpRequired() + ")")));
+                    p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f);
                 }
                 p.getInventory().addItem(e.getCurrentItem());
                 e.getInventory().setItem(e.getSlot(), null);
-
                 p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 0.5f);
-
                 p.getInventory().remove(p.getItemOnCursor());
             }
         } else if (e.getView().getTitle().equals("SKRPG Menu")) {
@@ -625,6 +684,10 @@ public class PlayerListener implements Listener {
                 p.performCommand("collections");
             } else if (e.getCurrentItem().getItemMeta().getDisplayName().equals(Text.color("&aSettings"))) {
                 p.performCommand("settings");
+            } else if (e.getCurrentItem().getItemMeta().getDisplayName().equals(Text.color("&5Runic Table"))) {
+                buildRunicTable(p, playerData);
+            } else if (e.getCurrentItem().getItemMeta().getDisplayName().equals(Text.color("&aManage Banks"))) {
+                openBankMenu(p, playerData);
             }
         } else if (e.getView().getTitle().equals("Your Skills")) {
             if (e.getCurrentItem() != null) {
@@ -636,6 +699,8 @@ public class PlayerListener implements Listener {
                     p.performCommand("skills crafting");
                 } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Mining")) {
                     p.performCommand("skills mining");
+                } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Runics")) {
+                    p.performCommand("skills runics");
                 }
             }
             e.setCancelled(true);
@@ -821,7 +886,7 @@ public class PlayerListener implements Listener {
                     }
                 }
             }
-        } else if (e.getView().getTitle().contains("Salesman") || e.getView().getTitle().equals("Hiltcrafter")) {
+        } else if (e.getView().getTitle().contains("Salesman")) {
             e.setCancelled(true);
             if (e.getCurrentItem() != null) {
                 if (e.getCurrentItem().getItemMeta() != null) {
@@ -895,7 +960,8 @@ public class PlayerListener implements Listener {
             }
         } else if (e.getView().getTitle().equals("Your Statistics") ||
                 e.getView().getTitle().equals("Your Combat") || e.getView().getTitle().equals("Your Herbalism") ||
-        e.getView().getTitle().equals("Your Crafting") || e.getView().getTitle().equals("Your Mining") || e.getView().getTitle().contains("| Collection Viewer")) {
+        e.getView().getTitle().equals("Your Crafting") || e.getView().getTitle().equals("Your Mining") || e.getView().getTitle().contains("| Collection Viewer")
+                || e.getView().getTitle().equals(Text.color("&5Your Runics"))) {
             e.setCancelled(true);
         } else if (e.getView().getTitle().equals("Settings")) {
             e.setCancelled(true);
@@ -1009,7 +1075,524 @@ public class PlayerListener implements Listener {
                     p.performCommand("collections " + collectionType.toString());
                 }
             }
+        } else if (e.getView().getTitle().contains("Runic Table")) {
+            e.setCancelled(true);
+            if (e.getCurrentItem() != null) {
+                if (e.getCurrentItem().getItemMeta().getDisplayName().contains(Text.color("&5Enchant Item"))) {
+                    Inventory inv = Bukkit.createInventory(null, 45, "Enchant Item");
+                    for (int i = 0; i <= 8; i++) {
+                        inv.setItem(i, new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE, 0).asItem());
+                    }
+                    for (int i = 9; i <= 17; i++) {
+                        inv.setItem(i, new ItemBuilder(Material.WHITE_STAINED_GLASS_PANE, 0).asItem());
+                    }
+                    for (int i = 18; i <= 26; i++) {
+                        inv.setItem(i, new ItemBuilder(Material.PINK_STAINED_GLASS_PANE, 0).asItem());
+                    }
+                    for (int i = 27; i <= 44; i++) {
+                        inv.setItem(i, new ItemBuilder(Material.MAGENTA_STAINED_GLASS_PANE, 0).asItem());
+                    }
+                    inv.setItem(13, null);
+                    inv.setItem(20, new ItemBuilder(Material.PINK_DYE, 0).setName(Text.color("&7Use &5250 Runic Points ஐ"))
+                            .setLore(Arrays.asList(" ", Text.color("&7Level Chance: &51-2"), " ")).asItem());
+                    inv.setItem(24, new ItemBuilder(Material.PURPLE_GLAZED_TERRACOTTA, 0).setName(Text.color("&7Use &5500 Runic Points ஐ"))
+                            .setLore(Arrays.asList(" ", Text.color("&7Level Chance: &53-4"), " ")).asItem());
+                    inv.setItem(31, new ItemBuilder(Material.DRAGON_BREATH, 0).setName(Text.color("&7Use &51000 Runic Points ஐ"))
+                            .setLore(Arrays.asList(" ", Text.color("&7Level: &55"), " ")).asItem());
+                    p.openInventory(inv);
+                } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains(Text.color("&5Apply Runic Stone"))) {
+                    if (SKRPG.levelToInt(playerData.getRunics().getLevel().toString()) < 7) {
+                        Text.applyText(p, "&cYou need to increase your &5Runic Level &cto do this! (Required Level: &57&c)");
+                        p.playSound(p.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1.0f, 1.0f);
+                        return;
+                    }
+                    Inventory inv = Bukkit.createInventory(null, 45, "Apply Runic Stone");
+                    for (int i = 0; i <= 8; i++) {
+                        inv.setItem(i, new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE, 0).asItem());
+                    }
+                    for (int i = 9; i <= 17; i++) {
+                        inv.setItem(i, new ItemBuilder(Material.WHITE_STAINED_GLASS_PANE, 0).asItem());
+                    }
+                    for (int i = 18; i <= 26; i++) {
+                        inv.setItem(i, new ItemBuilder(Material.PINK_STAINED_GLASS_PANE, 0).asItem());
+                    }
+                    for (int i = 27; i <= 44; i++) {
+                        inv.setItem(i, new ItemBuilder(Material.MAGENTA_STAINED_GLASS_PANE, 0).asItem());
+                    }
+                    inv.setItem(30, null);
+                    inv.setItem(32, null);
+                    inv.setItem(31, new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE, 0).setName(" ").setLore(
+                            Arrays.asList(Text.color("&5☚ &7Your Item"), Text.color("&7Runic Stone &5☛"), " ")
+                    ).asItem());
+                    inv.setItem(22, new ItemBuilder(Material.DRAGON_BREATH, 0).setName("&7Click to &5Combine&7.").asItem());
+                    inv.setItem(13, null);
+                    p.openInventory(inv);
+                } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains(Text.color("&5Destroy an Item"))) {
+                    if (SKRPG.levelToInt(playerData.getRunics().getLevel().toString()) < 3) {
+                        Text.applyText(p, "&cYou need to increase your &5Runic Level &cto do this! (Required Level: &53&c)");
+                        p.playSound(p.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1.0f, 1.0f);
+                        return;
+                    }
+                    Inventory inv = Bukkit.createInventory(null, 27, "Destroy an Item");
+                    for (int i = 0; i <= 8; i++) {
+                        inv.setItem(i, new ItemBuilder(Material.WHITE_STAINED_GLASS_PANE, 0).asItem());
+                    }
+                    for (int i = 9; i <= 17; i++) {
+                        inv.setItem(i, new ItemBuilder(Material.PINK_STAINED_GLASS_PANE, 0).asItem());
+                    }
+                    for (int i = 18; i <= 26; i++) {
+                        inv.setItem(i, new ItemBuilder(Material.MAGENTA_STAINED_GLASS_PANE, 0).asItem());
+                    }
+                    inv.setItem(13, new ItemBuilder(Material.NETHERITE_AXE, 0).setName("&7Click an item to &5destroy &7it for &5Runic Points&7.").asItem());
+                    p.openInventory(inv);
+                } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains(Text.color("&5Spend Runic Points"))) {
+                    if (SKRPG.levelToInt(playerData.getRunics().getLevel().toString()) < 3) {
+                        Text.applyText(p, "&cYou need to increase your &5Runic Level &cto do this! (Required Level: &53&c)");
+                        p.playSound(p.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1.0f, 1.0f);
+                        return;
+                    }
+                    Inventory inv = Bukkit.createInventory(null, 27, Text.color("Spend Runic Points"));
+                    for (int i = 0; i <= 8; i++) {
+                        inv.setItem(i, new ItemBuilder(Material.WHITE_STAINED_GLASS_PANE, 0).asItem());
+                    }
+                    for (int i = 9; i <= 17; i++) {
+                        inv.setItem(i, new ItemBuilder(Material.PINK_STAINED_GLASS_PANE, 0).asItem());
+                    }
+                    for (int i = 18; i <= 26; i++) {
+                        inv.setItem(i, new ItemBuilder(Material.MAGENTA_STAINED_GLASS_PANE, 0).asItem());
+                    }
+                    String nameCollector;
+                    Material itemTypeCollector = Material.NETHERITE_HOE;
+                    String costCollector;
+                    if (!playerData.getRunicUpgrades().containsKey(RunicUpgrades.MORE_RP)) {
+                        nameCollector = "&5Buy Runic Points Collector";
+                        costCollector = 1000 + "";
+                    } else {
+                        nameCollector = "&5Upgrade Runic Points Collector &8| &5" + (playerData.getRunicUpgrades().get(RunicUpgrades.MORE_RP) + 1);
+                        costCollector = 250 * (playerData.getRunicUpgrades().get(RunicUpgrades.MORE_RP) + 1) + "";
+                    }
+                    if (playerData.getRunicUpgrades().containsKey(RunicUpgrades.MORE_RP) &&
+                            playerData.getRunicUpgrades().get(RunicUpgrades.MORE_RP) >= 5) {
+                        nameCollector = "&6&lMAXXED! &r&5Runic Points Collector";
+                        itemTypeCollector = Material.DRAGON_BREATH;
+                        costCollector = "&6&lMAXXED!";
+                    }
+                    String nameEnchantCostDecrease;
+                    Material itemTypeEnchantCostDecrease = Material.ENCHANTED_BOOK;
+                    String costEnchantCostDecrease;
+                    if (!playerData.getRunicUpgrades().containsKey(RunicUpgrades.REDUCE_ENCHANTING)) {
+                        nameEnchantCostDecrease = "&5Buy Enchanting Cost Reduction";
+                        costEnchantCostDecrease = 2000 + "";
+
+                    } else {
+                        nameEnchantCostDecrease = "&5Upgrade Enchanting Cost Reduction &8| &5" + (playerData.getRunicUpgrades().get(RunicUpgrades.REDUCE_ENCHANTING) + 1);
+                        costEnchantCostDecrease = 500 * (playerData.getRunicUpgrades().get(RunicUpgrades.REDUCE_ENCHANTING) + 1) + "";
+                    }
+                    if (playerData.getRunicUpgrades().containsKey(RunicUpgrades.REDUCE_ENCHANTING) &&
+                            playerData.getRunicUpgrades().get(RunicUpgrades.REDUCE_ENCHANTING) >= 5) {
+                        nameEnchantCostDecrease = "&6&lMAXXED! &r&5Enchanting Cost Reduction";
+                        itemTypeEnchantCostDecrease = Material.DRAGON_BREATH;
+                        costEnchantCostDecrease = "&6&lMAXXED!";
+                    }
+                    String nameRunicStoneDecrease;
+                    Material itemTypeRunicStoneDecrease = Material.ANVIL;
+                    String runicStoneDecreaseCost;
+                    if (!playerData.getRunicUpgrades().containsKey(RunicUpgrades.REDUCE_RUNIC_STONE)) {
+                        nameRunicStoneDecrease = "&5Buy Runic Stone Cost Reduction";
+                        runicStoneDecreaseCost = 2500 + "";
+                    } else {
+                        nameRunicStoneDecrease = "&5Upgrade Runic Stone Cost Reduction &8| &5" + (playerData.getRunicUpgrades().get(RunicUpgrades.REDUCE_RUNIC_STONE) + 1);
+                        runicStoneDecreaseCost = 750 * (playerData.getRunicUpgrades().get(RunicUpgrades.REDUCE_RUNIC_STONE) + 1) + "";
+                    }
+                    if (playerData.getRunicUpgrades().containsKey(RunicUpgrades.REDUCE_RUNIC_STONE) &&
+                            playerData.getRunicUpgrades().get(RunicUpgrades.REDUCE_RUNIC_STONE) >= 5) {
+                        nameRunicStoneDecrease = "&6&lMAXXED! &r&5Runic Stone Cost Reduction";
+                        itemTypeRunicStoneDecrease = Material.DRAGON_BREATH;
+                        runicStoneDecreaseCost = "&6&lMAXXED!";
+                    }
+                    String nameItemDestructionPoints;
+                    Material itemTypeItemDestructionPoints = Material.NETHERITE_AXE;
+                    String itemDestructionPointsCost;
+                    if (!playerData.getRunicUpgrades().containsKey(RunicUpgrades.RUNIC_POINTS_DESTROY)) {
+                        nameItemDestructionPoints = "&5Buy Item Destruction Points";
+                        itemDestructionPointsCost = 3000 + "";
+                    } else {
+                        nameItemDestructionPoints = "&5Upgrade Item Destruction Points &8| &5" + (playerData.getRunicUpgrades().get(RunicUpgrades.RUNIC_POINTS_DESTROY) + 1);
+                        itemDestructionPointsCost = 1000 * (playerData.getRunicUpgrades().get(RunicUpgrades.RUNIC_POINTS_DESTROY) + 1) + "";
+                    }
+                    if (playerData.getRunicUpgrades().containsKey(RunicUpgrades.RUNIC_POINTS_DESTROY) &&
+                            playerData.getRunicUpgrades().get(RunicUpgrades.RUNIC_POINTS_DESTROY) >= 5) {
+                        nameItemDestructionPoints = "&6&lMAXXED! &r&5Item Destruction Points";
+                        itemTypeItemDestructionPoints = Material.DRAGON_BREATH;
+                        itemDestructionPointsCost = "&6&lMAXXED!";
+                    }
+                    inv.setItem(12, new ItemBuilder(itemTypeEnchantCostDecrease, 0).setName(nameEnchantCostDecrease).setLore(
+                            Arrays.asList(" ", Text.color("&7Decrease the amount of &5Runic Points"), Text.color("&7you spend &5enchanting &7an item."), " ", Text.color("&7Cost: &5" + costEnchantCostDecrease) + " ")).asItem());
+                    inv.setItem(10, new ItemBuilder(itemTypeCollector, 0).setName(nameCollector).setLore(
+                            Arrays.asList(" ", Text.color("&7Get &51 Runic Point &7for every 5 Runic Points"), Text.color("&7earned per level."), " ", Text.color("&7Cost: &5" + costCollector) + " ")).asItem());
+                    inv.setItem(14, new ItemBuilder(itemTypeRunicStoneDecrease, 0).setName(nameRunicStoneDecrease).setLore(
+                            Arrays.asList(" ", Text.color("&7Decrease the amount of &5Runic Points"), Text.color("&7you spend &5applying a runic stone &7to an item."), " ", Text.color("&7Cost: &5" + runicStoneDecreaseCost) + " ")).asItem());
+                    inv.setItem(16, new ItemBuilder(itemTypeItemDestructionPoints, 0).setName(nameItemDestructionPoints).setLore(
+                            Arrays.asList(" ", Text.color("&7Increase the amount of &5Runic Points"), Text.color("&7you get &5destroying an item&7."), " ", Text.color("&7Cost: &5" + itemDestructionPointsCost) + " ")).asItem());
+                    p.openInventory(inv);
+                }
+
+            }
+        } else if (e.getView().getTitle().equalsIgnoreCase("Enchant Item")) {
+
+            if (e.getCurrentItem() != null) {
+                if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Runic Points")) {
+                    if (e.getInventory().getItem(13) == null) {
+                        Text.applyText(p, "&cYou need to put in an item to enchant first!");
+                        p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                        e.setCancelled(true);
+                        return;
+                    }
+                    int amount = Integer.parseInt(ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName())
+                            .replace(" Runic Points ஐ", "").replace("Use ", ""));
+                    List<Enchantments> validEnchantments = new ArrayList<>();
+                    ItemInfo itemInfo = ItemInfo.parseItemInfo(e.getInventory().getItem(13));
+                    if (itemInfo == null) {
+                        Text.applyText(p, "&cYou need to put in a valid item to enchant first!");
+                        p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                        e.setCancelled(true);
+                        return;
+                    }
+                    for (Enchantments enchantments : EnumSet.allOf(Enchantments.class)) {
+                        if (enchantments.getApplyType().equals(itemInfo.getItem().getItemType())) {
+                            validEnchantments.add(enchantments);
+                        }
+                    }
+                    Random random = new Random();
+                    if ((validEnchantments.size() - 1) < 0) {
+                        Text.applyText(p, "&cThere are no enchantments availible for this item!");
+                        p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                        e.setCancelled(true);
+                        return;
+                    }
+                    int randomEnchantment = random.nextInt(validEnchantments.size());
+                    Enchantments selectedEnchantment = validEnchantments.get(randomEnchantment);
+                    int randomLevel = random.nextInt(2);
+                    if (amount == 250) {
+                        if (SKRPG.levelToInt(playerData.getRunics().getLevel().toString()) < 1) {
+                            Text.applyText(p, "&cYou need to increase your &5Runic Level &cto do this! (Required Level: &51&c)");
+                            p.playSound(p.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1.0f, 1.0f);
+                            e.setCancelled(true);
+                            return;
+                        }
+                        if (playerData.getRunicPoints() < 250) {
+                            Text.applyText(p, "&cYou need more &5Runic Points ஐ &cto enchant this!");
+                            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                            e.setCancelled(true);
+                            return;
+                        }
+                        int price = 250;
+                        if (playerData.getRunicUpgrades().containsKey(RunicUpgrades.REDUCE_ENCHANTING)) {
+                            price = (int) Math.round(price / (1 + (0.25 * playerData.getRunicUpgrades().get(RunicUpgrades.REDUCE_ENCHANTING))));
+                        }
+                        playerData.removeRunicPoints(price);
+                        if (itemInfo.hasEnchantment(selectedEnchantment) && randomLevel + 1 <= itemInfo.getEnchantment(selectedEnchantment).getLevel()) {
+                            Text.applyText(p, "&4&lOOF! &r&8| &cYou failed to apply the enchantment.");
+                            p.playSound(p.getLocation(), Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f);
+                            e.setCancelled(true);
+                            return;
+
+                        }
+                        itemInfo.addEnchantment(new Enchantment(selectedEnchantment, randomLevel + 1));
+                        Text.applyText(p, "&5&lWOOSH! &r&8| &7You applied &5" + selectedEnchantment.getName() + " " + (randomLevel + 1) + " &7to your " +
+                                itemInfo.getRarity().getColor() + itemInfo.getItem().getName() + "&7!");
+                    } else if (amount == 500) {
+                        if (SKRPG.levelToInt(playerData.getRunics().getLevel().toString()) < 5) {
+                            Text.applyText(p, "&cYou need to increase your &5Runic Level &cto do this! (Required Level: &55&c)");
+                            p.playSound(p.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1.0f, 1.0f);
+                            e.setCancelled(true);
+                            return;
+                        }
+                        if (playerData.getRunicPoints() < 500) {
+                            Text.applyText(p, "&cYou need more &5Runic Points ஐ &cto enchant this!");
+                            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                            e.setCancelled(true);
+                            return;
+                        }
+                        int price = 500;
+                        if (playerData.getRunicUpgrades().containsKey(RunicUpgrades.REDUCE_ENCHANTING)) {
+                            price = (int) Math.round(price / (1 + (0.25 * playerData.getRunicUpgrades().get(RunicUpgrades.REDUCE_ENCHANTING))));
+                        }
+                        playerData.removeRunicPoints(price);
+                        if (itemInfo.hasEnchantment(selectedEnchantment) && randomLevel + 3 <= itemInfo.getEnchantment(selectedEnchantment).getLevel()) {
+                            Text.applyText(p, "&4&lOOF! &r&8| &cYou failed to apply the enchantment.");
+                            p.playSound(p.getLocation(), Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f);
+                            e.setCancelled(true);
+                            return;
+                        }
+                        itemInfo.addEnchantment(new Enchantment(selectedEnchantment, randomLevel + 3));
+                        Text.applyText(p, "&5&lWOOSH! &r&8| &7You applied &5" + selectedEnchantment.getName() + " " + (randomLevel + 3) + " &7to your " +
+                                itemInfo.getRarity().getColor() + itemInfo.getItem().getName() + "&7!");
+                    } else if (amount == 1000) {
+                        if (SKRPG.levelToInt(playerData.getRunics().getLevel().toString()) < 11) {
+                            Text.applyText(p, "&cYou need to increase your &5Runic Level &cto do this! (Required Level: &511&c)");
+                            p.playSound(p.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1.0f, 1.0f);
+                            e.setCancelled(true);
+                            return;
+                        }
+                        if (playerData.getRunicPoints() < 1000) {
+                            Text.applyText(p, "&cYou need more &5Runic Points ஐ &cto enchant this!");
+                            p.playSound(p.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1.0f, 1.0f);
+                            e.setCancelled(true);
+                            return;
+                        }
+                        int price = 1000;
+                        if (playerData.getRunicUpgrades().containsKey(RunicUpgrades.REDUCE_ENCHANTING)) {
+                            price = (int) Math.round(price / (1 + (0.25 * playerData.getRunicUpgrades().get(RunicUpgrades.REDUCE_ENCHANTING))));
+                        }
+                        playerData.removeRunicPoints(price);
+                        if (itemInfo.hasEnchantment(selectedEnchantment) && randomLevel + 1 <= itemInfo.getEnchantment(selectedEnchantment).getLevel()) {
+                            Text.applyText(p, "&4&lOOF! &r&8| &cYou failed to apply the enchantment.");
+                            p.playSound(p.getLocation(), Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f);
+                            e.setCancelled(true);
+                            return;
+                        }
+                        itemInfo.addEnchantment(new Enchantment(selectedEnchantment, 5));
+                        Text.applyText(p, "&5&lWOOSH! &r&8| &7You applied &5" + selectedEnchantment.getName() + " 5 &7to your " +
+                                itemInfo.getRarity().getColor() + itemInfo.getItem().getName() + "&7!");
+                    }
+                    p.playSound(p.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1.0f, 0.2f);
+                    new BukkitRunnable() {
+
+                        @Override
+                        public void run() {
+                            p.playSound(p.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1.0f, 0.2f);
+                        }
+                    }.runTaskLater(skrpg, 4);
+
+                    Items.updateItem(e.getInventory().getItem(13), itemInfo);
+                    p.getInventory().addItem(e.getInventory().getItem(13));
+                    e.getInventory().removeItem(e.getInventory().getItem(13));
+                    e.setCancelled(true);
+                    return;
+                }
+                if (e.getClickedInventory().getType().equals(InventoryType.PLAYER)) {
+                    if (p.getOpenInventory().getTopInventory().getItem(13) == null) {
+                        p.getOpenInventory().getTopInventory().setItem(13, e.getCurrentItem());
+                        p.getInventory().removeItem(e.getCurrentItem());
+                        p.playSound(p.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1.0f, 1.0f);
+                    }
+                } else if (e.getSlot() == 13 && e.getInventory().getItem(13) != null) {
+                    p.getInventory().addItem(e.getInventory().getItem(13));
+                    e.getInventory().removeItem(e.getInventory().getItem(13));
+                    p.playSound(p.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1.0f, 0.2f);
+                }
+
+                e.setCancelled(true);
+            }
+
+        } else if (e.getView().getTitle().equalsIgnoreCase("Apply Runic Stone")) {
+
+            if (e.getCurrentItem() != null) {
+                if (e.getCurrentItem().getItemMeta().getDisplayName().equals(Text.color("&7Click to &5Combine&7."))) {
+                    Inventory topInv = e.getView().getTopInventory();
+                    if (topInv.getItem(13) == null) {
+                        Text.applyText(p, "&cYou need to put an item and a &5Runic Stone &cin first!");
+                        p.playSound(p.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1.0f, 1.0f);
+                        e.setCancelled(true);
+                        return;
+                    }
+                    ItemInfo iF = ItemInfo.parseItemInfo(topInv.getItem(13));
+                    int price = iF.getRunicStones().getCost() * iF.getRarity().getPriority();
+                    if (playerData.getRunicUpgrades().containsKey(RunicUpgrades.REDUCE_RUNIC_STONE)) {
+                        price = (int) Math.round(price / (1 + (0.25 * playerData.getRunicUpgrades().get(RunicUpgrades.REDUCE_RUNIC_STONE))));
+                    }
+                    if (playerData.getRunicPoints() < price) {
+                        Text.applyText(p, "&cYou need more &5Runic Points &cto apply this!");
+                        p.playSound(p.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1.0f, 1.0f);
+                        e.setCancelled(true);
+                        return;
+                    }
+                    p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 1.0f);
+                    new BukkitRunnable() {
+
+                        @Override
+                        public void run() {
+                            p.playSound(p.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1.0f, 0.2f);
+                            p.playSound(p.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1.0f, 0.2f);
+                        }
+                    }.runTaskLater(skrpg, 17);
+                    playerData.removeRunicPoints(price);
+                    Items.updateItem(topInv.getItem(13), iF);
+                    p.getInventory().addItem(topInv.getItem(13));
+                    e.getInventory().removeItem(topInv.getItem(13));
+                    e.getInventory().removeItem(topInv.getItem(32));
+                    e.getInventory().removeItem(topInv.getItem(30));
+                    Text.applyText(p, "&5&lNICE! &r&8| &r&7You applied &5" + iF.getRunicStones().getName() + " &7to your " + iF.getRarity().getColor() + iF.getItem().getName() + "&7!");
+                }
+                ItemInfo itemInfo = ItemInfo.parseItemInfo(e.getCurrentItem());
+                if (itemInfo != null) {
+                    if (e.getSlot() == 32 && e.getInventory().getItem(32) != null) {
+                        p.getInventory().addItem(e.getCurrentItem());
+                        e.getInventory().removeItem(e.getCurrentItem());
+                        p.playSound(p.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1.0f, 0.2f);
+                    }
+                    if (e.getSlot() == 30 && e.getInventory().getItem(30) != null) {
+                        p.getInventory().addItem(e.getCurrentItem());
+                        e.getInventory().removeItem(e.getCurrentItem());
+                        p.playSound(p.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1.0f, 0.2f);
+                    }
+                    if (itemInfo.getItem().getItemType().equals(ItemType.RUNIC_STONE)) {
+                        if (e.getRawSlot() > e.getView().getTopInventory().getSize()) {
+                            Inventory openInv = p.getOpenInventory().getTopInventory();
+                            if (openInv.getItem(32) == null) {
+                                openInv.setItem(32, e.getCurrentItem());
+                                p.getInventory().removeItem(e.getCurrentItem());
+                                p.playSound(p.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1.0f, 1.0f);
+                            }
+                        }
+
+                    } else {
+                        if (e.getRawSlot() > e.getView().getTopInventory().getSize()) {
+                            Inventory openInv = p.getOpenInventory().getTopInventory();
+                            if (openInv.getItem(30) == null) {
+                                openInv.setItem(30, e.getCurrentItem());
+                                p.getInventory().removeItem(e.getCurrentItem());
+                                p.playSound(p.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1.0f, 1.0f);
+                            }
+                        }
+                    }
+                }
+            }
+            e.setCancelled(true);
+            runicStoneUpdate(e.getView().getTopInventory(), p, playerData);
+        } else if (e.getView().getTitle().equalsIgnoreCase("Destroy an Item")) {
+            if (e.getCurrentItem() != null) {
+                e.setCancelled(true);
+                if (e.getRawSlot() > e.getView().getTopInventory().getSize()) {
+                    ItemInfo itemInfo = ItemInfo.parseItemInfo(e.getCurrentItem());
+                    if (itemInfo != null) {
+                        if (itemInfo.getItem().getItemType().equals(ItemType.WEAPON) ||
+                                itemInfo.getItem().getItemType().equals(ItemType.ARMOR) ||
+                                itemInfo.getItem().getItemType().equals(ItemType.BOW) ||
+                                itemInfo.getItem().getItemType().equals(ItemType.TOOL)) {
+                            if (playerData.getSellAboveRarity().getPriority() < itemInfo.getRarity().getPriority() || playerData.getSellAboveRarity() == Rarity.COMMON) {
+                                Text.applyText(p, "&cYour sell above rarity setting prevented you from selling this!");
+                                p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                                return;
+                            }
+                            int price = (itemInfo.getItem().getSellPrice() / 4);
+                            if (playerData.getRunicUpgrades().containsKey(RunicUpgrades.RUNIC_POINTS_DESTROY)) {
+                                price = (int) Math.round(price * (1 + (0.50 * playerData.getRunicUpgrades().get(RunicUpgrades.RUNIC_POINTS_DESTROY))));
+                            }
+                            Text.applyText(p, "&7You sold " + e.getCurrentItem().getItemMeta().getDisplayName() + " &7for &5" + price + " Runic Points&7.");
+                            p.getInventory().removeItem(e.getCurrentItem());
+                            playerData.addRunicPoints(price, skrpg);
+                            p.playSound(p.getLocation(), Sound.ENTITY_ITEM_BREAK, 1.0f, 0.2f);
+                            p.playSound(p.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_CHARGE, 1.0f, 0.2f);
+                        }
+
+                    }
+                }
+            }
+        } else if (e.getView().getTitle().equalsIgnoreCase("Spend Runic Points")) {
+            if (e.getCurrentItem() != null) {
+                e.setCancelled(true);
+                RunicUpgrades runicUpgrades = null;
+                int price = 0;
+                if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Item Destruction Points")) {
+                    runicUpgrades = RunicUpgrades.RUNIC_POINTS_DESTROY;
+                    if (!playerData.getRunicUpgrades().containsKey(RunicUpgrades.RUNIC_POINTS_DESTROY)) {
+                        price = 3000;
+                    } else {
+                        price = 1000 * (playerData.getRunicUpgrades().get(RunicUpgrades.RUNIC_POINTS_DESTROY) + 1);
+                    }
+                } else if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Enchanting Cost Reduction")) {
+                    runicUpgrades = RunicUpgrades.REDUCE_ENCHANTING;
+                    if (!playerData.getRunicUpgrades().containsKey(RunicUpgrades.REDUCE_ENCHANTING)) {
+                        price = 2000;
+                    } else {
+                        price = 500 * (playerData.getRunicUpgrades().get(RunicUpgrades.REDUCE_ENCHANTING) + 1);
+                    }
+                }  else if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Runic Stone Cost Reduction")) {
+                    runicUpgrades = RunicUpgrades.REDUCE_RUNIC_STONE;
+                    if (!playerData.getRunicUpgrades().containsKey(RunicUpgrades.REDUCE_RUNIC_STONE)) {
+                        price = 2500;
+                    } else {
+                        price = 750 * (playerData.getRunicUpgrades().get(RunicUpgrades.REDUCE_RUNIC_STONE) + 1);
+                    }
+                }  else if (e.getCurrentItem().getItemMeta().getDisplayName().contains("Runic Points Collector")) {
+                    runicUpgrades = RunicUpgrades.MORE_RP;
+                    if (!playerData.getRunicUpgrades().containsKey(RunicUpgrades.MORE_RP)) {
+                        price = 1000;
+                    } else {
+                        price = 250 * (playerData.getRunicUpgrades().get(RunicUpgrades.MORE_RP) + 1);
+                    }
+                }
+                if (runicUpgrades == null) { return; }
+                if (price > playerData.getRunicPoints()) {
+                    Text.applyText(p, "&cYou don't have enough &5Runic Points &cto buy this!");
+                    p.playSound(p.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1.0f, 0.2f);
+                    e.setCancelled(true);
+                    return;
+                }
+                playerData.removeRunicPoints(price);
+                if (!playerData.getRunicUpgrades().containsKey(runicUpgrades)) {
+                    playerData.getRunicUpgrades().put(runicUpgrades, 1);
+                } else {
+                    int level = (playerData.getRunicUpgrades().get(runicUpgrades) + 1);
+                    playerData.getRunicUpgrades().remove(runicUpgrades);
+                    playerData.getRunicUpgrades().put(runicUpgrades, level);
+                }
+                Text.applyText(p,"&5&lNICE! &r&8| &7You purchased &5" + runicUpgrades.getRunicUpgradeName() + " " + playerData.getRunicUpgrades().get(runicUpgrades) + " &7for &5" + price + " Runic Points&7.");
+                p.playSound(p.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1.0f, 0.2f);
+                new BukkitRunnable() {
+
+                    @Override
+                    public void run() {
+                        p.playSound(p.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1.0f, 0.2f);
+                    }
+                }.runTaskLater(skrpg, 4);
+            }
+
         }
+    }
+    public static void openBankMenu(Player p, PlayerData playerData) {
+        Inventory inv = Bukkit.createInventory(null, 27, "Banker");
+        for (int i = 0; i <= 26; i++) {
+            inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
+        }
+        List<Integer> slots = Arrays.asList(11, 12, 13, 14, 15);
+        for (int i = 0; i < playerData.getBanks().size(); i++) {
+            ItemStack bank = ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmY3NWQxYjc4NWQxOGQ0N2IzZWE4ZjBhN2UwZmQ0YTFmYWU5ZTdkMzIzY2YzYjEzOGM4Yzc4Y2ZlMjRlZTU5In19fQ==", "1d2bf3fe-1b67-495f-995d-435693e90fa0");
+            ItemMeta iM = bank.getItemMeta();
+            iM.setDisplayName(Text.color("&7Bank &a") + (i + 1));
+            iM.setLore(Arrays.asList(" ", Text.color("&7Level: " + playerData.getBanks().get(i).getLevel()
+                    .getNameColored()), Text.color("&7Nuggets: &6" + playerData.getBanks().get(i).getCredits())));
+            bank.setItemMeta(iM);
+            inv.setItem(slots.get(i), bank);
+        }
+        if (playerData.getBanks().size() != 5) {
+            inv.setItem(22, new ItemBuilder(Material.LIME_DYE, 0).setName("&7Buy Bank: &6" + (
+                    2500000 * playerData.getBanks().size())).asItem());
+        }
+        p.openInventory(inv);
+    }
+    public void runicStoneUpdate(Inventory inv, Player p, PlayerData playerData) {
+        if (inv.getItem(30) == null) { inv.setItem(13, null); return; }
+        if (inv.getItem(32) == null) { inv.setItem(13, null); return; }
+        ItemInfo itemInfo = ItemInfo.parseItemInfo(inv.getItem(30));
+        ItemInfo itemInfoStone = ItemInfo.parseItemInfo(inv.getItem(32));
+        if (itemInfo == null) { inv.setItem(13, null); return; }
+        if (itemInfoStone == null) { inv.setItem(13, null); return; }
+        if (RunicStones.getRunicStone(itemInfoStone.getItem()) == null) { inv.setItem(13, null); return; }
+        ItemStack itemStack = inv.getItem(30).clone();
+        ItemInfo clonedInfo = ItemInfo.parseItemInfo(itemStack);
+        clonedInfo.setRunicStones(RunicStones.getRunicStone(itemInfoStone.getItem()));
+        Items.updateItem(itemStack, clonedInfo);
+        ItemMeta iM = itemStack.getItemMeta();
+        List<String> lore = itemStack.getItemMeta().getLore();
+        lore.add(" ");
+        lore.add(" ");
+        lore.add(Text.color("&7Cost: &5" + (RunicStones.getRunicStone(itemInfoStone.getItem()).getCost() * clonedInfo.getRarity().getPriority()) + " Runic Points"));
+        iM.setLore(lore);
+        itemStack.setItemMeta(iM);
+        inv.setItem(13, itemStack);
     }
     public void craftingTableUpdate(Inventory inv, Player p, PlayerData playerData) {
         HashMap<Integer, CraftingIngrediant> craftingItems = new HashMap<>();
@@ -1149,5 +1732,16 @@ public class PlayerListener implements Listener {
         e.setCancelled(true);
         Text.applyText(p, "&cYou cannot use your own crafting inventory in SKRPG! &cUse /ct instead.");
         p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+    }
+    @EventHandler
+    public void onChatEvent(AsyncPlayerChatEvent e) {
+        Player p = e.getPlayer();
+        if (skrpg.getSetup(p) != null) {
+            if (e.getMessage().equals("okay") && skrpg.getSetup(p).getStage() != 6) {
+                skrpg.getSetup(p).nextStage(null);
+            } else if (skrpg.getSetup(p).getStage() == 6) {
+                skrpg.getSetup(p).nextStage(e.getMessage());
+            }
+        }
     }
 }

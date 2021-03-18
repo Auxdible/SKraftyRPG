@@ -1,19 +1,20 @@
 package com.auxdible.skrpg.items;
 
+import com.auxdible.skrpg.items.enchantments.Enchantments;
 import com.auxdible.skrpg.utils.ItemBuilder;
 import com.auxdible.skrpg.utils.ItemTweaker;
 import com.auxdible.skrpg.utils.Text;
-import de.tr7zw.changeme.nbtapi.NBTItem;
+import net.minecraft.server.v1_16_R3.NBTTagCompound;
+import net.minecraft.server.v1_16_R3.NBTTagString;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
+
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 public enum Items {
     NONE(Rarity.COMMON, "How Did You Do That???", null, 0, 0, 0, 0, 0, 0, "NONE", ItemType.ITEM, null, SellMerchant.COMBAT, 0, false),
@@ -137,9 +138,9 @@ public enum Items {
             5, 0, 0, 0, 0, 0, "CORRUPTED_ROOT", ItemType.ITEM,
             Arrays.asList(Text.color("&7&oHow did we get here?")), SellMerchant.MINING, 150, true),
     /* ------ MERCHANT ITEMS ------*/
-    STARTER_SWORD(Rarity.COMMON, "Starter Sword", new ItemBuilder(Material.GOLDEN_SWORD, 0).asItem(), 35, 5, 10, 0, 0, 0, "STARTER_SWORD", ItemType.SWORD,
+    STARTER_SWORD(Rarity.COMMON, "Starter Sword", new ItemBuilder(Material.GOLDEN_SWORD, 0).asItem(), 35, 5, 10, 0, 0, 0, "STARTER_SWORD", ItemType.WEAPON,
             Arrays.asList(Text.color("&8&l[&e&lABILITY&8&l] &r&e10 Energy"), Text.color("&7Gain a temporary &f+25 Speed")), SellMerchant.COMBAT, 10, false),
-    ZOMBIE_SWORD(Rarity.UNCOMMON, "Zombie Sword", new ItemBuilder(Material.IRON_SWORD, 0).asItem(), 50, 0, 0, 0, 0, 0, "ZOMBIE_SWORD", ItemType.SWORD,
+    ZOMBIE_SWORD(Rarity.UNCOMMON, "Zombie Sword", new ItemBuilder(Material.IRON_SWORD, 0).asItem(), 50, 0, 0, 0, 0, 0, "ZOMBIE_SWORD", ItemType.WEAPON,
             Arrays.asList(Text.color("&7Do &c+50% damage &7to all &cZombies.")), SellMerchant.COMBAT, 10, false),
 
 
@@ -184,87 +185,87 @@ public enum Items {
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.STRING, 1),
             new CraftingIngrediant(Items.ADVANCED_HILT, 1), new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STRING, 1),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.STRING, 1)), 1, 40, SellMerchant.COMBAT,  100, false),
-    WOODEN_PICKAXE(Rarity.COMMON, "Wooden Pickaxe", new ItemBuilder(Material.WOODEN_PICKAXE, 0).asItem(), 2, 0, 0, 0, 0, 0, "WOODEN_PICKAXE", ItemType.PICKAXE,
+    WOODEN_PICKAXE(Rarity.COMMON, "Wooden Pickaxe", new ItemBuilder(Material.WOODEN_PICKAXE, 0).asItem(), 2, 0, 0, 0, 0, 0, "WOODEN_PICKAXE", ItemType.TOOL,
             null, Arrays.asList(new CraftingIngrediant(Items.PLANK, 1), new CraftingIngrediant(Items.PLANK, 1), new CraftingIngrediant(Items.PLANK, 1),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 22, SellMerchant.MINING, 15, false),
-    WOODEN_SWORD(Rarity.COMMON, "Wooden Sword", new ItemBuilder(Material.WOODEN_SWORD, 0).asItem(), 20, 0, 0, 0, 0, 0, "WOODEN_SWORD", ItemType.SWORD,
+    WOODEN_SWORD(Rarity.COMMON, "Wooden Sword", new ItemBuilder(Material.WOODEN_SWORD, 0).asItem(), 20, 0, 0, 0, 0, 0, "WOODEN_SWORD", ItemType.WEAPON,
             null, Arrays.asList(new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.PLANK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.PLANK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 22, SellMerchant.COMBAT, 15, false),
-    WOODEN_HOE(Rarity.COMMON, "Wooden Hoe", new ItemBuilder(Material.WOODEN_HOE, 0).asItem(), 2, 0, 0, 0, 0, 0, "WOODEN_HOE", ItemType.HOE,
+    WOODEN_HOE(Rarity.COMMON, "Wooden Hoe", new ItemBuilder(Material.WOODEN_HOE, 0).asItem(), 2, 0, 0, 0, 0, 0, "WOODEN_HOE", ItemType.TOOL,
             null, Arrays.asList(new CraftingIngrediant(Items.PLANK, 1), new CraftingIngrediant(Items.PLANK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 22, SellMerchant.FARMING, 15, false),
-    WOODEN_AXE(Rarity.COMMON, "Wooden Axe", new ItemBuilder(Material.WOODEN_AXE, 0).asItem(), 10, 0, 0, 0, 0, 0, "WOODEN_AXE", ItemType.AXE, null, Arrays.asList(
+    WOODEN_AXE(Rarity.COMMON, "Wooden Axe", new ItemBuilder(Material.WOODEN_AXE, 0).asItem(), 10, 0, 0, 0, 0, 0, "WOODEN_AXE", ItemType.TOOL, null, Arrays.asList(
             new CraftingIngrediant(Items.PLANK, 1), new CraftingIngrediant(Items.PLANK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.PLANK, 1), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 22, SellMerchant.WOODCUTTING, 15, false),
     /* ----- STONE TOOLS ----- */
-    STONE_PICKAXE(Rarity.COMMON, "Stone Pickaxe", new ItemBuilder(Material.STONE_PICKAXE, 0).asItem(), 4, 0, 0, 0, 0, 0, "STONE_PICKAXE", ItemType.PICKAXE,
+    STONE_PICKAXE(Rarity.COMMON, "Stone Pickaxe", new ItemBuilder(Material.STONE_PICKAXE, 0).asItem(), 4, 0, 0, 0, 0, 0, "STONE_PICKAXE", ItemType.TOOL,
             null, Arrays.asList(new CraftingIngrediant(Items.STONE, 1), new CraftingIngrediant(Items.STONE, 1), new CraftingIngrediant(Items.STONE, 1),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 24, SellMerchant.MINING, 15, false),
-    STONE_SWORD(Rarity.COMMON, "Stone Sword", new ItemBuilder(Material.STONE_SWORD, 0).asItem(), 25, 0, 0, 0, 0, 0, "STONE_SWORD", ItemType.SWORD,
+    STONE_SWORD(Rarity.COMMON, "Stone Sword", new ItemBuilder(Material.STONE_SWORD, 0).asItem(), 25, 0, 0, 0, 0, 0, "STONE_SWORD", ItemType.WEAPON,
             null, Arrays.asList(new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STONE, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STONE, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 24, SellMerchant.COMBAT, 15, false),
-    STONE_HOE(Rarity.COMMON, "Stone Hoe", new ItemBuilder(Material.STONE_HOE, 0).asItem(), 4, 0, 0, 0, 0, 0, "STONE_HOE", ItemType.HOE,
+    STONE_HOE(Rarity.COMMON, "Stone Hoe", new ItemBuilder(Material.STONE_HOE, 0).asItem(), 4, 0, 0, 0, 0, 0, "STONE_HOE", ItemType.TOOL,
             null, Arrays.asList(new CraftingIngrediant(Items.STONE, 1), new CraftingIngrediant(Items.STONE, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 24, SellMerchant.FARMING, 15, false),
-    STONE_AXE(Rarity.COMMON, "Stone Axe", new ItemBuilder(Material.STONE_AXE, 0).asItem(), 15, 5, 0, 0, 0, 0, "STONE_AXE", ItemType.AXE, null, Arrays.asList(
+    STONE_AXE(Rarity.COMMON, "Stone Axe", new ItemBuilder(Material.STONE_AXE, 0).asItem(), 15, 5, 0, 0, 0, 0, "STONE_AXE", ItemType.TOOL, null, Arrays.asList(
             new CraftingIngrediant(Items.STONE, 1), new CraftingIngrediant(Items.STONE, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.STONE, 1), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 24, SellMerchant.WOODCUTTING, 15, false),
     /* ----- IRON TOOLS ----- */
-    IRON_PICKAXE(Rarity.COMMON, "Iron Pickaxe", new ItemBuilder(Material.IRON_PICKAXE, 0).asItem(), 6, 0, 0, 0, 0, 0, "IRON_PICKAXE", ItemType.PICKAXE,
+    IRON_PICKAXE(Rarity.COMMON, "Iron Pickaxe", new ItemBuilder(Material.IRON_PICKAXE, 0).asItem(), 6, 0, 0, 0, 0, 0, "IRON_PICKAXE", ItemType.TOOL,
             null, Arrays.asList(new CraftingIngrediant(Items.IRON_INGOT, 1), new CraftingIngrediant(Items.IRON_INGOT, 1), new CraftingIngrediant(Items.IRON_INGOT, 1),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 24, SellMerchant.MINING, 20, false),
-    IRON_SWORD(Rarity.COMMON, "Iron Sword", new ItemBuilder(Material.IRON_SWORD, 0).asItem(), 30, 0, 0, 0, 0, 0, "IRON_SWORD", ItemType.SWORD,
+    IRON_SWORD(Rarity.COMMON, "Iron Sword", new ItemBuilder(Material.IRON_SWORD, 0).asItem(), 30, 0, 0, 0, 0, 0, "IRON_SWORD", ItemType.WEAPON,
             null, Arrays.asList(new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.IRON_INGOT, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.IRON_INGOT, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 24, SellMerchant.COMBAT, 20, false),
-    IRON_HOE(Rarity.COMMON, "Iron Hoe", new ItemBuilder(Material.IRON_HOE, 0).asItem(), 6, 0, 0, 0, 0, 0, "IRON_HOE", ItemType.HOE,
+    IRON_HOE(Rarity.COMMON, "Iron Hoe", new ItemBuilder(Material.IRON_HOE, 0).asItem(), 6, 0, 0, 0, 0, 0, "IRON_HOE", ItemType.TOOL,
             null, Arrays.asList(new CraftingIngrediant(Items.IRON_INGOT, 1), new CraftingIngrediant(Items.IRON_INGOT, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 24, SellMerchant.FARMING, 20, false),
-    IRON_AXE(Rarity.COMMON, "Iron Axe", new ItemBuilder(Material.IRON_AXE, 0).asItem(), 20, 10, 0, 0, 0, 0, "IRON_AXE", ItemType.AXE, null, Arrays.asList(
+    IRON_AXE(Rarity.COMMON, "Iron Axe", new ItemBuilder(Material.IRON_AXE, 0).asItem(), 20, 10, 0, 0, 0, 0, "IRON_AXE", ItemType.TOOL, null, Arrays.asList(
             new CraftingIngrediant(Items.IRON_INGOT, 1), new CraftingIngrediant(Items.IRON_INGOT, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.IRON_INGOT, 1), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.BASIC_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 24, SellMerchant.WOODCUTTING, 15, false),
     /* ----- GOLDEN TOOLS ----- */
-    GOLDEN_PICKAXE(Rarity.RARE, "Golden Pickaxe", new ItemBuilder(Material.GOLDEN_PICKAXE, 0).asItem(), 1, 0, 0, 0, 0, 0, "GOLDEN_PICKAXE", ItemType.PICKAXE,
+    GOLDEN_PICKAXE(Rarity.RARE, "Golden Pickaxe", new ItemBuilder(Material.GOLDEN_PICKAXE, 0).asItem(), 1, 0, 0, 0, 0, 0, "GOLDEN_PICKAXE", ItemType.TOOL,
             null, Arrays.asList(new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.GOLD_INGOT, 1),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.EXPERTISE_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 26, SellMerchant.MINING, 25, false),
-    GOLDEN_SWORD(Rarity.RARE, "Golden Sword", new ItemBuilder(Material.GOLDEN_SWORD, 0).asItem(), 20, 20, 0, 0, 0, 0, "GOLDEN_SWORD", ItemType.SWORD,
+    GOLDEN_SWORD(Rarity.RARE, "Golden Sword", new ItemBuilder(Material.GOLDEN_SWORD, 0).asItem(), 20, 20, 0, 0, 0, 0, "GOLDEN_SWORD", ItemType.WEAPON,
             null, Arrays.asList(new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.EXPERTISE_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 26, SellMerchant.COMBAT, 25, false),
-    GOLDEN_HOE(Rarity.RARE, "Golden Hoe", new ItemBuilder(Material.GOLDEN_HOE, 0).asItem(), 4, 0, 0, 0, 0, 0, "GOLDEN_HOE", ItemType.HOE,
+    GOLDEN_HOE(Rarity.RARE, "Golden Hoe", new ItemBuilder(Material.GOLDEN_HOE, 0).asItem(), 4, 0, 0, 0, 0, 0, "GOLDEN_HOE", ItemType.TOOL,
             null, Arrays.asList(new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.EXPERTISE_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 24, SellMerchant.FARMING, 25, false),
-    GOLDEN_AXE(Rarity.RARE, "Golden Axe", new ItemBuilder(Material.GOLDEN_AXE, 0).asItem(), 4, 0, 0, 0, 0, 0, "GOLDEN_AXE", ItemType.AXE, null, Arrays.asList(
+    GOLDEN_AXE(Rarity.RARE, "Golden Axe", new ItemBuilder(Material.GOLDEN_AXE, 0).asItem(), 4, 0, 0, 0, 0, 0, "GOLDEN_AXE", ItemType.TOOL, null, Arrays.asList(
             new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.EXPERTISE_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 26, SellMerchant.WOODCUTTING, 25, false),
     /* ----- DIAMOND TOOLS  -----*/
-    DIAMOND_PICKAXE(Rarity.UNCOMMON, "Diamond Pickaxe", new ItemBuilder(Material.DIAMOND_PICKAXE, 0).asItem(), 10, 0, 0, 0, 0, 0, "DIAMOND_PICKAXE", ItemType.PICKAXE,
+    DIAMOND_PICKAXE(Rarity.UNCOMMON, "Diamond Pickaxe", new ItemBuilder(Material.DIAMOND_PICKAXE, 0).asItem(), 10, 0, 0, 0, 0, 0, "DIAMOND_PICKAXE", ItemType.TOOL,
             null, Arrays.asList(new CraftingIngrediant(Items.DIAMOND, 1), new CraftingIngrediant(Items.DIAMOND, 1), new CraftingIngrediant(Items.DIAMOND, 1),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.ADVANCED_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 30, SellMerchant.MINING, 30, false),
-    DIAMOND_SWORD(Rarity.UNCOMMON, "Diamond Sword", new ItemBuilder(Material.DIAMOND_SWORD, 0).asItem(), 35, 0, 0, 0, 0, 0, "DIAMOND_SWORD", ItemType.SWORD,
+    DIAMOND_SWORD(Rarity.UNCOMMON, "Diamond Sword", new ItemBuilder(Material.DIAMOND_SWORD, 0).asItem(), 35, 0, 0, 0, 0, 0, "DIAMOND_SWORD", ItemType.WEAPON,
             null, Arrays.asList(new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.DIAMOND, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.DIAMOND, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.ADVANCED_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 30, SellMerchant.COMBAT, 30, false),
-    DIAMOND_HOE(Rarity.UNCOMMON, "Diamond Hoe", new ItemBuilder(Material.DIAMOND_HOE, 0).asItem(), 10, 0, 0, 0,  0,0, "DIAMOND_HOE", ItemType.HOE,
+    DIAMOND_HOE(Rarity.UNCOMMON, "Diamond Hoe", new ItemBuilder(Material.DIAMOND_HOE, 0).asItem(), 10, 0, 0, 0,  0,0, "DIAMOND_HOE", ItemType.TOOL,
             null, Arrays.asList(new CraftingIngrediant(Items.DIAMOND, 1), new CraftingIngrediant(Items.DIAMOND, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.ADVANCED_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 30, SellMerchant.FARMING, 30, false),
-    DIAMOND_AXE(Rarity.UNCOMMON, "Diamond Axe", new ItemBuilder(Material.DIAMOND_AXE, 0).asItem(), 30, 10, 10, 0, 0, 0, "DIAMOND_AXE", ItemType.AXE, null, Arrays.asList(
+    DIAMOND_AXE(Rarity.UNCOMMON, "Diamond Axe", new ItemBuilder(Material.DIAMOND_AXE, 0).asItem(), 30, 10, 10, 0, 0, 0, "DIAMOND_AXE", ItemType.TOOL, null, Arrays.asList(
             new CraftingIngrediant(Items.DIAMOND, 1), new CraftingIngrediant(Items.DIAMOND, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.DIAMOND, 1), new CraftingIngrediant(Items.STICK, 1), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.ADVANCED_HILT, 1), new CraftingIngrediant(Items.NONE, 0)), 1, 30, SellMerchant.WOODCUTTING, 30, false),
@@ -339,14 +340,24 @@ public enum Items {
     /* ----- CRAB ITEMS ----- */
     CRAB_FRAGMENT(Rarity.UNCOMMON, "Crab Fragment", new ItemBuilder(Material.RED_DYE, 0).asItem(), 0, 0, 0, 0, 0, 0, "CRAB_FRAGMENT", ItemType.ITEM, Arrays.asList(Text.color("&7&oOne of the &eBeachmaster's &7&ofavorite things."), Text.color("&7&oA remmnant of one of the &cCrab King's &7&ominions.")), SellMerchant.COMBAT, 5000, true),
     CRAB_SCROLL(Rarity.LEGENDARY, "Crab Scroll", new ItemBuilder(Material.PAPER, 0).asItem(), 0, 0, 0, 0, 0, 0, "CRAB_SCROLL", ItemType.ITEM, Arrays.asList(Text.color("&8&l[&e&lABILITY&8&l] &r&cSummon"), Text.color("&7Summon the &cCrab King&7.")), SellMerchant.COMBAT, 60000, true),
-    CRAB_CLAW(Rarity.EPIC, "Crab Claw", new ItemBuilder(Material.MUTTON, 0).asItem(), 150, 75, 0, 0, 0, 0, "CRAB_CLAW", ItemType.SWORD, Arrays.asList(Text.color("&7&oThe weapon of the now defeated &cCrab King&7&o.")), SellMerchant.COMBAT, 70000, true),
+    CRAB_CLAW(Rarity.EPIC, "Crab Claw", new ItemBuilder(Material.MUTTON, 0).asItem(), 150, 75, 0, 0, 0, 0, "CRAB_CLAW", ItemType.WEAPON, Arrays.asList(Text.color("&7&oThe weapon of the now defeated &cCrab King&7&o.")), SellMerchant.COMBAT, 70000, true),
     CRAB_CROWN(Rarity.EPIC, "Crab Crown", ItemTweaker.dye(new ItemBuilder(Material.LEATHER_HELMET, 0).asItem(), 99, 0, 0), 0, 50, 50, 100, 0, 50, "CRAB_CROWN", ItemType.ARMOR, Arrays.asList(Text.color("&7&oThe crown of the now dethroned &cCrab King&7&o."), Text.color(" "), Text.color("&7Do &c+200%&7 more damage, but your health is set to &c75♥&7.")), SellMerchant.COMBAT, 70000, true),
     /* ---- MISC ---- */
     NATURE_STAFF(Rarity.COMMON, "Nature Staff", new ItemBuilder(Material.STICK, 0).asItem(), 100, 0, 0, 50, 0, 50, "NATURE_STAFF", ItemType.WEAPON, null,
             Arrays.asList(new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.COMPACT_WOOD, 1), new CraftingIngrediant(Items.NONE, 0),
                     new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.WOOD, 64), new CraftingIngrediant(Items.NONE, 0),
                     new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.ADVANCED_HILT, 0), new CraftingIngrediant(Items.NONE, 0)), 1, 250,
-            SellMerchant.COMBAT, 10000, true);
+            SellMerchant.COMBAT, 10000, true),
+    /* ------ RUNIC STONES ------ */
+    ENCRESTED_OBSIDIAN(Rarity.COMMON, "Encrested Obsidian", ItemTweaker.createPlayerHeadFromData("ewogICJ0aW1lc3RhbXAiIDogMTYxMzQ2NDYyMTUxNSwKICAicHJvZmlsZUlkIiA6ICJmZDYwZjM2ZjU4NjE0ZjEyYjNjZDQ3YzJkODU1Mjk5YSIsCiAgInByb2ZpbGVOYW1lIiA6ICJSZWFkIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlL2ZhNGY3MDI3YTkwYmNjYmZhNDRiZDczNjU4NzU2NGE0NzQxOGM1OTU2OTA4NWQ4Y2I2ZWJiMzVhNzc4OGExNDEiLAogICAgICAibWV0YWRhdGEiIDogewogICAgICAgICJtb2RlbCIgOiAic2xpbSIKICAgICAgfQogICAgfQogIH0KfQ==",
+            "PdYxQ5vK2mtEc6duWFpKQerX5l11WBEhSbZYbq2x+sMBF3OdH5osW+JkUvmDxGHUp4PsEtaNfLyG9MLdDOZIzPPhYT8vt2kZt5ZjTBJnPUWaJxCM/3eTtNKd2AIyxQu/cNItGp0OmJo4ln82nLjcz2GFbad6JXZjUnwIXSdYhE5VuzYa1BHpDQCy9in+KDCr/tbfXiakJV0MqYzAHdLNYsrxOUykrw7z3vOD1U10gY7SQcWzNHprhx+zlzHM9KWhplcPs/uT7rl3lLk03gO4s9JPYLmiAfjVvStxA6oo32spHGNK8t5mwHJMqME9WBTfXq/XRzwy0cEtlL+wif5C/U5dILwIdpMkseqlmCc1uvDSsG2fd0UZ6FFaUx+jr3kg7zEgKfebkuA3aeagCXIWxCqXNO2ygqleFuE1tLe9R/mFMg0LJXJbMhFDN6KUGm7ZDLLiesiUb04/+8+z05I7lX1u3+aACKmapBwf/GkmsnnuKAhgPw5LC4xZCt7CdWLcZIVlsP1CIvd1iALt0ev9LCumWmfoN8v1mXzD+MtYzq0tU0Y53r8K1QRS1KA+S1eeQIJKf1AzLo8w/ujki9Y6BUfXwkCYZri8HEMmFKl9mQEej4bx7bP8/OFd+1A73BZbppsM+fQQ1fo/nwXmtozkDC1aKXw7YWAskbE+y+e/oMY=")
+            , 0, 0, 0, 0, 0, 0, "ENCRESTED_OBSIDIAN", ItemType.RUNIC_STONE, Arrays.asList(Text.color("&7Apply the &5Encrested &7Runic Stone to your item.")), SellMerchant.COMBAT, 5, true),
+    SWEET_CANE(Rarity.COMMON, "Sweet Cane", ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzNjYTlkOGIxZDVmMmMyNjU0NzY0NDAzNGE1NWE0YTI0NjNlMTY2ZjYwZmViMGM3YzVhZjNmNzI0YmFlIn19fQ==",
+            "27469789-1229-45e5-bbef-e7bb290983ad")
+            , 0, 0, 0, 0, 0, 0, "SWEET_CANE", ItemType.RUNIC_STONE, Arrays.asList(Text.color("&7Apply the &5Speedy &7Runic Stone to your item.")), SellMerchant.COMBAT, 7, true),
+    CRAB_SCALE(Rarity.COMMON, "Crab Scale", new ItemBuilder(Material.RED_CARPET, 0).asItem(), 0, 0, 0, 0, 0, 0, "CRAB_SCALE", ItemType.RUNIC_STONE, Arrays.asList("&7Apply the &5Ferocious &7Runic Stone to your item."), SellMerchant.COMBAT, 50, true),
+    REDSTONE_CIRCUIT(Rarity.COMMON, "Redstone Circuit", ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjA3YTdjNzE1NGY1NDUzZTRhYzA0MDgzOGYyM2E3NTNiMjk0MzEyZGViZDgzYmE2OGUxMjI0MGNjZmZlYzZhIn19fQ==",
+            "56f88d31-bbf3-497a-923c-2b4c5c29e4d6"), 0, 0, 0, 0, 0, 0, "REDSTONE_CIRCUIT", ItemType.RUNIC_STONE, Arrays.asList(Text.color("&7Apply the &5Circuited &7Runic Stone to your item.")), SellMerchant.COMBAT, 7, true);
     private Rarity rarity;
     private String name;
     private ItemStack itemStack;
@@ -429,25 +440,25 @@ public enum Items {
         }
         ArrayList<String> lore = new ArrayList<>();
         if (items.getDamage() != 0) {
-            lore.add(Text.color("&7Damage: &c+" + items.getDamage()));
+            lore.add(Text.color("&7Damage: &c+" + items.getDamage() + " &8(+ 0)"));
         }
         if (items.getStrength() != 0) {
-            lore.add(Text.color("&7Strength: &4+" + items.getStrength()));
+            lore.add(Text.color("&7Strength: &4+" + items.getStrength() + " &8(+ 0)"));
         }
 
         if (items.getEnergy() != 0) {
             lore.add(" ");
-            lore.add(Text.color("&7Energy: &e+" + items.getStrength()));
+            lore.add(Text.color("&7Energy: &e+" + items.getEnergy() + " &8(+ 0)"));
         }
         if (items.getDefence() != 0) {
-            lore.add(Text.color("&7Defence: &a+" + items.getDefence()));
+            lore.add(Text.color("&7Defence: &a+" + items.getDefence() + " &8(+ 0)"));
         }
         if (items.getHp() != 0) {
-            lore.add(Text.color("&7Health: &c+" + items.getHp()));
+            lore.add(Text.color("&7Health: &c+" + items.getHp() + " &8(+ 0)"));
         }
         if (items.getSpeed() != 0) {
             lore.add(" ");
-            lore.add(Text.color("&7Speed: &f+" + items.getSpeed()));
+            lore.add(Text.color("&7Speed: &f+" + items.getSpeed() + " &8(+ 0)"));
         }
         if (items.getLore() != null) {
             lore.add(" ");
@@ -458,12 +469,12 @@ public enum Items {
 
         lore.add(" ");
         lore.add(" ");
-        lore.add(Text.color(items.getRarity().getNameColored() + " " + items.getItemType()));
+        lore.add(Text.color(items.getRarity().getNameColored() + items.getItemType().getName()));
         ItemMeta iM = itemStack.getItemMeta();
         iM.setDisplayName(Text.color(items.getRarity().getColor() + items.getName()));
         iM.setLore(lore);
         if (items.doesGlow()) {
-            iM.addEnchant(Enchantment.DAMAGE_ALL, 1, true);
+            iM.addEnchant(org.bukkit.enchantments.Enchantment.DAMAGE_ALL, 1, true);
         }
         iM.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         iM.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
@@ -471,8 +482,113 @@ public enum Items {
         iM.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         itemStack.setItemMeta(iM);
         ItemStack item = itemStack;
-
+        net.minecraft.server.v1_16_R3.ItemStack nbtStack = CraftItemStack.asNMSCopy(item);
+        NBTTagCompound nbtTagCompound = (nbtStack.hasTag()) ? nbtStack.getTag() : new NBTTagCompound();
+        nbtTagCompound.setBoolean("rpgItem",
+                true);
+        nbtTagCompound.setString("enchantmentsRpg", "NONE");
+        nbtTagCompound.setString("runicStoneRpg", "NONE");
+        nbtTagCompound.setString("itemIdRpg", items.getId());
+        nbtTagCompound.setString("rarityRpg", items.getRarity().toString());
+        item = CraftItemStack.asBukkitCopy(nbtStack);
         return item;
+    }
+    public static void updateItem(ItemStack itemStack, ItemInfo itemInfo) {
+        Items items = itemInfo.getItem();
+
+        ArrayList<String> lore = new ArrayList<>();
+        if (items.getDamage() != 0 || itemInfo.getBonusDamage() != 0) {
+            lore.add(Text.color("&7Damage: &c+" + (items.getDamage() + itemInfo.getBonusDamage()) + " &8(+ " + itemInfo.getBonusDamage() + ")"));
+        }
+        if (items.getStrength() != 0 || itemInfo.getBonusStrength() != 0) {
+            lore.add(Text.color("&7Strength: &4+" + (items.getStrength() + itemInfo.getBonusStrength())  + " &8(+ " + itemInfo.getBonusStrength() + ")"));
+        }
+
+        if (items.getEnergy() != 0 || itemInfo.getBonusEnergy() != 0) {
+            lore.add(" ");
+            lore.add(Text.color("&7Energy: &e+" + (items.getEnergy() + itemInfo.getBonusEnergy())  + " &8(+ " + itemInfo.getBonusEnergy() + ")"));
+        }
+        if (items.getDefence() != 0 || itemInfo.getBonusDefence() != 0) {
+            lore.add(Text.color("&7Defence: &a+" + (items.getDefence() + itemInfo.getBonusDefence())  + " &8(+ " + itemInfo.getBonusDefence() + ")"));
+        }
+        if (items.getHp() != 0 || itemInfo.getBonusHealth() != 0) {
+            lore.add(Text.color("&7Health: &c+" + (items.getHp() + itemInfo.getBonusHealth())  + " &8(+ " + itemInfo.getBonusHealth() + ")"));
+        }
+        if (items.getSpeed() != 0) {
+            lore.add(" ");
+            lore.add(Text.color("&7Speed: &f+" + (items.getSpeed() + itemInfo.getBonusSpeed())  + " &8(+ " + itemInfo.getBonusSpeed() + ")"));
+        }
+        if (items.getLore() != null) {
+            lore.add(" ");
+            for (int i = 0; i < items.getLore().size(); i++) {
+                lore.add(Text.color(items.getLore().get(i)));
+            }
+        }
+
+        lore.add(" ");
+        StringJoiner unformattedEnchantments = new StringJoiner("#");
+        if (!itemInfo.getEnchantmentsList().isEmpty()) {
+            int amount = 0;
+            List<StringJoiner> allStringJoiners = new ArrayList<>();
+            StringJoiner currentStringJoiner = null;
+
+            for (int i = 0; i < itemInfo.getEnchantmentsList().size(); i++) {
+                if (amount == 3) {
+                    allStringJoiners.add(currentStringJoiner);
+                    currentStringJoiner = new StringJoiner(", ");
+                }
+                if (currentStringJoiner == null) {
+                    currentStringJoiner = new StringJoiner(", ");
+                }
+                if (i == itemInfo.getEnchantmentsList().size() - 1) {
+                    allStringJoiners.add(currentStringJoiner);
+                }
+                currentStringJoiner.add(
+                        Text.color("&5" + itemInfo.getEnchantmentsList().get(i).getEnchantmentType().getName() + " " +
+                                itemInfo.getEnchantmentsList().get(i).getLevel()));
+                unformattedEnchantments.add(itemInfo.getEnchantmentsList().get(i).getEnchantmentType().toString() + ":" +
+                        itemInfo.getEnchantmentsList().get(i).getLevel());
+                amount++;
+            }
+            for (StringJoiner stringJoiner : allStringJoiners) {
+                lore.add(Text.color(stringJoiner.toString()));
+            }
+        }
+        lore.add(" ");
+        lore.add(" ");
+        lore.add(Text.color(itemInfo.getRarity().getNameColored() + items.getItemType().getName()));
+        ItemMeta iM = itemStack.getItemMeta();
+        String runicStoneName = "";
+        if (itemInfo.getRunicStones() != null) {
+            runicStoneName = itemInfo.getRunicStones().getName() + " ";
+        }
+        iM.setDisplayName(Text.color(itemInfo.getRarity().getColor() + runicStoneName + items.getName()));
+        iM.setLore(lore);
+        if (items.doesGlow() || !itemInfo.getEnchantmentsList().isEmpty()) {
+            iM.addEnchant(org.bukkit.enchantments.Enchantment.DAMAGE_ALL, 1, true);
+        }
+        if (itemInfo.hasEnchantment(Enchantments.EFFICIENCY)) {
+            iM.addEnchant(Enchantment.DIG_SPEED, itemInfo.getEnchantment(Enchantments.EFFICIENCY).getLevel(), true);
+        }
+        iM.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        iM.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
+        iM.setUnbreakable(true);
+        iM.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        itemStack.setItemMeta(iM);
+        String runicStone = "NONE";
+        if (itemInfo.getRunicStones() != null) {
+            runicStone = itemInfo.getRunicStones().toString();
+        }
+        net.minecraft.server.v1_16_R3.ItemStack nbtStack = CraftItemStack.asNMSCopy(itemStack);
+        NBTTagCompound nbtTagCompound = (nbtStack.hasTag()) ? nbtStack.getTag() : new NBTTagCompound();
+
+        nbtTagCompound.setBoolean("rpgItem",
+                true);
+        nbtTagCompound.setString("enchantmentsRpg", unformattedEnchantments.toString());
+        nbtTagCompound.setString("runicStoneRpg", runicStone);
+        nbtTagCompound.setString("itemIdRpg", items.getId());
+        nbtTagCompound.setString("rarityRpg", itemInfo.getRarity().toString());
+        itemStack.setItemMeta(CraftItemStack.getItemMeta(nbtStack));
     }
     public int getSpeed() { return speed; }
 

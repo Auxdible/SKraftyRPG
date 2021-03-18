@@ -2,8 +2,10 @@ package com.auxdible.skrpg.mobs;
 
 
 import com.auxdible.skrpg.SKRPG;
+import com.auxdible.skrpg.items.ItemInfo;
 import com.auxdible.skrpg.items.ItemType;
 import com.auxdible.skrpg.items.Items;
+import com.auxdible.skrpg.items.enchantments.Enchantments;
 import com.auxdible.skrpg.player.PlayerData;
 import com.auxdible.skrpg.player.collections.Collection;
 import com.auxdible.skrpg.player.collections.CollectionType;
@@ -21,6 +23,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.EnumSet;
+import java.util.StringJoiner;
 
 public class Mob {
     private MobType mobType;
@@ -37,6 +40,7 @@ public class Mob {
     public MobType getMobType() { return mobType; }
     public void damage(Player player, int damage, SKRPG skrpg) {
         PlayerData playerData = skrpg.getPlayerManager().getPlayerData(player.getUniqueId());
+        ItemInfo itemInfo = ItemInfo.parseItemInfo(player.getInventory().getItemInMainHand());
         damage = damage + 30;
         double bonusDamage = 1 + (Integer.parseInt(playerData.getCombat().getLevel().toString()
                 .replace("_", "")) * 0.02);
@@ -61,9 +65,20 @@ public class Mob {
             }
 
         }
+        StringJoiner enchantmentSymbols = new StringJoiner(" ");
+        if (itemInfo != null) {
+            if (itemInfo.hasEnchantment(Enchantments.SHARPNESS)) {
+                nerfedDamage = (int) Math.round(nerfedDamage * (1 + (0.07 * itemInfo.getEnchantment(Enchantments.SHARPNESS).getLevel())));
+                enchantmentSymbols.add(Text.color("&5⚔"));
+            } else if (itemInfo.hasEnchantment(Enchantments.POWER)) {
+                nerfedDamage = (int) Math.round(nerfedDamage * (1 + (0.07 * itemInfo.getEnchantment(Enchantments.POWER).getLevel())));
+                enchantmentSymbols.add(Text.color("&5↑"));
+            }
+        }
         if (skrpg.getScrollBossManager().getBoss(this) != null) {
             skrpg.getScrollBossManager().getBoss(this).damage(nerfedDamage, player);
         }
+
         if (getCurrentHP() - nerfedDamage < 0) {
             setCurrentHP(0);
         } else {
@@ -75,7 +90,7 @@ public class Mob {
         damageIndictator.setInvulnerable(true);
         damageIndictator.setCollidable(false);
         damageIndictator.setInvisible(true);
-        damageIndictator.setCustomName(Text.color("&c" + nerfedDamage + " &4&l☄"));
+        damageIndictator.setCustomName(Text.color("&c" + nerfedDamage + " &4&l☄ " + enchantmentSymbols.toString()));
         damageIndictator.setCustomNameVisible(true);
         damageIndictator.setSmall(true);
         damageIndictator.setVelocity(new Vector(0, 0.5, 0));
@@ -93,7 +108,7 @@ public class Mob {
         }.runTaskTimer(skrpg, 0, 5);
         if (getCurrentHP() <= 0) {
             player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f);
-
+            playerData.addRunicPoints(mobType.getLevel(), skrpg);
             for (MobKill mobKill : EnumSet.allOf(MobKill.class)) {
                 if (getMobType().getName().equals(mobKill.getMobType().getName())) {
                     if (mobKill.getDrop() != null) {
@@ -158,8 +173,10 @@ public class Mob {
             }
             for (MobSpawn mobSpawn : skrpg.getMobSpawnManager().getMobSpawns()) {
                 if (mobSpawn.getCurrentlySpawnedMobs() != null && mobSpawn.getCurrentlySpawnedMobs().size() != 0) {
-                    mobSpawn.getCurrentlySpawnedMobs()
-                            .removeIf(mobs -> getEnt().getEntityId() == mobs.getEnt().getEntityId());
+                    if (mobSpawn.getCurrentlySpawnedMobs().contains(this)) {
+                        mobSpawn.getCurrentlySpawnedMobs().remove(this);
+                    }
+
                 }
 
             }

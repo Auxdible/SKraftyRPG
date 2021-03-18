@@ -3,8 +3,10 @@ package com.auxdible.skrpg;
 import com.auxdible.skrpg.commands.*;
 import com.auxdible.skrpg.commands.admin.*;
 import com.auxdible.skrpg.commands.inventory.*;
+import com.auxdible.skrpg.items.ItemInfo;
 import com.auxdible.skrpg.items.ItemType;
 import com.auxdible.skrpg.items.Items;
+import com.auxdible.skrpg.items.enchantments.Enchantments;
 import com.auxdible.skrpg.mobs.*;
 import com.auxdible.skrpg.mobs.boss.scrollboss.ScrollBossManager;
 import com.auxdible.skrpg.mobs.npcs.NPC;
@@ -42,8 +44,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SKRPG extends JavaPlugin {
-    private ArrayList<MobSpawn> renderedSpawns;
-
+    private ArrayList<Integer> renderedSpawns;
+    private ArrayList<RegionSetup> playersInRegionSetup;
     public PlayerManager playerManager;
     public PlayerManager getPlayerManager() { return playerManager; }
 
@@ -81,7 +83,7 @@ public class SKRPG extends JavaPlugin {
     @Override
     public void onEnable() {
         // Plugin startup logic
-        getLogger().info("Loading SKRPG core plugin...");
+        getLogger().info("Loading SKRPG core plugin... Runic Table Test");
         saveDefaultConfig();
         host = getConfig().getString("mySQL.host");
         database = getConfig().getString("mySQL.database");
@@ -99,9 +101,17 @@ public class SKRPG extends JavaPlugin {
         try {
             prepareStatement("CREATE TABLE IF NOT EXISTS stat_table(" +
                     "UUID varchar(36), baseHP int(11), baseDefence int(11), baseStrength int(11), " +
-                    "baseEnergy int(11), baseSpeed int(11), credits int(11), interest varchar(36), canTrade tinyint(1), raritySell varchar(36), questsCompleted longtext, PRIMARY KEY (UUID));").executeUpdate();
+                    "baseEnergy int(11), baseSpeed int(11), credits int(11), interest varchar(36), canTrade tinyint(1), raritySell varchar(36), questsCompleted longtext, runicPoints int(11), PRIMARY KEY (UUID));").executeUpdate();
+            prepareStatement("ALTER TABLE stat_table ADD COLUMN IF NOT EXISTS runicPoints INT(11) NOT NULL;").executeUpdate();
+            prepareStatement("ALTER TABLE stat_table ADD COLUMN IF NOT EXISTS runicUpgrades LONGTEXT NOT NULL;").executeUpdate();
+            prepareStatement("ALTER TABLE stat_table ADD COLUMN IF NOT EXISTS currentQuestState INT(11) NOT NULL;").executeUpdate();
+            prepareStatement("ALTER TABLE stat_table ADD COLUMN IF NOT EXISTS currentQuest VARCHAR(36) NOT NULL;").executeUpdate();
             prepareStatement("CREATE TABLE IF NOT EXISTS skills_table(UUID varchar(36), miningLevel int(11), miningXpTill int(11), miningXpTotal int(11), herbalismLevel int(11), herbalismXpTill int(11), " +
-                    "herbalismXpTotal int(11), craftingLevel int(11), craftingXpTill int(11), craftingXpTotal int(11), combatLevel int(11), combatXpTill int(11), combatXpTotal int(11), PRIMARY KEY (UUID));").executeUpdate();
+                    "herbalismXpTotal int(11), craftingLevel int(11), craftingXpTill int(11), craftingXpTotal int(11), combatLevel int(11), combatXpTill int(11), combatXpTotal int(11), runicLevel int(11), runicXpTill int(11)," +
+                    "runicXpTotal int(11), PRIMARY KEY (UUID));").executeUpdate();
+            prepareStatement("ALTER TABLE skills_table ADD COLUMN IF NOT EXISTS runicLevel INT(11) NOT NULL;").executeUpdate();
+            prepareStatement("ALTER TABLE skills_table ADD COLUMN IF NOT EXISTS runicXpTill INT(11) NOT NULL;").executeUpdate();
+            prepareStatement("ALTER TABLE skills_table ADD COLUMN IF NOT EXISTS runicXpTotal INT(11) NOT NULL;").executeUpdate();
             prepareStatement("CREATE TABLE IF NOT EXISTS banks_table(bank1Level varchar(36), bank1Credits int(11), bank2Level varchar(36)," +
                     "bank2Credits int(11), bank3Level varchar(36), bank3Credits int(11), bank4Level varchar(36), bank4Credits int(11), bank5Level varchar(36)," +
                     "bank5Credits int(11), bankAmount int(11), UUID varchar(36), PRIMARY KEY (UUID));").executeUpdate();
@@ -151,8 +161,10 @@ public class SKRPG extends JavaPlugin {
         getCommand("guild").setExecutor(new GuildCommand(this));
         getCommand("skrpg").setExecutor(new SKRPGCommand(this));
         getCommand("recipe").setExecutor(new RecipeCommand(this));
+        getCommand("itemInfo").setExecutor(new ItemDataCommand(this));
         getLogger().info("Loaded SKRPG core plugin!");
         renderedSpawns = new ArrayList<>();
+        playersInRegionSetup = new ArrayList<>();
         SKRPG skrpg = this;
         new BukkitRunnable() {
 
@@ -164,7 +176,8 @@ public class SKRPG extends JavaPlugin {
                             Text.color(
                                     "&c" + playerData.getHp() + "/" + playerData.getMaxHP() + " ♥ " +
                                             "&a" + playerData.getDefence() + " ✿ Defence " +
-                                            "&e" + playerData.getEnergy() + "/" + playerData.getMaxEnergy() + " ☢ Energy"
+                                            "&e" + playerData.getEnergy() + "/" + playerData.getMaxEnergy() + " ☢ Energy" +
+                                            " &5" + playerData.getRunicPoints() + " RP ஐ"
                             )
                     ));
                     if (playerData.getHp() <= 0) {
@@ -239,25 +252,22 @@ public class SKRPG extends JavaPlugin {
                         boolean spawnRendered = false;
                         for (Player onlinePlayers : Bukkit.getOnlinePlayers()) {
                             if (onlinePlayers.getLocation().distance(mobSpawn.getLocation()) <= 80) {
-                                if (!renderedSpawns.contains(mobSpawn)) {
-                                    renderedSpawns.add(mobSpawn);
-                                }
                                 spawnRendered = true;
                             }
                         }
                         if (!spawnRendered) {
-                            if (renderedSpawns.contains(mobSpawn)) {
-                                renderedSpawns.remove(mobSpawn);
+                            if (renderedSpawns.contains(Integer.valueOf(mobSpawn.getId()))) {
+                                renderedSpawns.remove(Integer.valueOf(mobSpawn.getId()));
                             }
-                            List<Mob> processedMobs = new ArrayList<>();
+
                             for (Mob mob : mobSpawn.getCurrentlySpawnedMobs()) {
                                 mob.getEnt().remove();
-
                             }
-                            for (Mob mob : processedMobs) {
-                                mobSpawn.getCurrentlySpawnedMobs().remove(mob);
+                            mobSpawn.getCurrentlySpawnedMobs().clear();
+                        } else {
+                            if (!renderedSpawns.contains(Integer.valueOf(mobSpawn.getId()))) {
+                                renderedSpawns.add(Integer.valueOf(mobSpawn.getId()));
                             }
-
                         }
                     }
                     if (!regionFound) {
@@ -271,62 +281,72 @@ public class SKRPG extends JavaPlugin {
                     int hpIncrease = 0;
                     int speedIncrease = 0;
                     boolean wearingCrabHat = false;
-                    for (Items item : Items.values()) {
-                        if (player.getInventory().getItemInMainHand().getType() != Material.AIR) {
-                            if (player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().contains(
-                                    Text.color(item.getName()))) {
-                                strengthIncrease = strengthIncrease + item.getStrength();
-                                defenceIncrease = defenceIncrease + item.getDefence();
-                                energyIncrease = energyIncrease + item.getEnergy();
-                                hpIncrease = hpIncrease + item.getHp();
-                                speedIncrease = speedIncrease + item.getSpeed();
-                            }
+                    ItemInfo iteminfoHand = ItemInfo.parseItemInfo(player.getInventory().getItemInMainHand());
+                    ItemInfo itemInfoHelmet = ItemInfo.parseItemInfo(player.getInventory().getHelmet());
+                    ItemInfo itemInfoChestplate = ItemInfo.parseItemInfo(player.getInventory().getChestplate());
+                    ItemInfo itemInfoLeggings = ItemInfo.parseItemInfo(player.getInventory().getLeggings());
+                    ItemInfo itemInfoBoots = ItemInfo.parseItemInfo(player.getInventory().getBoots());
+                    if (iteminfoHand != null) {
+                        if (iteminfoHand.getItem().getItemType() != ItemType.ARMOR) {
+                            strengthIncrease = strengthIncrease + iteminfoHand.getItem().getStrength() + iteminfoHand.getBonusStrength();
+                            defenceIncrease = defenceIncrease + iteminfoHand.getItem().getDefence() + iteminfoHand.getBonusDefence();
+                            energyIncrease = energyIncrease + iteminfoHand.getItem().getEnergy() + iteminfoHand.getBonusEnergy();
+                            hpIncrease = hpIncrease + iteminfoHand.getItem().getHp() + iteminfoHand.getBonusHealth();
+                            speedIncrease = speedIncrease + iteminfoHand.getItem().getSpeed() + iteminfoHand.getBonusSpeed();
                         }
-                        if (player.getInventory().getHelmet() != null) {
-                            if (player.getInventory().getHelmet().getItemMeta().getDisplayName().contains(
-                                    Text.color(item.getName())) && item.getItemType().equals(ItemType.ARMOR)) {
-                                strengthIncrease = strengthIncrease + item.getStrength();
-                                defenceIncrease = defenceIncrease + item.getDefence();
-                                energyIncrease = energyIncrease + item.getEnergy();
-                                hpIncrease = hpIncrease + item.getHp();
-                                speedIncrease = speedIncrease + item.getSpeed();
-                                if (item == Items.CRAB_CROWN) {
-                                    wearingCrabHat = true;
-                                }
-                            }
-                        }
-                        if (player.getInventory().getChestplate() != null) {
-                            if (player.getInventory().getChestplate().getItemMeta().getDisplayName().contains(
-                                    Text.color(item.getName())) && item.getItemType().equals(ItemType.ARMOR)) {
-                                strengthIncrease = strengthIncrease + item.getStrength();
-                                defenceIncrease = defenceIncrease + item.getDefence();
-                                energyIncrease = energyIncrease + item.getEnergy();
-                                hpIncrease = hpIncrease + item.getHp();
-                                speedIncrease = speedIncrease + item.getSpeed();
-                            }
-                        }
-                        if (player.getInventory().getLeggings() != null) {
-                            if (player.getInventory().getLeggings().getItemMeta().getDisplayName().contains(
-                                    Text.color(item.getName())) && item.getItemType().equals(ItemType.ARMOR)) {
-                                strengthIncrease = strengthIncrease + item.getStrength();
-                                defenceIncrease = defenceIncrease + item.getDefence();
-                                energyIncrease = energyIncrease + item.getEnergy();
-                                hpIncrease = hpIncrease + item.getHp();
-                                speedIncrease = speedIncrease + item.getSpeed();
-                            }
-                        }
-                        if (player.getInventory().getBoots() != null) {
-                            if (player.getInventory().getBoots().getItemMeta().getDisplayName().contains(
-                                    Text.color(item.getName())) && item.getItemType().equals(ItemType.ARMOR)) {
-                                strengthIncrease = strengthIncrease + item.getStrength();
-                                defenceIncrease = defenceIncrease + item.getDefence();
-                                energyIncrease = energyIncrease + item.getEnergy();
-                                hpIncrease = hpIncrease + item.getHp();
-                                speedIncrease = speedIncrease + item.getSpeed();
-                            }
-                        }
-
                     }
+                    if (itemInfoHelmet != null) {
+                        strengthIncrease = strengthIncrease + itemInfoHelmet.getItem().getStrength() + itemInfoHelmet.getBonusStrength();
+                        defenceIncrease = defenceIncrease + itemInfoHelmet.getItem().getDefence() + itemInfoHelmet.getBonusDefence();
+                        energyIncrease = energyIncrease + itemInfoHelmet.getItem().getEnergy() + itemInfoHelmet.getBonusEnergy();
+                        hpIncrease = hpIncrease + itemInfoHelmet.getItem().getHp() + itemInfoHelmet.getBonusHealth();
+                        speedIncrease = speedIncrease + itemInfoHelmet.getItem().getSpeed() + itemInfoHelmet.getBonusSpeed();
+                        if (itemInfoHelmet.getItem() == Items.CRAB_CROWN) {
+                            wearingCrabHat = true;
+                        }
+                        if (itemInfoHelmet.hasEnchantment(Enchantments.PROTECTION)) {
+                            defenceIncrease = defenceIncrease + (itemInfoHelmet.getEnchantment(Enchantments.PROTECTION).getLevel() * 25);
+                        } else if (itemInfoHelmet.hasEnchantment(Enchantments.HEALTHY)) {
+                            hpIncrease = hpIncrease + (itemInfoHelmet.getEnchantment(Enchantments.HEALTHY).getLevel() * 25);
+                        }
+                    }
+                    if (itemInfoChestplate != null) {
+                            strengthIncrease = strengthIncrease + itemInfoChestplate.getItem().getStrength() + itemInfoChestplate.getBonusStrength();
+                            defenceIncrease = defenceIncrease + itemInfoChestplate.getItem().getDefence() + itemInfoChestplate.getBonusDefence();
+                            energyIncrease = energyIncrease + itemInfoChestplate.getItem().getEnergy() + itemInfoChestplate.getBonusEnergy();
+                            hpIncrease = hpIncrease + itemInfoChestplate.getItem().getHp() + itemInfoChestplate.getBonusHealth();
+                            speedIncrease = speedIncrease + itemInfoChestplate.getItem().getSpeed() + itemInfoChestplate.getBonusSpeed();
+                        if (itemInfoChestplate.hasEnchantment(Enchantments.PROTECTION)) {
+                            defenceIncrease = defenceIncrease + (itemInfoChestplate.getEnchantment(Enchantments.PROTECTION).getLevel() * 25);
+                        } else if (itemInfoChestplate.hasEnchantment(Enchantments.HEALTHY)) {
+                            hpIncrease = hpIncrease + (itemInfoChestplate.getEnchantment(Enchantments.HEALTHY).getLevel() * 25);
+                        }
+                    }
+                    if (itemInfoLeggings != null) {
+                            strengthIncrease = strengthIncrease + itemInfoLeggings.getItem().getStrength() + itemInfoLeggings.getBonusStrength();
+                            defenceIncrease = defenceIncrease + itemInfoLeggings.getItem().getDefence() + itemInfoLeggings.getBonusDefence();
+                            energyIncrease = energyIncrease + itemInfoLeggings.getItem().getEnergy() + itemInfoLeggings.getBonusEnergy();
+                            hpIncrease = hpIncrease + itemInfoLeggings.getItem().getHp() + itemInfoLeggings.getBonusHealth();
+                            speedIncrease = speedIncrease + itemInfoLeggings.getItem().getSpeed() + itemInfoLeggings.getBonusSpeed();
+                        if (itemInfoLeggings.hasEnchantment(Enchantments.PROTECTION)) {
+                            defenceIncrease = defenceIncrease + (itemInfoLeggings.getEnchantment(Enchantments.PROTECTION).getLevel() * 25);
+                        } else if (itemInfoLeggings.hasEnchantment(Enchantments.HEALTHY)) {
+                            hpIncrease = hpIncrease + (itemInfoLeggings.getEnchantment(Enchantments.HEALTHY).getLevel() * 25);
+                        }
+                    }
+                    if (itemInfoBoots != null) {
+                        strengthIncrease = strengthIncrease + itemInfoBoots.getItem().getStrength() + itemInfoBoots.getBonusStrength();
+                        defenceIncrease = defenceIncrease + itemInfoBoots.getItem().getDefence() + itemInfoBoots.getBonusDefence();
+                        energyIncrease = energyIncrease + itemInfoBoots.getItem().getEnergy() + itemInfoBoots.getBonusEnergy();
+                        hpIncrease = hpIncrease + itemInfoBoots.getItem().getHp() + itemInfoBoots.getBonusHealth();
+                        speedIncrease = speedIncrease + itemInfoBoots.getItem().getSpeed() + itemInfoBoots.getBonusSpeed();
+                        if (itemInfoBoots.hasEnchantment(Enchantments.PROTECTION)) {
+                            defenceIncrease = defenceIncrease + (itemInfoBoots.getEnchantment(Enchantments.PROTECTION).getLevel() * 25);
+                        } else if (itemInfoBoots.hasEnchantment(Enchantments.HEALTHY)) {
+                            hpIncrease = hpIncrease + (itemInfoBoots.getEnchantment(Enchantments.HEALTHY).getLevel() * 25);
+                        }
+                    }
+
                     playerData.setStrength(playerData.getBaseStrength() + strengthIncrease);
                     playerData.setDefence(playerData.getBaseDefence() + defenceIncrease);
                     playerData.setMaxEnergy(playerData.getBaseEnergy() + energyIncrease);
@@ -340,6 +360,12 @@ public class SKRPG extends JavaPlugin {
                     }
 
                     playerData.setSpeed(playerData.getBaseSpeed() + speedIncrease);
+                    if (playerData.getHp() > playerData.getMaxHP()) {
+                        playerData.setHp(playerData.getMaxHP());
+                    }
+                    if (playerData.getEnergy() > playerData.getMaxEnergy()) {
+                        playerData.setEnergy(playerData.getMaxEnergy());
+                    }
                 }
             }
         }.runTaskTimer(this, 0, 20);
@@ -373,11 +399,17 @@ public class SKRPG extends JavaPlugin {
         new BukkitRunnable() {
             @Override
             public void run() {
-                for (MobSpawn mobSpawn : mobSpawnManager.getMobSpawns()) {
-                    if (mobSpawn.getCurrentlySpawnedMobs() == null || mobSpawn.getCurrentlySpawnedMobs().isEmpty()
-                            && renderedSpawns.contains(mobSpawn)) {
+                for (int i = 0; i < skrpg.getMobSpawnManager().getMobSpawns().size(); i++) {
+                    MobSpawn mobSpawn = skrpg.getMobSpawnManager().getMobSpawn(i);
+                    if (mobSpawn.getCurrentlySpawnedMobs() == null || mobSpawn.getCurrentlySpawnedMobs().isEmpty()) {
 
-                        MobType.buildMob(mobSpawn.getMob().getId(), skrpg, mobSpawn);
+                        ArrayList<Integer> mobId = new ArrayList<>();
+                        mobId.add(mobSpawn.getId());
+                        boolean check = renderedSpawns.containsAll(mobId);
+                        if (check) {
+                            MobType.buildMob(mobSpawn.getMob().getId(), skrpg, mobSpawn);
+                        }
+
                     }
                 }
             }
@@ -440,5 +472,12 @@ public class SKRPG extends JavaPlugin {
             }
         }
         return trueOrNot;
+    }
+    public ArrayList<RegionSetup> getPlayersInRegionSetup() { return playersInRegionSetup; }
+    public RegionSetup getSetup(Player p) {
+        for (RegionSetup regionSetup : getPlayersInRegionSetup()) {
+            if (regionSetup.getSetupPlayer().getUniqueId() == p.getUniqueId()) { return regionSetup; }
+        }
+        return null;
     }
 }

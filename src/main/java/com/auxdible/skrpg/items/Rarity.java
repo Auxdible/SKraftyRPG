@@ -1,11 +1,12 @@
 package com.auxdible.skrpg.items;
 
 public enum Rarity {
-    COMMON("&f&lCOMMON", "&f", 0),
-    UNCOMMON("&a&lUNCOMMON", "&a", 1),
-    RARE("&1&lRARE", "&1", 2),
-    EPIC("&5&lEPIC", "&5", 3),
-    LEGENDARY("&e&lLEGENDARY", "&e", 4);
+    COMMON("&f&lCOMMON", "&f", 1),
+    UNCOMMON("&a&lUNCOMMON", "&a", 2),
+    RARE("&1&lRARE", "&1", 3),
+    EPIC("&5&lEPIC", "&5", 4),
+    LEGENDARY("&6&lLEGENDARY", "&6", 5),
+    MYTHICAL("&e&lMYTHICAL", "&e", 6);
     private String nameColored;
     private String color;
     private int priority;

@@ -2,14 +2,12 @@ package com.auxdible.skrpg.items;
 
 public enum ItemType {
     ITEM(""),
-    SWORD(" SWORD"),
     BOW(" BOW"),
     ARMOR(" ARMOR"),
     MATERIAL(" CRAFTING MATERIAL"),
-    PICKAXE(" PICKAXE"),
-    AXE(" AXE"),
-    HOE(" HOE"),
-    WEAPON(" WEAPON");
+    TOOL(" TOOL"),
+    WEAPON(" WEAPON"),
+    RUNIC_STONE(" RUNIC STONE");
     private String name;
     ItemType(String name) {
         this.name = name;

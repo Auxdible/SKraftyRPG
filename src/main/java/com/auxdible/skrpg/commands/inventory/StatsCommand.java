@@ -73,6 +73,8 @@ public class StatsCommand implements CommandExecutor {
         inv.setItem(15, new ItemBuilder(Material.SUGAR, 0).setName("&fYour Speed ≈")
                 .setLore(Arrays.asList(" ", Text.color("&7Total Speed: &f" + playerData.getSpeed() + " ≈"),
                         Text.color("&7Base Speed: &f" + playerData.getBaseSpeed() + " ≈"))).asItem());
+        ItemStack runicPointsStack = new ItemBuilder(Material.DRAGON_BREATH, 0).setName(Text.color("&7Your Runic Points: &5" + playerData.getRunicPoints() + " ஐ")).asItem();
+        inv.setItem(16, runicPointsStack);
         inv.setItem(27, new ItemBuilder(Material.ARROW, 0).setName("&aBack to Menu").asItem());
         p.openInventory(inv);
         return false;

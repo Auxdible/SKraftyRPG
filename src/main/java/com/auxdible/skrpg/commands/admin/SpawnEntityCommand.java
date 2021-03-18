@@ -27,6 +27,7 @@ public class SpawnEntityCommand implements CommandExecutor {
         Player player = (Player) sender;
         if (!player.hasPermission("skrpg.admin")) {
             Text.applyText(player, "&cAdmin is required to run this command!");
+            return false;
         }
         if (args.length == 0) {
             skrpg.getLogger().info("Please name a mob!");

@@ -23,21 +23,25 @@ public class CreateRegionCommand implements CommandExecutor {
             return false;
         }
         Player player = (Player) sender;
+
         if (!player.hasPermission("skrpg.admin")) {
             Text.applyText(player, "&cAdmin is required to run this command!");
-        }
-        if (args.length != 11) {
-            Text.applyText(player, "&c&oUsage: /createregion (x) (z) (x2) (z2) (bannerX) (bannerY) (bannerZ) (raidX) (raidY) (raidZ) (name)");
             return false;
         }
-        if (!player.hasPermission("skrpg.admin")) {
-            Text.applyText(player, "&cAdmin is required to run this command!");
+        if (args.length == 0) {
+            if (skrpg.getSetup(player) != null) {
+                Text.applyText(player, "&cYou are in the region setup!");
+                return false;
+            }
+            skrpg.getPlayersInRegionSetup().add(new RegionSetup(player, skrpg));
+        } else if (args[0].equalsIgnoreCase("leave")) {
+            if (skrpg.getSetup(player) == null) {
+                Text.applyText(player, "&cYou aren't in the region setup!");
+                return false;
+            }
+            skrpg.getPlayersInRegionSetup().remove(skrpg.getSetup(player));
         }
-        skrpg.getRegionManager().addRegion(skrpg.getRegionManager().getRegions().size(),
-                args[10].replace("_", " "), Double.parseDouble(args[0]), Double.parseDouble(args[1]), Double.parseDouble(args[2]),
-                Double.parseDouble(args[3]), player.getLocation(), new Location(Bukkit.getWorld(skrpg.getConfig().getString("rpgWorld")), Double.parseDouble(args[7]), Double.parseDouble(args[8]), Double.parseDouble(args[9]), 0.0f, 0.0f), Double.parseDouble(args[4]), Double.parseDouble(args[5]), Double.parseDouble(args[6]));
 
-        Text.applyText(player, "&aRegion Created!");
         return false;
     }
 }

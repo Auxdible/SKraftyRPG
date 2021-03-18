@@ -72,10 +72,11 @@ public class CollectionsCommand implements CommandExecutor {
                             " ",
                             Text.color("&7Tier &b" + SKRPG.levelToInt(collection.getTier().toString()))));
                     collectionItem.setItemMeta(collectioniM);
-                    inv.setItem(4, collectionItem);
+
                     for (int i = 0; i <= 44; i++) {
                         inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
                     }
+                    inv.setItem(4, collectionItem);
                     for (List<Items> rewards : collection.getCollectionType().getTierRewards()) {
                         List<Tiers> rewardsList = new ArrayList<>(getKeysByValue(rewardsMap, rewards));
                         ItemStack rewardsStack = Items.buildItem(rewards.get(0));
@@ -90,7 +91,7 @@ public class CollectionsCommand implements CommandExecutor {
                         iM.setDisplayName(Text.color("&7" + collection.getCollectionType().getItem().getName() + " &b" + SKRPG.levelToInt(
                                 rewardsList.get(0).toString())));
                         rewardsStack.setItemMeta(iM);
-                        inv.setItem(9 + collection.getCollectionType().getTierRewards().indexOf(rewards), rewardsStack);
+                        inv.setItem(18 + collection.getCollectionType().getTierRewards().indexOf(rewards), rewardsStack);
                     }
                     p.openInventory(inv);
                 }

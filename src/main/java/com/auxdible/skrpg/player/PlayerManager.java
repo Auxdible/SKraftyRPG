@@ -114,8 +114,20 @@ public class PlayerManager {
                         }
                     }
                 }
-
-
+                List<String> runicUpgrades = Arrays.asList(rsStats.getString("runicUpgrades").split(","));
+                HashMap<RunicUpgrades, Integer> runicUpgradesProcessed = new HashMap<>();
+                if (!rsStats.getString("runicUpgrades").equals("")) {
+                    for (String string : runicUpgrades) {
+                        List<String> splitUpgrade = Arrays.asList(string.split(":"));
+                        runicUpgradesProcessed.put(RunicUpgrades.valueOf(splitUpgrade.get(0)), Integer.parseInt(splitUpgrade.get(1)));
+                    }
+                }
+                Quests quest;
+                if (rsStats.getString("currentQuest").equals("")) {
+                    quest = null;
+                } else {
+                    quest = Quests.valueOf(rsStats.getString("currentQuest"));
+                }
                 playerData = new PlayerData(rsStats.getInt("baseHP"), rsStats.getInt("baseEnergy"),
                         rsStats.getInt("baseStrength"), rsStats.getInt("baseDefence"), rsStats.getInt("baseSpeed"),
                         player.getUniqueId(), rsStats.getInt("credits"),
@@ -123,7 +135,9 @@ public class PlayerManager {
                         new Mining(Level.valueOf("_" + rsSkills.getInt("miningLevel")), rsSkills.getInt("miningXpTotal"), rsSkills.getInt("miningXpTill")),
                         new Herbalism(Level.valueOf("_" + rsSkills.getInt("herbalismLevel")), rsSkills.getInt("herbalismXpTotal"), rsSkills.getInt("herbalismXpTill")),
                         new Crafting(Level.valueOf("_" + rsSkills.getInt("craftingLevel")), rsSkills.getInt("craftingXpTotal"), rsSkills.getInt("craftingXpTill")),
-                        playerBanks, calendar.getTime(), collections, Rarity.valueOf(rarityValue), rsStats.getBoolean("canTrade"), processedQuests);
+                        new Runics(Level.valueOf("_" + rsSkills.getInt("runicLevel")), rsSkills.getInt("runicXpTotal"), rsSkills.getInt("runicXpTill")),
+                        playerBanks, calendar.getTime(), collections, Rarity.valueOf(rarityValue), rsStats.getBoolean("canTrade"), processedQuests, rsStats.getInt("runicPoints"), runicUpgradesProcessed, rsStats.getInt("currentQuestState"),
+                        quest);
                 if (getPlayerData(playerData.getUuid()) == null) {
                     players.add(playerData);
                 }
@@ -210,6 +224,20 @@ public class PlayerManager {
                         processedQuests.add(Quests.valueOf(quests));
                     }
                 }
+                List<String> runicUpgrades = Arrays.asList(rsStats.getString("runicUpgrades").split(","));
+                HashMap<RunicUpgrades, Integer> runicUpgradesProcessed = new HashMap<>();
+                if (!rsStats.getString("runicUpgrades").equals("")) {
+                    for (String string : runicUpgrades) {
+                        List<String> splitUpgrade = Arrays.asList(string.split(":"));
+                        runicUpgradesProcessed.put(RunicUpgrades.valueOf(splitUpgrade.get(0)), Integer.parseInt(splitUpgrade.get(1)));
+                    }
+                }
+                Quests quest;
+                if (rsStats.getString("currentQuest").equals("")) {
+                    quest = null;
+                } else {
+                    quest = Quests.valueOf(rsStats.getString("currentQuest"));
+                }
                 playerData = new PlayerData(rsStats.getInt("baseHP"), rsStats.getInt("baseEnergy"),
                         rsStats.getInt("baseStrength"), rsStats.getInt("baseDefence"), rsStats.getInt("baseSpeed"),
                         player.getUniqueId(), rsStats.getInt("credits"),
@@ -217,7 +245,8 @@ public class PlayerManager {
                         new Mining(Level.valueOf("_" + rsSkills.getInt("miningLevel")), rsSkills.getInt("miningXpTotal"), rsSkills.getInt("miningXpTill")),
                         new Herbalism(Level.valueOf("_" + rsSkills.getInt("herbalismLevel")), rsSkills.getInt("herbalismXpTotal"), rsSkills.getInt("herbalismXpTill")),
                         new Crafting(Level.valueOf("_" + rsSkills.getInt("craftingLevel")), rsSkills.getInt("craftingXpTotal"), rsSkills.getInt("craftingXpTill")),
-                        playerBanks, calendar.getTime(), collections, Rarity.valueOf(rarityValue), rsStats.getBoolean("canTrade"), processedQuests);
+                        new Runics(Level.valueOf("_" + rsSkills.getInt("runicLevel")), rsSkills.getInt("runicXpTotal"), rsSkills.getInt("runicXpTill")),
+                        playerBanks, calendar.getTime(), collections, Rarity.valueOf(rarityValue), rsStats.getBoolean("canTrade"), processedQuests, rsStats.getInt("runicPoints"), runicUpgradesProcessed, rsStats.getInt("currentQuestState"), quest);
                 if (getPlayerData(playerData.getUuid()) == null) {
                     players.add(playerData);
                 }
@@ -258,7 +287,8 @@ public class PlayerManager {
         banks.add(new Bank(0, BankLevel.FREE));
         PlayerData playerData = new PlayerData(100, 100, 1, 1, 100, uuid, 0,
                 new Combat(Level._0, 0, 0), new Mining(Level._0, 0, 0),
-                new Herbalism(Level._0, 0, 0), new Crafting(Level._0, 0, 0), banks, calendar.getTime(), collectionsGenerated, Rarity.LEGENDARY, true, new ArrayList<>());
+                new Herbalism(Level._0, 0, 0), new Crafting(Level._0, 0, 0),
+                new Runics(Level._0, 0, 0), banks, calendar.getTime(), collectionsGenerated, Rarity.LEGENDARY, true, new ArrayList<>(), 0, new HashMap<>(), 0, null);
         players.add(playerData);
         int canTrade = 0;
         if (playerData.canTrade()) {
@@ -295,20 +325,23 @@ public class PlayerManager {
             stringJoinerCollections.add(count);
         }
         try {
-            SKRPG.prepareStatement("INSERT INTO stat_table(UUID, baseHP, baseDefence, baseStrength, baseEnergy, baseSpeed, credits, interest, canTrade, raritySell)" +
+            SKRPG.prepareStatement("INSERT INTO stat_table(UUID, baseHP, baseDefence, baseStrength, baseEnergy, baseSpeed, credits, interest, canTrade, raritySell, questsCompleted, runicPoints, runicUpgrades, " +
+                    " currentQuestState, currentQuest)" +
                     " VALUES ('" + playerData.getUuid().toString() + "','" + playerData.getBaseHP() + "','" +
                     playerData.getBaseDefence() + "','" + playerData.getBaseStrength() + "','" + playerData.getBaseEnergy() + "','" + playerData.getBaseSpeed() + "','" +
                     playerData.getCredits() + "','" + calendar.get(Calendar.YEAR) + "-"
-                    + calendar.get(Calendar.MONTH) + "-" + calendar.get(Calendar.DAY_OF_MONTH) + "','" + canTrade + "','" + playerData.getSellAboveRarity().toString() + "');").executeUpdate();
+                    + calendar.get(Calendar.MONTH) + "-" + calendar.get(Calendar.DAY_OF_MONTH) + "','" + canTrade + "','" + playerData.getSellAboveRarity().toString() + "','','" + playerData.getRunicPoints() +"','','"
+                    + playerData.getQuestPhase() + "','" + playerData.getActiveQuest().toString() + "');").executeUpdate();
             SKRPG.prepareStatement("INSERT INTO skills_table(UUID, miningLevel, miningXpTill, miningXpTotal, " +
                     "herbalismLevel, herbalismXpTill, herbalismXpTotal, craftingLevel, craftingXpTill, craftingXpTotal, " +
-                    "combatLevel, combatXpTill, combatXpTotal)" +
+                    "combatLevel, combatXpTill, combatXpTotal, runicLevel, runicXpTill, runicXpTotal)" +
                     " VALUES ('" + playerData.getUuid().toString() + "','" + SKRPG.levelToInt(playerData.getMining().getLevel().toString()) + "','" +
                     playerData.getMining().getXpTillNext() + "','" + playerData.getMining().getTotalXP() + "','" +
                     SKRPG.levelToInt(playerData.getHerbalism().getLevel().toString()) + "','" + playerData.getHerbalism().getXpTillNext() + "','" + playerData.getHerbalism().getTotalXP() + "','" +
                     SKRPG.levelToInt(playerData.getCrafting().getLevel().toString()) + "','" + playerData.getCrafting().getXpTillNext() + "','" + playerData.getCrafting().getTotalXP() + "','" +
-                    SKRPG.levelToInt(playerData.getCombat().getLevel().toString()) + "','" + playerData.getCombat().getXpTillNext() + "','" + playerData.getCombat().getTotalXP()
-                    + "');").executeUpdate();
+                    SKRPG.levelToInt(playerData.getCombat().getLevel().toString()) + "','" + playerData.getCombat().getXpTillNext() + "','" + playerData.getCombat().getTotalXP() + "','" +
+                    + SKRPG.levelToInt(playerData.getRunics().getLevel().toString()) + "','" + playerData.getRunics().getXpTillNext() + "','" + playerData.getRunics().getTotalXP() +
+                    "');").executeUpdate();
             SKRPG.prepareStatement("INSERT INTO banks_table(bank1Level, bank1Credits, bank2Level, " +
                     "bank2Credits, bank3Level, bank3Credits, bank4Level, bank4Credits, bank5Level, " +
                     "bank5Credits, bankAmount, UUID)" +
@@ -343,12 +376,20 @@ public class PlayerManager {
                 for (Quests quests : playerData.getCompletedQuests()) {
                     questsCompletedJoiner.add(quests.toString());
                 }
+                StringJoiner runicUpgradesJoiner = new StringJoiner(",");
+                if (!playerData.getRunicUpgrades().keySet().isEmpty()) {
+                    for (RunicUpgrades runicUpgrades : playerData.getRunicUpgrades().keySet()) {
+                        runicUpgradesJoiner.add(runicUpgrades.toString() + ":" + playerData.getRunicUpgrades().get(runicUpgrades));
+                    }
+                }
+
                 if (rs.getInt(1) == 0) {
-                    SKRPG.prepareStatement("INSERT INTO stat_table(UUID, baseHP, baseDefence, baseStrength, baseEnergy, baseSpeed, credits, interest, canTrade, raritySell, questsCompleted)" +
+                    SKRPG.prepareStatement("INSERT INTO stat_table(UUID, baseHP, baseDefence, baseStrength, baseEnergy, baseSpeed, credits, interest, canTrade, raritySell, questsCompleted, runicPoints, runicUpgrades, currentQuestState, currentQuest)" +
                             " VALUES ('" + playerData.getUuid().toString() + "','" + playerData.getBaseHP() + "','" +
                             playerData.getBaseDefence() + "','" + playerData.getBaseStrength() + "','" + playerData.getBaseEnergy() + "','" + playerData.getBaseSpeed() + "','" +
                             playerData.getCredits() + "','" + calendar.get(Calendar.YEAR) + "-"
-                            + calendar.get(Calendar.MONTH) + "-" + calendar.get(Calendar.DAY_OF_MONTH) + "','" + canTrade + "','" + playerData.getSellAboveRarity().toString()  + "','" + questsCompletedJoiner.toString() + "');").executeUpdate();
+                            + calendar.get(Calendar.MONTH) + "-" + calendar.get(Calendar.DAY_OF_MONTH) + "','" + canTrade + "','" +
+                            playerData.getSellAboveRarity().toString()  + "','" + questsCompletedJoiner.toString() + "','" + playerData.getRunicPoints() +  "','" + runicUpgradesJoiner.toString() + "','" + playerData.getQuestPhase() + "','" + playerData.getActiveQuest() + "');").executeUpdate();
                 } else {
                     SKRPG.prepareStatement("UPDATE stat_table SET baseHP = '" + playerData.getBaseHP() + "'," +
                             " baseDefence = '" + playerData.getBaseDefence() + "'," +
@@ -360,7 +401,11 @@ public class PlayerManager {
                             + calendar.get(Calendar.MONTH) + "-" + calendar.get(Calendar.DAY_OF_MONTH) +  "'," +
                             " canTrade = '" + canTrade + "'," +
                             " raritySell = '" + playerData.getSellAboveRarity().toString() + "'," +
-                            " questsCompleted = '" + questsCompletedJoiner.toString() + "' WHERE UUID = '" + playerData.getUuid().toString() + "';").executeUpdate();
+                            " questsCompleted = '" + questsCompletedJoiner.toString() + "'," +
+                            " runicPoints = '" + playerData.getRunicPoints() + "'," +
+                            " runicUpgrades = '" + runicUpgradesJoiner.toString() + "'," +
+                            " currentQuestState = '" + playerData.getQuestPhase() + "'," +
+                            " currentQuest = '" + playerData.getActiveQuest().toString() + "' WHERE UUID = '" + playerData.getUuid().toString() + "';").executeUpdate();
 
                 }
                 ResultSet rsSkills = SKRPG.prepareStatement("SELECT COUNT(UUID) FROM skills_table WHERE UUID = '" + playerData.getUuid().toString() + "';").executeQuery();
@@ -368,12 +413,14 @@ public class PlayerManager {
                 if (rsSkills.getInt(1) == 0) {
                     SKRPG.prepareStatement("INSERT INTO skills_table(UUID, miningLevel, miningXpTill, miningXpTotal, " +
                             "herbalismLevel, herbalismXpTill, herbalismXpTotal, craftingLevel, craftingXpTill, craftingXpTotal, " +
-                            "combatLevel, combatXpTill, combatXpTotal)" +
+                            "combatLevel, combatXpTill, combatXpTotal, runicLevel, runicXpTill, runicXpTotal)" +
                             " VALUES ('" + playerData.getUuid().toString() + "','" + SKRPG.levelToInt(playerData.getMining().getLevel().toString()) + "','" +
                             playerData.getMining().getXpTillNext() + "','" + playerData.getMining().getTotalXP() + "','" +
                             SKRPG.levelToInt(playerData.getHerbalism().getLevel().toString()) + "','" + playerData.getHerbalism().getXpTillNext() + "','" + playerData.getHerbalism().getTotalXP() + "','" +
                             SKRPG.levelToInt(playerData.getCrafting().getLevel().toString()) + "','" + playerData.getCrafting().getXpTillNext() + "','" + playerData.getCrafting().getTotalXP() + "','" +
                             SKRPG.levelToInt(playerData.getCombat().getLevel().toString()) + "','" + playerData.getCombat().getXpTillNext() + "','" + playerData.getCombat().getTotalXP()
+                            + "','" +
+                            SKRPG.levelToInt(playerData.getRunics().getLevel().toString()) + "','" + playerData.getRunics().getXpTillNext() + "','" + playerData.getRunics().getTotalXP()
                             + "');").executeUpdate();
                 } else {
                     SKRPG.prepareStatement("UPDATE skills_table SET miningLevel = '" + SKRPG.levelToInt(playerData.getMining().getLevel().toString()) + "'," +
@@ -387,7 +434,10 @@ public class PlayerManager {
                             " craftingXpTotal = '" + playerData.getCrafting().getTotalXP() + "'," +
                             " combatLevel = '" + SKRPG.levelToInt(playerData.getCombat().getLevel().toString()) + "'," +
                             " combatXpTill = '" + playerData.getCombat().getXpTillNext() + "'," +
-                            " combatXpTotal = '" + playerData.getCombat().getTotalXP() + "' WHERE UUID = '" + playerData.getUuid().toString() + "';").executeUpdate();
+                            " combatXpTotal = '" + playerData.getCombat().getTotalXP() + "'," +
+                            " runicLevel = '" + SKRPG.levelToInt(playerData.getRunics().getLevel().toString()) + "'," +
+                            " runicXpTill = '" + playerData.getRunics().getXpTillNext() + "'," +
+                            " runicXpTotal = '" + playerData.getRunics().getTotalXP() + "' WHERE UUID = '" + playerData.getUuid().toString() + "';").executeUpdate();
                 }
                 ResultSet rsBanks = SKRPG.prepareStatement("SELECT COUNT(UUID) FROM banks_table WHERE UUID = '" + playerData.getUuid().toString() + "';").executeQuery();
                 rsBanks.next();

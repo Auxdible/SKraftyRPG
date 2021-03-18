@@ -19,7 +19,9 @@ public enum NpcType {
     FARMER_SELLER(FarmerSeller.class),
     COMBAT_SELLER(CombatSeller.class),
     WOODCUTTING_SELLER(WoodcuttingSeller.class),
-    MINING_SELLER(MiningSeller.class);
+    MINING_SELLER(MiningSeller.class),
+    STONE_FORGER(StoneForger.class),
+    OLD_MINER(OldMiner.class);
 
     private Class npc;
 

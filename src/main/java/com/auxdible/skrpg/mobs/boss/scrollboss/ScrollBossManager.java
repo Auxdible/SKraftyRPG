@@ -61,6 +61,7 @@ public class ScrollBossManager {
             lootWeight.put(players, totalWeight);
         }
         for (Player player : rewards.keySet()) {
+            skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).addRunicPoints(125, skrpg);
             Text.applyText(player, "&8&m>                                          ");
             Text.applyText(player, "&4&l           " + scrollBoss.name().toUpperCase() + " DOWN!");
             Text.applyText(player, " ");

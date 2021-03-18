@@ -19,7 +19,7 @@ public enum MineBlock {
     EMERALD(Items.EMERALD, Arrays.asList(Drop.GEMSTONE), Material.EMERALD_ORE, 12),
     OBSIDIAN(Items.OBSIDIAN, Arrays.asList(Drop.GEMSTONE), Material.OBSIDIAN, 50),
     CRYSTALITE(Items.CRYSTALLITE, Arrays.asList(Drop.GEMSTONE), Material.WHITE_STAINED_GLASS, 14),
-    NETHERRRACK(Items.NETHERRACK, Arrays.asList(Drop.GEMSTONE), Material.NETHERRACK, 1),
+    NETHERRRACK(Items.NETHERRACK, null, Material.NETHERRACK, 1),
     END_STONE(Items.END_STONE, Arrays.asList(Drop.GEMSTONE), Material.END_STONE, 16);
     private Items commonDrop;
 

@@ -6,6 +6,7 @@ import com.auxdible.skrpg.player.collections.Tiers;
 import com.auxdible.skrpg.player.skills.Level;
 import com.auxdible.skrpg.utils.ItemBuilder;
 import com.auxdible.skrpg.utils.Text;
+import com.mojang.datafixers.types.Func;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -79,6 +80,17 @@ public class SkillsCommand implements CommandExecutor {
                 levelCrafting = Level._50;
                 xpTillCrafting = "&6&lCRAFTING SKILL MAXXED!";
             }
+            Level levelRunics;
+            String xpTillRunics;
+            if (playerData.getCrafting().getLevel() != Level._50) {
+                levelRunics = Level.valueOf("_" +
+                        (Integer.parseInt(playerData.getRunics().getLevel().toString()
+                                .replace("_", "")) + 1));
+                xpTillRunics = "" + levelRunics.getXpRequired();
+            } else {
+                levelRunics = Level._50;
+                xpTillRunics = "&5&lRUNICS SKILL MAXXED!";
+            }
             inv.setItem(13, new ItemBuilder(Material.DIAMOND_SWORD, 0).setName("&7Combat &6" +
                     levelCombat.toString().replace("_", "")).setLore(
                     Arrays.asList(Text.color("&6" + playerData.getCombat().getXpTillNext() + "&7/&6" +
@@ -94,11 +106,16 @@ public class SkillsCommand implements CommandExecutor {
                     Arrays.asList(Text.color("&6" + playerData.getHerbalism().getXpTillNext() + "&7/&6" +
                                     xpTillHerbalism),
                             Text.color("&7Total Herbalism XP: &6" + playerData.getHerbalism().getTotalXP()))).asItem());
-            inv.setItem(22, new ItemBuilder(Material.CRAFTING_TABLE, 0).setName("&7Crafting &6" +
+            inv.setItem(23, new ItemBuilder(Material.CRAFTING_TABLE, 0).setName("&7Crafting &6" +
                     levelCrafting.toString().replace("_", "")).setLore(
                     Arrays.asList(Text.color("&6" + playerData.getCrafting().getXpTillNext() + "&7/&6" +
                                     xpTillCrafting),
                             Text.color("&7Total Crafting XP: &6" + playerData.getCrafting().getTotalXP()))).asItem());
+            inv.setItem(21, new ItemBuilder(Material.DRAGON_BREATH, 0).setName("&7Runics &5" +
+                    levelRunics.toString().replace("_", "")).setLore(
+                    Arrays.asList(Text.color("&5" + playerData.getRunics().getXpTillNext() + "&7/&5" +
+                                    xpTillRunics),
+                            Text.color("&7Total Runics XP: &5" + playerData.getRunics().getTotalXP()))).asItem());
             inv.setItem(27, new ItemBuilder(Material.ARROW, 0).setName("&aBack to Menu").asItem());
             p.openInventory(inv);
         } else if (args[0].equalsIgnoreCase("combat")) {
@@ -233,6 +250,62 @@ public class SkillsCommand implements CommandExecutor {
                                     Arrays.asList(" ", Text.color("&7Rewards:"), Text.color("&6" + creditsReward + " Nuggets"),
                                             Text.color("&a+2 Defence ✿"),
                                             Text.color("&64% more double drop chance"))).asItem());
+                }
+
+            }
+            p.openInventory(inv);
+        } else if (args[0].equalsIgnoreCase("runics")) {
+            Inventory inv = Bukkit.createInventory(null, 27, "Your Runics");
+            for (int i = 0; i <= 26; i++) {
+                inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
+            }
+            if (playerData.getRunics().getLevel().equals(Level._50)) {
+                inv.setItem(13, new ItemBuilder(Material.PURPLE_STAINED_GLASS_PANE, 0).setName("&5&lRunics Skill MAXXED!").setLore(
+                        Arrays.asList(" ", Text.color("&7Total Skill XP: &5" + playerData.getRunics().getTotalXP()))
+                ).asItem());
+            } else {
+                List<Level> levelsAfter = new ArrayList<>();
+                Level currentLevel = playerData.getRunics().getLevel();
+                int currentLevelInt = SKRPG.levelToInt(currentLevel.toString());
+                for (int i = 1; i <= 3; i++) {
+                    if (currentLevelInt + i == 50) {
+                        levelsAfter.add(Level.valueOf("_" + (currentLevelInt + i)));
+                        break;
+                    }
+                    levelsAfter.add(Level.valueOf("_" + (currentLevelInt + i)));
+                }
+                List<Integer> slots = Arrays.asList(12, 14, 16);
+                inv.setItem(10, new ItemBuilder(Material.LIME_STAINED_GLASS_PANE, 0).setName("&7Runics &5" + currentLevelInt).asItem());
+                for (Level levels : levelsAfter) {
+                    int creditsReward = levels.getXpRequired() / 2;
+                    String unlockReward = "&cNONE";
+                    if (levels == Level._1) {
+                        unlockReward = "&7Level &51-2 &7Enchantments";
+                    } else if (levels == Level._3) {
+                        unlockReward = "&7Level &5Destroying Items";
+                    } else if (levels == Level._5) {
+                        unlockReward = "&7Level &53-4 &7Enchantments";
+                    } else if (levels == Level._7) {
+                        unlockReward = "&f&lCOMMON &r&5Runic Stones";
+                    } else if (levels == Level._8) {
+                        unlockReward = "&a&lUNCOMMON &r&5Runic Stones";
+                    } else if (levels == Level._10) {
+                        unlockReward = "&5Runic Shop";
+                    } else if (levels == Level._11) {
+                        unlockReward = "&7Level &55 &7Enchantments";
+                    } else if (levels == Level._12) {
+                        unlockReward = "&1&lRARE &r&5Runic Stones";
+                    } else if (levels == Level._13) {
+                        unlockReward = "&5&lEPIC &r&5Runic Stones";
+                    } else if (levels == Level._14) {
+                        unlockReward = "&e&lLEGENDARY &r&5Runic Stones";
+                    } else if (levels == Level._25) {
+                        unlockReward = "&5Personal Runic Table";
+                    }
+                    inv.setItem(slots.get(levelsAfter.indexOf(levels)), new ItemBuilder(Material.BARRIER, 0)
+                            .setName("&7Runics &5" + SKRPG.levelToInt(levels.toString())).setLore(
+                                    Arrays.asList(" ", Text.color("&7Rewards:"), Text.color("&6" + creditsReward + " Nuggets"),
+                                            Text.color(unlockReward))).asItem());
                 }
 
             }

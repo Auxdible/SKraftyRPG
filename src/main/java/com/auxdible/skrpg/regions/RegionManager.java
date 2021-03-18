@@ -5,7 +5,10 @@ import com.auxdible.skrpg.utils.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Banner;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.Rotatable;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 
@@ -98,6 +101,9 @@ public class RegionManager {
     }
     public void buildRegion(Region region) {
         region.getBannerLocation().getBlock().setType(Material.GREEN_BANNER);
+        Rotatable blockData = (Rotatable) region.getBannerLocation().getBlock().getBlockData();
+        blockData.setRotation(BlockFace.WEST);
+        region.getBannerLocation().getBlock().setBlockData(blockData);
         if (region.getStand() != null) {
             region.getStand().remove();
             region.setStand(null);

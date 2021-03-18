@@ -1,6 +1,7 @@
 package com.auxdible.skrpg.player;
 
 import com.auxdible.skrpg.SKRPG;
+import com.auxdible.skrpg.items.ItemInfo;
 import com.auxdible.skrpg.mobs.npcs.NPC;
 import com.auxdible.skrpg.player.economy.Bank;
 import com.auxdible.skrpg.player.quests.Quests;
@@ -27,6 +28,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
@@ -117,6 +119,12 @@ public class PlayerJoinLeaveListener implements Listener {
                     playerData.setCredits(playerData.getCredits() + (int) (bank.getCredits() * 0.005));
                     Text.applyText(e.getPlayer(), "&aYou earned &6" + Math.round(bank.getCredits() * 0.005) + " Nuggets &afrom bank intrest!");
                 }
+            }
+        }
+        for (org.bukkit.inventory.ItemStack itemStack : Arrays.asList(e.getPlayer().getInventory().getContents())) {
+            if (itemStack != null) {
+                ItemInfo stackInfo = ItemInfo.parseItemInfo(itemStack);
+                if (stackInfo == null) { itemStack.setType(org.bukkit.Material.AIR); }
             }
         }
     }

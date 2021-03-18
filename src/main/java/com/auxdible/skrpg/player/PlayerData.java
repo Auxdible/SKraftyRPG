@@ -8,10 +8,7 @@ import com.auxdible.skrpg.player.collections.Collection;
 import com.auxdible.skrpg.player.economy.Bank;
 import com.auxdible.skrpg.player.economy.Trade;
 import com.auxdible.skrpg.player.quests.Quests;
-import com.auxdible.skrpg.player.skills.Combat;
-import com.auxdible.skrpg.player.skills.Crafting;
-import com.auxdible.skrpg.player.skills.Herbalism;
-import com.auxdible.skrpg.player.skills.Mining;
+import com.auxdible.skrpg.player.skills.*;
 import com.auxdible.skrpg.regions.Region;
 import com.auxdible.skrpg.utils.Text;
 import org.bukkit.Bukkit;
@@ -36,6 +33,7 @@ public class PlayerData {
     private int baseStrength;
     private int defence;
     private int baseDefence;
+    private int runicPoints;
     private UUID uuid;
     private int credits;
     private Region region;
@@ -54,9 +52,13 @@ public class PlayerData {
     private Quests activeQuest;
     private int questPhase;
     private List<NPC> renderedNPCs;
+    private Runics runics;
+    private HashMap<RunicUpgrades, Integer> runicUpgrades;
+    private int fifthRunicPoint;
     public PlayerData(int maxHP, int maxEnergy, int strength, int defence, int speed, UUID uuid, int credits, Combat combat,
-                      Mining mining, Herbalism herbalism, Crafting crafting, ArrayList<Bank> banks,
-                      Date intrestDate, ArrayList<Collection> collections, Rarity sellAboveRarity, boolean toggleTrade, ArrayList<Quests> quests) {
+                      Mining mining, Herbalism herbalism, Crafting crafting, Runics runics, ArrayList<Bank> banks,
+                      Date intrestDate, ArrayList<Collection> collections, Rarity sellAboveRarity, boolean toggleTrade, ArrayList<Quests> quests,
+                      int runicPoints, HashMap<RunicUpgrades, Integer> runicUpgrades, int questPhase, Quests currentQuest) {
         this.crafting = crafting;
         this.maxHP = maxHP;
         this.hp = maxHP;
@@ -83,10 +85,42 @@ public class PlayerData {
         this.toggleTrade = toggleTrade;
         this.sellAboveRarity = sellAboveRarity;
         this.completedQuests = quests;
-        this.activeQuest = null;
-        this.questPhase = 0;
+        this.activeQuest = currentQuest;
+        this.questPhase = questPhase;
         this.renderedNPCs = new ArrayList<>();
+        this.runicPoints = runicPoints;
+        this.runics = runics;
+        this.runicUpgrades = runicUpgrades;
+        this.fifthRunicPoint = 0;
     }
+
+    public HashMap<RunicUpgrades, Integer> getRunicUpgrades() { return runicUpgrades; }
+    public Runics getRunics() { return runics; }
+    public int getRunicPoints() { return runicPoints; }
+    public void removeRunicPoints(int runicPointsRemoved) {
+        this.runicPoints = runicPoints - runicPointsRemoved;
+    }
+    public void addRunicPoints(int runicPointsGained, SKRPG skrpg) {
+        Player p = Bukkit.getPlayer(uuid);
+        if (Math.random() <= 0.01) {
+            runicPointsGained = runicPointsGained + 100;
+
+            Text.applyText(p, "&5&lLUCKY RP! &r&8| &7You got &5" + runicPointsGained +" RP ஐ&7!");
+            p.playSound(p.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1.0f, 0.2f);
+        }
+        if (getRunicUpgrades().containsKey(RunicUpgrades.MORE_RP)) {
+            fifthRunicPoint++;
+        }
+        if (fifthRunicPoint == 5) {
+            fifthRunicPoint = 0;
+            runicPointsGained = runicPointsGained + (1 * getRunicUpgrades().get(RunicUpgrades.MORE_RP));
+        }
+        getRunics().setXpTillNext(getRunics().getXpTillNext() +
+                runicPointsGained);
+        getRunics().setTotalXP(getRunics().getTotalXP()
+                + runicPointsGained);
+        getRunics().levelUpSkill(p, this, skrpg);
+        this.runicPoints = runicPoints + runicPointsGained; }
     public List<NPC> getRenderedNPCs() { return renderedNPCs; }
     public void setQuestPhase(int questPhase) { this.questPhase = questPhase; }
     public int getQuestPhase() { return questPhase; }
@@ -149,6 +183,7 @@ public class PlayerData {
     }
     public Herbalism getHerbalism() { return herbalism; }
     public void setHp(int hp) { this.hp = hp;
+    if (Bukkit.getPlayer(uuid) == null) { return; }
         if (getHp() > getMaxHP()) {
             setHp(getMaxHP());
         } else {
