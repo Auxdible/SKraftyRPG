@@ -26,7 +26,8 @@ public enum MobKill {
     CRYSTALLITE_ZOMBIE(MobType.CRYSTALLITE_ZOMBIE, 12, Items.CRYSTALLITE, Arrays.asList(Drop.GEMSTONE)),
     DIAMOND_REGENT(MobType.DIAMOND_REGENT, 14, Items.DIAMOND, Arrays.asList(Drop.GEMSTONE)),
     OBSIDIAN_TITAN(MobType.OBSIDIAN_TITAN, 16, Items.OBSIDIAN, Arrays.asList(Drop.GEMSTONE)),
-    CRAB_ZOMBIE(MobType.CRAB_ZOMBIE, 20, Items.ROTTEN_FLESH, Arrays.asList(Drop.CRAB_FRAGMENT));
+    CRAB_ZOMBIE(MobType.CRAB_ZOMBIE, 20, Items.ROTTEN_FLESH, Arrays.asList(Drop.CRAB_FRAGMENT)),
+    VALISSAS_KEEPER(MobType.VALISSAS_KEEPER, 1000, Items.VALISSA_ARACHNE_FRAGMENT, null);
     private MobType mobType;
     private int xpGiven;
     private Items commonDrop;

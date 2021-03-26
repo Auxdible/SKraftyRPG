@@ -15,7 +15,8 @@ import java.util.EnumSet;
 public enum Abilities {
     SPEED_BOOST(new SpeedBoostAbility()),
     NATURE_LAUNCH(new NatureLaunchAbility()),
-    CRAB_KING_SUMMON(new CrabKingSummonAbility());
+    CRAB_KING_SUMMON(new CrabKingSummonAbility()),
+    VALISSA_ARACHNE_SUMMON(new ValissaArachneSummonAbility());
     private Ability ability;
     Abilities(Ability ability) {
         this.ability = ability;

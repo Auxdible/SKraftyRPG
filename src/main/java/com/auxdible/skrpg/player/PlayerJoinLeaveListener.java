@@ -42,47 +42,25 @@ public class PlayerJoinLeaveListener implements Listener {
         skrpg.getPlayerManager().loadMySQLPlayerData(e.getPlayer());
 
         PlayerData playerData = skrpg.getPlayerManager().getPlayerData(e.getPlayer().getUniqueId());
-        buildScoreboard(e.getPlayer());
+        if (playerData == null) {
+            skrpg.getPlayerManager().createPlayer(e.getPlayer().getUniqueId());
+        }
+        buildScoreboard(e.getPlayer(), skrpg);
+        playerData.setRenderedNPCs(new ArrayList<>());
         playerData.setRegion(null);
         playerData.setSpeed(playerData.getBaseSpeed());
+        playerData.setPlayerAction(new PlayerAction(e.getPlayer(), playerData, skrpg));
         new BukkitRunnable() {
             @Override
             public void run() {
                 playerData.setHp(playerData.getMaxHP());
             }
-        }.runTaskLater(skrpg, 20);
+        }.runTaskLater(skrpg, 40);
 
         e.getPlayer().getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(16);
         e.setJoinMessage(Text.color("&8[&a+&8] &r&7" + e.getPlayer().getDisplayName()));
         e.getPlayer().setFoodLevel(20);
         e.getPlayer().setHealth(20.0);
-        for (NPC npc : skrpg.getNpcManager().getNpcs()) {
-            if (npc.getEntityPlayer() != null) {
-                PlayerConnection playerConnection = ((CraftPlayer) e.getPlayer()).getHandle().playerConnection;
-                playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo
-                        .EnumPlayerInfoAction.ADD_PLAYER, npc.getEntityPlayer()));
-                playerConnection.sendPacket(new PacketPlayOutNamedEntitySpawn(npc.getEntityPlayer()));
-                DataWatcher watcher = npc.getEntityPlayer().getDataWatcher();
-                Integer byteInt = 127;
-                watcher.set(new DataWatcherObject<>(16, DataWatcherRegistry.a), byteInt.byteValue());
-                playerConnection.sendPacket(new PacketPlayOutEntityMetadata(npc.getEntityPlayer().getId(),
-                        npc.getEntityPlayer().getDataWatcher(), true));
-                playerConnection.sendPacket(new PacketPlayOutEntityHeadRotation(npc.getEntityPlayer(), (byte) (
-                        npc.getLocation().getYaw() * 256 / 360)));
-                if (npc.getItemInHand() != null) {
-                    List<Pair<EnumItemSlot, ItemStack>> itemList = new ArrayList<>();
-                    itemList.add(Pair.of(EnumItemSlot.MAINHAND, CraftItemStack.asNMSCopy(new ItemBuilder(npc.getItemInHand(), 1).asItem())));
-                    playerConnection.sendPacket(new PacketPlayOutEntityEquipment(npc.getEntityPlayer().getId(), itemList));
-                }
-                e.getPlayer().getScoreboard().getTeam("npcs").addEntry(npc.getEntityPlayer().getName());
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, npc.getEntityPlayer()));
-                    }
-                }.runTaskLater(skrpg ,50);
-            }
-        }
         if (!playerData.getCompletedQuests().contains(Quests.TUTORIAL)) {
             Quests.startQuest(Quests.TUTORIAL, e.getPlayer(), playerData, skrpg);
             e.getPlayer().getInventory().clear();
@@ -116,8 +94,8 @@ public class PlayerJoinLeaveListener implements Listener {
                 skrpg.getLogger().info(updatedCalendar.getTime() + " updated calendar");
                 e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2.0f, 0.25f);
                 for (Bank bank : playerData.getBanks()) {
-                    playerData.setCredits(playerData.getCredits() + (int) (bank.getCredits() * 0.005));
-                    Text.applyText(e.getPlayer(), "&aYou earned &6" + Math.round(bank.getCredits() * 0.005) + " Nuggets &afrom bank intrest!");
+                    playerData.setCredits(playerData.getCredits() + (double) Math.round(((bank.getCredits() * 0.005) * 100) / 100));
+                    Text.applyText(e.getPlayer(), "&aYou earned &6" + (double) Math.round(((bank.getCredits() * 0.005) * 100) / 100)  + " Nuggets &afrom bank intrest!");
                 }
             }
         }
@@ -132,19 +110,26 @@ public class PlayerJoinLeaveListener implements Listener {
     public void playerLeaveEvent(PlayerQuitEvent e) {
         PlayerData playerData = skrpg.getPlayerManager().getPlayerData(e.getPlayer().getUniqueId());
         e.setQuitMessage(Text.color("&8[&c-&8] &r&7" + e.getPlayer().getDisplayName()));
-        playerData.setActiveQuest(null);
-        playerData.setTrade(null);
-        for (NPC npc : skrpg.getNpcManager().getNpcs()) {
-            if (npc.getEntityPlayer() != null) {
-                PlayerConnection playerConnection = ((CraftPlayer) e.getPlayer()).getHandle().playerConnection;
-                playerConnection.sendPacket(new PacketPlayOutPlayerInfo(
-                        PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, npc.getEntityPlayer()));
-                playerConnection.sendPacket(new PacketPlayOutEntityDestroy(npc.getEntityPlayer().getId()));
-                playerData.getRenderedNPCs().remove(npc);
-            }
+        if (playerData == null) {
+            skrpg.getPlayerManager().createPlayer(e.getPlayer().getUniqueId());
         }
+        playerData = skrpg.getPlayerManager().getPlayerData(e.getPlayer().getUniqueId());
+            playerData.setActiveQuest(null);
+            playerData.setTrade(null);
+            playerData.setPlayerAction(null);
+            for (NPC npc : skrpg.getNpcManager().getNpcs()) {
+                if (npc.getEntityPlayer() != null) {
+                    PlayerConnection playerConnection = ((CraftPlayer) e.getPlayer()).getHandle().playerConnection;
+                    playerConnection.sendPacket(new PacketPlayOutPlayerInfo(
+                            PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, npc.getEntityPlayer()));
+                    playerConnection.sendPacket(new PacketPlayOutEntityDestroy(npc.getEntityPlayer().getId()));
+                    playerData.getRenderedNPCs().remove(npc);
+                }
+            }
+            playerData.setRenderedNPCs(null);
+        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(skrpg, () -> e.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard()), 20L);
     }
-    public void buildScoreboard(Player player) {
+    public static void buildScoreboard(Player player, SKRPG skrpg) {
         Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
         Team npcs = scoreboard.registerNewTeam("npcs");
         npcs.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);

@@ -4,13 +4,20 @@ import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.utils.ItemBuilder;
 import com.auxdible.skrpg.utils.ItemTweaker;
 import com.auxdible.skrpg.utils.Text;
+import net.minecraft.server.v1_16_R3.EntityLiving;
+import net.minecraft.server.v1_16_R3.NBTTagCompound;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.craftbukkit.v1_16_R3.entity.CraftEntity;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
+import javax.naming.Name;
 import java.util.EnumSet;
 
 public enum MobType {
@@ -34,13 +41,14 @@ public enum MobType {
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 255, 0, 0),
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 255, 0, 0),
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 255, 0, 0), null, "CRAB_ZOMBIE"),
-    CRAB_KING("Crab King", 25, 20000, 300, 0, 0.6, EntityType.ZOMBIE,
+    CRAB_KING("Crab King", 50, 50000, 300, 0, 0.6, EntityType.ZOMBIE,
             ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGI2ZWI0MjA4MmU0Y" +
                     "zc0MDlkOTlhYmNhMjdjNjZjZjY5N2RkNmJjZWVjNDE3NGE5NDM5YmQ5YWJmZGZmMDVlIn19fQ==",
                     "8edda98d-d25a-453b-aa3f-50e0cd4c7644"),
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 99, 0, 0),
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 99, 0, 0),
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 99, 0, 0), new ItemBuilder(Material.GOLDEN_SWORD, 0).asItem(), "CRAB_KING"),
+    FISH("Fish", 1, 5, 0, 0, 0, EntityType.TROPICAL_FISH, null, null, null, null, null, "FISH"),
     /* ---- THE THICKETS (LVL 4-5) ---- */
     NATURE_ZOMBIE("&aNature Zombie", 4, 300, 110, 0, 0.2, EntityType.ZOMBIE,
             ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90Z" +
@@ -56,6 +64,8 @@ public enum MobType {
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 0, 255, 0), new ItemBuilder(Material.BOW, 0).asItem(), "CAMO_SKELETON"),
     SPIDER("Spider", 4, 100, 90, 25, 0.5, EntityType.SPIDER,
             null, null, null, null, null, "SPIDER"),
+    VALISSAS_KEEPER("&c&lValissa's Keeper", 50, 2500, 300, 50, 0.3, EntityType.CAVE_SPIDER, null, null, null, null, null, "VALISSAS_KEEPER"),
+    VALISSA_ARACHNE("&4&lValissa Arachne", 100, 100000, 500, 0, 0.7, EntityType.SPIDER, null, null, null, null, null, "VALISSA_ARACHNE"),
     /* ---- THE MINES ---- */
     SILVERFISH("Silverfish", 1, 20, 25, 0, 0.4, EntityType.SILVERFISH,
             null, null, null, null, null, "SILVERFISH"),
@@ -187,6 +197,8 @@ public enum MobType {
                 entity.setCustomName(Text.color("&7&l☠&e" + mobType.getLevel() + "&8 &r&8" + mobType.getName() + " " + "&c" +
                         mobType.getMaxHP() + "&c♥"));
                 entity.setCustomNameVisible(true);
+                PersistentDataContainer persistentDataContainer = entity.getPersistentDataContainer();
+                persistentDataContainer.set(new NamespacedKey(skrpg, "mobId"),  PersistentDataType.STRING, mobType.getId());
                 Mob mob = new Mob(mobType, entity);
                 skrpg.getMobManager().addMob(mob);
                 spawn.getCurrentlySpawnedMobs().add(mob);
@@ -220,6 +232,8 @@ public enum MobType {
                 entity.setCustomName(Text.color("&7&l☠&e" + mobType.getLevel() + "&8 &r&8" + mobType.getName() + " " + "&c" +
                         mobType.getMaxHP() + "&c♥"));
                 entity.setCustomNameVisible(true);
+                PersistentDataContainer persistentDataContainer = entity.getPersistentDataContainer();
+                persistentDataContainer.set(new NamespacedKey(skrpg, "mobId"),  PersistentDataType.STRING, mobType.getId());
                 Mob mob = new Mob(mobType, entity);
                 skrpg.getMobManager().addMob(mob);
             }
@@ -252,9 +266,20 @@ public enum MobType {
                 entity.setCustomName(Text.color("&7&l☠&e" + mobType.getLevel() + "&8 &r&8" + mobType.getName() + " " + "&c" +
                         mobType.getMaxHP() + "&c♥"));
                 entity.setCustomNameVisible(true);
+                PersistentDataContainer persistentDataContainer = entity.getPersistentDataContainer();
+                persistentDataContainer.set(new NamespacedKey(skrpg, "mobId"),  PersistentDataType.STRING, mobType.getId());
+
                 Mob mob = new Mob(mobType, entity);
                 skrpg.getMobManager().addMob(mob);
                 return mob;
+            }
+        }
+        return null;
+    }
+    public static MobType getMob(String id) {
+        for (MobType mobType : EnumSet.allOf(MobType.class)) {
+            if (mobType.getId() == id) {
+                return mobType;
             }
         }
         return null;

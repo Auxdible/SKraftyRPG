@@ -13,23 +13,28 @@ import org.bukkit.inventory.ItemStack;
 import javax.swing.*;
 
 public enum Quests {
-    TUTORIAL(new TutorialQuest());
+    TUTORIAL(new TutorialQuest()),
+    ABANDONED_MINES(new AbandonedMinesQuest());
     private Quest quest;
     Quests(Quest quest) {
         this.quest = quest;
     }
     public Quest getQuest() { return quest; }
     public static void startQuest(Quests quest, Player player, PlayerData playerData, SKRPG skrpg) {
+        if (playerData.getActiveQuest() != null) {
+            Text.applyText(player,  "&cYou are already in a quest! Finish your current quest!");
+        }
         playerData.setActiveQuest(quest);
         quest.getQuest().executePhase(1, player, skrpg);
     }
     public static void completeQuest(Quests quest, Player player, PlayerData playerData, SKRPG skrpg) {
         playerData.setQuestPhase(0);
+        playerData.setActiveQuest(null);
         playerData.getCompletedQuests().add(quest);
         Text.applyText(player, "&8&m>                                          ");
         Text.applyText(player, "&a&l           QUEST COMPLETE!");
         Text.applyText(player, " ");
-        Text.applyText(player, "&7You completed the quest!");
+        Text.applyText(player, "&7You completed the quest: &e" + quest.getQuest().name());
         Text.applyText(player, "&7Rewards: ");
         if (quest.getQuest().getItemRewards() != null) {
             for (CraftingIngrediant craftingIngrediant : quest.getQuest().getItemRewards()) {

@@ -66,9 +66,9 @@ public class CollectionsCommand implements CommandExecutor {
                     ItemStack collectionItem = Items.buildItem(collection.getCollectionType().getItem());
                     ItemMeta collectioniM = collectionItem.getItemMeta();
                     Tiers tiersNext = Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1));
-                    collectioniM.setDisplayName(Text.color(collection.getCollectionType().getItem().getName() + " &7Collection"));
+                    collectioniM.setDisplayName(Text.color("&b" + collection.getCollectionType().getItem().getName() + " &7Collection"));
                     collectioniM.setLore(Arrays.asList(" ", Text.color("&7Total Collected: &b" + collection.getCollectionAmount()),
-                            Text.color("&7Tier &b" + tiersNext + " &7Progress: &b" + collection.getCollectionAmount() + "&7/&b" + tiersNext.getAmountRequired()),
+                            Text.color("&7Next Tier: &b" + SKRPG.levelToInt(tiersNext.toString()) + " &7Progress: &b" + collection.getCollectionAmount() + "&7/&b" + tiersNext.getAmountRequired()),
                             " ",
                             Text.color("&7Tier &b" + SKRPG.levelToInt(collection.getTier().toString()))));
                     collectionItem.setItemMeta(collectioniM);

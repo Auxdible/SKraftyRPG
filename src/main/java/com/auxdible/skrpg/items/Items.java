@@ -98,40 +98,52 @@ public enum Items {
                     new CraftingIngrediant(Items.COMPACT_OBSIDIAN, 1), new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.COMPACT_OBSIDIAN, 1),
                     new CraftingIngrediant(Items.COMPACT_OBSIDIAN, 1), new CraftingIngrediant(Items.GEMSTONE_ORE, 2), new CraftingIngrediant(Items.COMPACT_OBSIDIAN, 1)), 1, 24, SellMerchant.COMBAT, 25000, true),
     WHEAT(Rarity.COMMON, "Wheat", new ItemBuilder(Material.WHEAT, 0).asItem(), 0, 0, 0, 0, 0, 0,
-            "WHEAT", ItemType.MATERIAL, null, SellMerchant.FARMING, 1, false),
+            "WHEAT", ItemType.MATERIAL, null, SellMerchant.FARMING, 1, false, false, true),
     CARROT(Rarity.COMMON, "Carrot", new ItemBuilder(Material.CARROT, 0).asItem(), 0, 0, 0, 0, 0, 0,
-            "CARROT", ItemType.MATERIAL, null, SellMerchant.FARMING, 1, false),
+            "CARROT", ItemType.MATERIAL, null, SellMerchant.FARMING, 1, false, false, true),
     CANE(Rarity.COMMON, "Sugar Cane", new ItemBuilder(Material.SUGAR_CANE, 0).asItem(), 0, 0, 0, 0, 0, 0,
-            "CANE", ItemType.MATERIAL, null, SellMerchant.FARMING, 1, false),
+            "CANE", ItemType.MATERIAL, null, SellMerchant.FARMING, 1, false, false, true),
     POTATO(Rarity.COMMON, "Potato", new ItemBuilder(Material.POTATO, 0).asItem(), 0, 0, 0, 0, 0, 0,
-            "POTATO", ItemType.MATERIAL, null, SellMerchant.FARMING, 1, false),
+            "POTATO", ItemType.MATERIAL, null, SellMerchant.FARMING, 1, false, false, true),
     SWEET_BERRIES(Rarity.COMMON, "Sweet Berries", new ItemBuilder(Material.SWEET_BERRIES, 0).asItem(), 0, 0,
             0, 0, 0, 0,
-            "POTATO", ItemType.MATERIAL, null, SellMerchant.FARMING, 5, false),
+            "SWEET_BERRIES", ItemType.MATERIAL, null, SellMerchant.FARMING, 5, false, false, true),
     BEETROOT(Rarity.COMMON, "Beetroot", new ItemBuilder(Material.BEETROOT, 0).asItem(), 0, 0,
             0, 0, 0, 0,
-            "BEETROOT", ItemType.MATERIAL, null, SellMerchant.FARMING, 1, false),
+            "BEETROOT", ItemType.MATERIAL, null, SellMerchant.FARMING, 1, false, false, true),
     PUMPKIN(Rarity.COMMON, "Pumpkin", new ItemBuilder(Material.PUMPKIN, 0).asItem(), 0, 0, 0, 0, 0, 0, "PUMPKIN",
-            ItemType.MATERIAL, null, SellMerchant.FARMING, 5,  false),
+            ItemType.MATERIAL, null, SellMerchant.FARMING, 5,  false, false, true),
     MELON(Rarity.COMMON, "Melon", new ItemBuilder(Material.MELON, 0).asItem(), 0, 0, 0, 0, 0, 0, "MELON",
-            ItemType.MATERIAL, null, SellMerchant.FARMING, 5, false),
+            ItemType.MATERIAL, null, SellMerchant.FARMING, 5, false, false, true),
     RAW_CHICKEN(Rarity.COMMON, "Raw Chicken", new ItemBuilder(Material.CHICKEN, 0).asItem(),
-            0, 0, 0, 0, 0, 0, "RAW_CHICKEN", ItemType.MATERIAL, null, SellMerchant.FARMING,5,false),
+            0, 0, 0, 0, 0, 0, "RAW_CHICKEN", ItemType.MATERIAL, null, SellMerchant.FARMING,5,false, true, false),
     RAW_BEEF(Rarity.COMMON, "Raw Beef", new ItemBuilder(Material.BEEF, 0).asItem(),
-            0, 0, 0, 0, 0, 0, "RAW_BEEF", ItemType.MATERIAL, null, SellMerchant.FARMING,5,false),
+            0, 0, 0, 0, 0, 0, "RAW_BEEF", ItemType.MATERIAL, null, SellMerchant.FARMING,5,false, true, false),
     RAW_PORK(Rarity.COMMON, "Raw Pork", new ItemBuilder(Material.PORKCHOP, 0).asItem(),
-            0, 0, 0, 0, 0, 0, "RAW_PORK", ItemType.MATERIAL, null, SellMerchant.FARMING,5,false),
+            0, 0, 0, 0, 0, 0, "RAW_PORK", ItemType.MATERIAL, null, SellMerchant.FARMING,5,false, true, false),
     ROTTEN_FLESH(Rarity.COMMON, "Rotten Flesh", new ItemBuilder(Material.ROTTEN_FLESH, 0).asItem(),
-            0, 0, 0, 0, 0, 0, "ROTTEN_FLESH", ItemType.MATERIAL, null, SellMerchant.COMBAT,5,false),
+            0, 0, 0, 0, 0, 0, "ROTTEN_FLESH", ItemType.MATERIAL, null, SellMerchant.COMBAT,5,false, true, false),
     BONE(Rarity.COMMON, "Bone", new ItemBuilder(Material.BONE, 0).asItem(),
             0, 0, 0, 0, 0, 0, "BONE", ItemType.MATERIAL, null, SellMerchant.COMBAT,5,false),
     STRING(Rarity.COMMON, "String", new ItemBuilder(Material.STRING, 0).asItem(),
             0, 0, 0, 0, 0, 0, "STRING", ItemType.MATERIAL, null, SellMerchant.COMBAT,5,false),
+    /* ----- STRING COLLECTION ----- */
+    COMPACT_STRING(Rarity.RARE, "Compact String", new ItemBuilder(Material.STRING, 0).asItem(), 0, 0, 0, 0, 0, 0, "COMPACT_STRING", ItemType.MATERIAL, null,
+            Arrays.asList(
+                    new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STRING, 16), new CraftingIngrediant(Items.NONE, 0),
+                    new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STRING, 16), new CraftingIngrediant(Items.NONE, 0),
+                    new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STRING, 16), new CraftingIngrediant(Items.NONE, 0)), 1, 50, SellMerchant.COMBAT, 250, true),
     ZOMBIE_FRAGMENT(Rarity.RARE, "Zombie Fragment", new ItemBuilder(Material.ZOMBIE_HEAD, 0).asItem(),
             0,  0,0, 0, 0, 0, "ZOMBIE_FRAGMENT", ItemType.MATERIAL, null, SellMerchant.COMBAT, 5000, false),
     CRYSTALLITE(Rarity.UNCOMMON, "Crystalite", new ItemBuilder(Material.QUARTZ, 0).asItem(), 0, 0, 0, 0, 0, 0, "CRYSTALLITE", ItemType.MATERIAL,
             Arrays.asList(Text.color("&dCrystalite, &7&oa mysterious resource, has unknown origins."),
                     Text.color("&7&oAll we know is that the townspeople use it for their windows.")), SellMerchant.MINING, 100, true),
+    /* ------ CRYSTALLITE COLLECTION ------ */
+    COMPACT_CRYSTALLITE(Rarity.RARE, "Compact Crystallite", new ItemBuilder(Material.WHITE_STAINED_GLASS, 0).asItem(),
+            0, 0, 0, 0, 0, 0, "COMPACT_CRYSTALLITE", ItemType.MATERIAL, null, Arrays.asList(
+            new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.CRYSTALLITE, 16), new CraftingIngrediant(Items.NONE, 0),
+            new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.CRYSTALLITE, 16), new CraftingIngrediant(Items.NONE, 0),
+            new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.CRYSTALLITE, 16), new CraftingIngrediant(Items.NONE, 0)), 1, 50, SellMerchant.MINING, 250, true),
     NETHERRACK(Rarity.COMMON, "Netherrack", new ItemBuilder(Material.NETHERRACK, 0).asItem(), 0, 0, 0, 0, 0, 0, "NETHERRACK", ItemType.MATERIAL, null, SellMerchant.MINING, 10, false),
     END_STONE(Rarity.UNCOMMON, "End Stone", new ItemBuilder(Material.END_STONE, 0).asItem(), 0, 0, 0, 0, 0, 0, "END_STONE", ItemType.MATERIAL, null, SellMerchant.MINING, 120, false),
     CORRUPTED_ROOT(Rarity.RARE, "Corrupted Root", new ItemBuilder(Material.PURPLE_DYE, 0).asItem(),
@@ -339,9 +351,20 @@ public enum Items {
                     new CraftingIngrediant(Items.GOLD_INGOT, 1), new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.GOLD_INGOT, 1)), 1, 30, SellMerchant.COMBAT, 20, false),
     /* ----- CRAB ITEMS ----- */
     CRAB_FRAGMENT(Rarity.UNCOMMON, "Crab Fragment", new ItemBuilder(Material.RED_DYE, 0).asItem(), 0, 0, 0, 0, 0, 0, "CRAB_FRAGMENT", ItemType.ITEM, Arrays.asList(Text.color("&7&oOne of the &eBeachmaster's &7&ofavorite things."), Text.color("&7&oA remmnant of one of the &cCrab King's &7&ominions.")), SellMerchant.COMBAT, 5000, true),
-    CRAB_SCROLL(Rarity.LEGENDARY, "Crab Scroll", new ItemBuilder(Material.PAPER, 0).asItem(), 0, 0, 0, 0, 0, 0, "CRAB_SCROLL", ItemType.ITEM, Arrays.asList(Text.color("&8&l[&e&lABILITY&8&l] &r&cSummon"), Text.color("&7Summon the &cCrab King&7.")), SellMerchant.COMBAT, 60000, true),
+    CRAB_SCROLL(Rarity.EPIC, "Crab Scroll", new ItemBuilder(Material.PAPER, 0).asItem(), 0, 0, 0, 0, 0, 0, "CRAB_SCROLL", ItemType.ITEM, Arrays.asList(Text.color("&8&l[&e&lABILITY&8&l] &r&cSummon"), Text.color("&7Summon the &cCrab King&7.")), SellMerchant.COMBAT, 60000, true),
     CRAB_CLAW(Rarity.EPIC, "Crab Claw", new ItemBuilder(Material.MUTTON, 0).asItem(), 150, 75, 0, 0, 0, 0, "CRAB_CLAW", ItemType.WEAPON, Arrays.asList(Text.color("&7&oThe weapon of the now defeated &cCrab King&7&o.")), SellMerchant.COMBAT, 70000, true),
     CRAB_CROWN(Rarity.EPIC, "Crab Crown", ItemTweaker.dye(new ItemBuilder(Material.LEATHER_HELMET, 0).asItem(), 99, 0, 0), 0, 50, 50, 100, 0, 50, "CRAB_CROWN", ItemType.ARMOR, Arrays.asList(Text.color("&7&oThe crown of the now dethroned &cCrab King&7&o."), Text.color(" "), Text.color("&7Do &c+200%&7 more damage, but your health is set to &c75♥&7.")), SellMerchant.COMBAT, 70000, true),
+    /* ----- SPIDER ITEMS ----- */
+    VALISSA_ARACHNE_FRAGMENT(Rarity.RARE, "Valissa Arachne Fragment", new ItemBuilder(Material.SPIDER_EYE, 0).asItem(), 0, 0, 0, 0, 0, 0, "VALISSA_ARACHNE_FRAGMENT", ItemType.ITEM, Arrays.asList(Text.color("&7Used to craft &cValissa Arachne's Crystal&7.")), SellMerchant.COMBAT, 5000, true),
+    VALISSA_ARACHNE_CRYSTAL(Rarity.LEGENDARY, "Valissa Arachne Crystal", ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjI0MDcwYzliNjY1OWVkMjViMmNhMTI2OTE1ZjRkODgyMGZhZmNlNDMyNGVkOWE4ZjRiOGE1MDYzNDUzMDdmIn19fQ==",
+            "d49c2625-cb64-4728-9acd-860bc0ef4272"), 0, 0, 0, 0, 0, 0, "VALISSA_ARACHNE_CRYSTAL", ItemType.ITEM, Arrays.asList(Text.color("&8&l[&e&lABILITY&8&l] &r&cSummon"), Text.color("&7Summon &cValissa Arachne&7.")),
+            Arrays.asList(new CraftingIngrediant(Items.COMPACT_CRYSTALLITE, 4), new CraftingIngrediant(Items.VALISSA_ARACHNE_FRAGMENT, 1), new CraftingIngrediant(Items.COMPACT_CRYSTALLITE, 4),
+                    new CraftingIngrediant(Items.VALISSA_ARACHNE_FRAGMENT, 1), new CraftingIngrediant(Items.COMPACT_STRING, 8), new CraftingIngrediant(Items.VALISSA_ARACHNE_FRAGMENT, 1),
+                    new CraftingIngrediant(Items.COMPACT_CRYSTALLITE, 4), new CraftingIngrediant(Items.VALISSA_ARACHNE_FRAGMENT, 1), new CraftingIngrediant(Items.COMPACT_CRYSTALLITE, 4)), 1, 1000, SellMerchant.COMBAT, 60000, true),
+    PREMIUM_SILK(Rarity.UNCOMMON, "Premium Silk", new ItemBuilder(Material.COBWEB, 0).asItem(), 0, 0, 0, 0, 0, 0, "PREMIUM_SILK", ItemType.ITEM,
+            Arrays.asList(Text.color("&7A remmnant of &cValissa Arachne&7,"), Text.color("&7and her beautiful silk...")), SellMerchant.COMBAT, 500, true),
+    SPIDER_BOW(Rarity.EPIC, "Spider Bow", new ItemBuilder(Material.BOW, 0).asItem(), 120, 50, 0, 0, 0, 0, "SPIDER_BOW", ItemType.BOW, Arrays.asList(Text.color("&7A weapon of a long defeated warrior,"), Text.color("&cValissa Arachne &7took his bow, and made it her prized possession.")), SellMerchant.COMBAT, 60000, false),
+    SPIDER_BOOTS(Rarity.EPIC, "Spider Boots", ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 255, 255, 255), 50, 50, 50, 50, 0, 100, "SPIDER_BOOTS", ItemType.ARMOR, Arrays.asList(Text.color("&7The boots of a long lost warrior, made from the silk"), Text.color("&7of long forgotten spiders."), " ", Text.color("&7Allows you to &cdouble jump &7in the air.")), SellMerchant.COMBAT, 50, false),
     /* ---- MISC ---- */
     NATURE_STAFF(Rarity.COMMON, "Nature Staff", new ItemBuilder(Material.STICK, 0).asItem(), 100, 0, 0, 50, 0, 50, "NATURE_STAFF", ItemType.WEAPON, null,
             Arrays.asList(new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.COMPACT_WOOD, 1), new CraftingIngrediant(Items.NONE, 0),
@@ -357,7 +380,14 @@ public enum Items {
             , 0, 0, 0, 0, 0, 0, "SWEET_CANE", ItemType.RUNIC_STONE, Arrays.asList(Text.color("&7Apply the &5Speedy &7Runic Stone to your item.")), SellMerchant.COMBAT, 7, true),
     CRAB_SCALE(Rarity.COMMON, "Crab Scale", new ItemBuilder(Material.RED_CARPET, 0).asItem(), 0, 0, 0, 0, 0, 0, "CRAB_SCALE", ItemType.RUNIC_STONE, Arrays.asList("&7Apply the &5Ferocious &7Runic Stone to your item."), SellMerchant.COMBAT, 50, true),
     REDSTONE_CIRCUIT(Rarity.COMMON, "Redstone Circuit", ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjA3YTdjNzE1NGY1NDUzZTRhYzA0MDgzOGYyM2E3NTNiMjk0MzEyZGViZDgzYmE2OGUxMjI0MGNjZmZlYzZhIn19fQ==",
-            "56f88d31-bbf3-497a-923c-2b4c5c29e4d6"), 0, 0, 0, 0, 0, 0, "REDSTONE_CIRCUIT", ItemType.RUNIC_STONE, Arrays.asList(Text.color("&7Apply the &5Circuited &7Runic Stone to your item.")), SellMerchant.COMBAT, 7, true);
+            "56f88d31-bbf3-497a-923c-2b4c5c29e4d6"), 0, 0, 0, 0, 0, 0, "REDSTONE_CIRCUIT", ItemType.RUNIC_STONE, Arrays.asList(Text.color("&7Apply the &5Circuited &7Runic Stone to your item.")), SellMerchant.COMBAT, 7, true),
+    /* ------ FOODS ------- */
+    /* --- Food Bases --- */
+    /* Fruit Bases */
+    LOW_QUALITY_FRUIT(Rarity.COMMON, "Low Quality Fruit", new ItemBuilder(Material.APPLE, 0).asItem(), 0, 0, 0, 0, 0, 0, "LOW_QUALITY_FRUIT",
+            ItemType.FOOD_BASE, null, SellMerchant.FARMING, 1, false),
+    BERRYFRUIT(Rarity.COMMON, "Berryfruit", ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNmVlOTc2NDliZDk5OTk1NTQxM2ZjYmYwYjI2OWM5MWJlNDM0MmIxMGQwNzU1YmFkN2ExN2U5NWZjZWZkYWIwIn19fQ==",
+            "2c382f99-71f3-4461-9861-4a9a361b8474"), 0, 0, 0, 0, 0, 0, "BERRYFRUIT", ItemType.FOOD, null, SellMerchant.FARMING, 7, false);
     private Rarity rarity;
     private String name;
     private ItemStack itemStack;
@@ -376,6 +406,30 @@ public enum Items {
     private int speed;
     private boolean glows;
     private SellMerchant sellMerchant;
+    private boolean cookable;
+    private boolean processable;
+    Items(Rarity rarity, String name, ItemStack itemStack, int damage, int strength, int defence, int energy, int speed,
+          int hp, String id, ItemType itemType, List<String> lore,
+          SellMerchant sellingPlace, int sellPrice, boolean glows, boolean cookable, boolean processable) {
+
+        this.rarity = rarity;
+        this.name = name;
+        this.itemStack = itemStack;
+        this.damage = damage;
+        this.strength = strength;
+        this.defence = defence;
+        this.id = id;
+        this.itemType = itemType;
+        this.energy = energy;
+        this.lore = lore;
+        this.hp = hp;
+        this.sellPrice = sellPrice;
+        this.speed = speed;
+        this.glows = glows;
+        this.sellMerchant = sellingPlace;
+        this.cookable = cookable;
+        this.processable = processable;
+    }
     Items(Rarity rarity, String name, ItemStack itemStack, int damage, int strength, int defence, int energy, int speed,
           int hp, String id, ItemType itemType, List<String> lore, List<CraftingIngrediant> craftingRecipe, int craftingAmount, int craftingXPGained,
           SellMerchant sellingPlace, int sellPrice, boolean glows) {
@@ -398,6 +452,8 @@ public enum Items {
         this.speed = speed;
         this.glows = glows;
         this.sellMerchant = sellingPlace;
+        this.cookable = false;
+        this.processable = false;
     }
     Items(Rarity rarity, String name, ItemStack itemStack, int damage, int strength, int defence, int energy, int hp, int speed,
           String id, ItemType itemType, List<String> lore, SellMerchant sellingPlace, int sellPrice, boolean glows) {
@@ -416,7 +472,12 @@ public enum Items {
         this.speed = speed;
         this.glows = glows;
         this.sellMerchant = sellingPlace;
+        this.cookable = false;
+        this.processable = false;
     }
+
+    public boolean isCookable() { return cookable; }
+    public boolean isProcessable() { return processable; }
     public int getDamage() { return damage; }
     public int getSellPrice() { return sellPrice; }
     public int getDefence() { return defence; }
@@ -490,6 +551,7 @@ public enum Items {
         nbtTagCompound.setString("runicStoneRpg", "NONE");
         nbtTagCompound.setString("itemIdRpg", items.getId());
         nbtTagCompound.setString("rarityRpg", items.getRarity().toString());
+
         item = CraftItemStack.asBukkitCopy(nbtStack);
         return item;
     }
@@ -556,14 +618,25 @@ public enum Items {
         }
         lore.add(" ");
         lore.add(" ");
+        if (itemInfo.isCooked()) {
+            lore.add(Text.color("&8&lCOOKED"));
+        }
+        if (itemInfo.isProcessed()) {
+            lore.add(Text.color("&8&lPROCESSED"));
+        }
         lore.add(Text.color(itemInfo.getRarity().getNameColored() + items.getItemType().getName()));
         ItemMeta iM = itemStack.getItemMeta();
         String runicStoneName = "";
         if (itemInfo.getRunicStones() != null) {
             runicStoneName = itemInfo.getRunicStones().getName() + " ";
         }
-        iM.setDisplayName(Text.color(itemInfo.getRarity().getColor() + runicStoneName + items.getName()));
+        String quality = "";
+        if (itemInfo.getQuality() != null) {
+            quality = itemInfo.getQuality().getColoredName();
+        }
+        iM.setDisplayName(Text.color(quality + itemInfo.getRarity().getColor() + runicStoneName + items.getName()));
         iM.setLore(lore);
+
         if (items.doesGlow() || !itemInfo.getEnchantmentsList().isEmpty()) {
             iM.addEnchant(org.bukkit.enchantments.Enchantment.DAMAGE_ALL, 1, true);
         }
@@ -581,13 +654,21 @@ public enum Items {
         }
         net.minecraft.server.v1_16_R3.ItemStack nbtStack = CraftItemStack.asNMSCopy(itemStack);
         NBTTagCompound nbtTagCompound = (nbtStack.hasTag()) ? nbtStack.getTag() : new NBTTagCompound();
-
         nbtTagCompound.setBoolean("rpgItem",
                 true);
         nbtTagCompound.setString("enchantmentsRpg", unformattedEnchantments.toString());
         nbtTagCompound.setString("runicStoneRpg", runicStone);
         nbtTagCompound.setString("itemIdRpg", items.getId());
         nbtTagCompound.setString("rarityRpg", itemInfo.getRarity().toString());
+        if (itemInfo.getQuality() != null) {
+            nbtTagCompound.setInt("qualityRpg", itemInfo.getQuality().getStar());
+        }
+        if (itemInfo.isCooked()) {
+            nbtTagCompound.setBoolean("cookedRpg", itemInfo.isCooked());
+        }
+        if (itemInfo.isProcessed()) {
+            nbtTagCompound.setBoolean("processedRpg", itemInfo.isProcessed());
+        }
         itemStack.setItemMeta(CraftItemStack.getItemMeta(nbtStack));
     }
     public int getSpeed() { return speed; }

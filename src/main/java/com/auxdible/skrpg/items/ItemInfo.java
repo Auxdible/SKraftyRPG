@@ -19,9 +19,12 @@ public class ItemInfo {
     private Rarity rarity;
     private List<Enchantment> enchantmentsList;
     private RunicStones runicStones;
+    private Quality quality;
     private int bonusDamage, bonusStrength, bonusSpeed, bonusEnergy, bonusHealth, bonusDefence;
+    private boolean processed, cooked;
     public ItemInfo(String id, Rarity rarity, List<Enchantment> enchantmentsList, int bonusDamage,
-                    int bonusStrength, int bonusSpeed, int bonusEnergy, int bonusHealth, int bonusDefence, RunicStones runicStones) {
+                    int bonusStrength, int bonusSpeed, int bonusEnergy, int bonusHealth, int bonusDefence, RunicStones runicStones,
+                    Quality quality, boolean cooked, boolean processed) {
         this.items = Items.getItem(id);
         this.rarity = rarity;
         this.enchantmentsList = enchantmentsList;
@@ -32,6 +35,9 @@ public class ItemInfo {
         this.bonusHealth = bonusHealth;
         this.bonusDefence = bonusDefence;
         this.runicStones = runicStones;
+        this.quality = quality;
+        this.cooked = cooked;
+        this.processed = processed;
     }
     public Items getItem() { return items; }
     public List<Enchantment> getEnchantmentsList() { return enchantmentsList; }
@@ -49,6 +55,9 @@ public class ItemInfo {
     public int getBonusSpeed() { return bonusSpeed; }
     public int getBonusStrength() { return bonusStrength; }
     public int getBonusEnergy() { return bonusEnergy; }
+    public boolean isProcessed() { return processed; }
+    public boolean isCooked() { return cooked; }
+    public Quality getQuality() { return quality; }
     public Enchantment getEnchantment(Enchantments enchantmentType) {
         for (Enchantment enchantment : getEnchantmentsList()) {
             if (enchantment.getEnchantmentType() == enchantmentType) {
@@ -66,6 +75,8 @@ public class ItemInfo {
         return false;
     }
     public RunicStones getRunicStones() { return runicStones; }
+    public void setQuality(Quality quality) { this.quality = quality; }
+
     public void setRunicStones(RunicStones runicStones) {
         this.runicStones = runicStones;
         bonusDamage = runicStones.getBonusDamage() * rarity.getPriority();
@@ -75,6 +86,10 @@ public class ItemInfo {
         bonusHealth = runicStones.getBonusHealth() * rarity.getPriority();
         bonusDefence = runicStones.getBonusDefence() * rarity.getPriority();
     }
+
+    public void setProcessed(boolean processed) { this.processed = processed; }
+    public void setCooked(boolean cooked) { this.cooked = cooked; }
+
     public static ItemInfo parseItemInfo(ItemStack itemStack) {
         if (itemStack == null || itemStack.getType().equals(Material.AIR)) {
             return null;
@@ -132,8 +147,19 @@ public class ItemInfo {
             }
 
         }
+        Quality quality = null;
+        if (compoundNbt.hasKey("qualityRpg")) {
+            quality = Quality.getQualityFromStar(compoundNbt.getInt("qualityRpg"));
+        }
+        boolean cooked = false, processed = false;
+        if (compoundNbt.hasKey("cookedRpg")) {
+            cooked = compoundNbt.getBoolean("cookedRpg");
+        }
+        if (compoundNbt.hasKey("processedRpg")) {
+            processed = compoundNbt.getBoolean("cookedRpg");
+        }
             return new ItemInfo(items, rarity, enchantmentsList, bonusDamage, bonusStrength, bonusSpeed,
-                    bonusEnergy, bonusHealth, bonusDefence, runicStones);
+                    bonusEnergy, bonusHealth, bonusDefence, runicStones, quality, cooked, processed);
 
     }
 }

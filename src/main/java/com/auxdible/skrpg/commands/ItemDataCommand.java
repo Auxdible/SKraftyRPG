@@ -50,20 +50,8 @@ public class ItemDataCommand implements CommandExecutor {
                 Text.applyText(p, "&7Bonus Speed: &e" + itemInfo.getBonusSpeed());
                 Text.applyText(p, "&7Bonus Energy: &e" + itemInfo.getBonusEnergy());
                 Text.applyText(p, "&7Bonus Strength: &e" + itemInfo.getBonusStrength());
-            } else if (args[0].equalsIgnoreCase("enchant")) {
-                if (args.length >= 3) {
-                    ItemInfo itemInfo = ItemInfo.parseItemInfo(p.getInventory().getItemInMainHand());
-                    if (itemInfo != null) {
-                        if (Enchantments.getEnchantment(args[1]) != null) {
-                            itemInfo.getEnchantmentsList().add(new Enchantment(Enchantments.getEnchantment(args[1]), Integer.parseInt(args[2])));
-                            Items.updateItem(p.getInventory().getItemInMainHand(), itemInfo);
-                        }
-
-                    }
-                }
             }
         }
-
         return false;
     }
 }

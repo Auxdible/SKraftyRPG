@@ -23,4 +23,6 @@ public interface Quest {
     ArrayList<Integer> xpRewards();
 
     void executePhase(int phase, Player player, SKRPG skrpg);
+
+    String name();
 }

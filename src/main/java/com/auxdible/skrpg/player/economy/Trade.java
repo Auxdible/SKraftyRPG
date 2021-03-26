@@ -2,6 +2,7 @@ package com.auxdible.skrpg.player.economy;
 
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.items.CraftingIngrediant;
+import com.auxdible.skrpg.items.ItemInfo;
 import com.auxdible.skrpg.items.Items;
 import com.auxdible.skrpg.player.PlayerData;
 import com.auxdible.skrpg.utils.ItemBuilder;
@@ -9,6 +10,7 @@ import com.auxdible.skrpg.utils.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -23,12 +25,12 @@ public class Trade {
     private Player player2;
     private PlayerData playerData1;
     private PlayerData playerData2;
-    private ArrayList<CraftingIngrediant> player1Offer;
-    private ArrayList<CraftingIngrediant> player2Offer;
+    private ArrayList<TradeItem> player1Offer;
+    private ArrayList<TradeItem> player2Offer;
     private Inventory tradeInv1;
     private Inventory tradeInv2;
-    private int player1CreditsOffer;
-    private int player2CreditsOffer;
+    private double player1CreditsOffer;
+    private double player2CreditsOffer;
     private boolean player1Accepted;
     private boolean player2Accepted;
     public Trade(Player player1, Player player2) {
@@ -46,21 +48,24 @@ public class Trade {
     public Player getPlayer1() { return player1; }
     public Player getPlayer2() { return player2; }
     public void setPlayer2(Player player2) { this.player2 = player2; }
-    public void addCredits(Player player, int creditsOffered) {
+    public void addCredits(Player player, double creditsOffered) {
+        if (creditsOffered == 0) {
+            return;
+        }
         if (player == player1) {
             player1CreditsOffer = player1CreditsOffer + creditsOffered;
             tradeInv1.setItem(4, new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&7Your Offer: &6" + player1CreditsOffer).asItem());
             tradeInv2.setItem(22, new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&7" +
                     player1.getDisplayName() + "'s Offer: &6" + player1CreditsOffer).asItem());
             Text.applyText(player, "&aAdded &6" + creditsOffered + " Nuggets &ato the trade!");
-            Text.applyText(player2, "&a" + player.getDisplayName() + "added &6" + creditsOffered + " Nuggets &ato the trade!");
+            Text.applyText(player2, "&a" + player.getDisplayName() + " added &6" + creditsOffered + " Nuggets &ato the trade!");
         } else {
             player2CreditsOffer = player2CreditsOffer + creditsOffered;
             tradeInv2.setItem(4, new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&7Your Offer: &6" + player2CreditsOffer).asItem());
             tradeInv1.setItem(22, new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&7" +
                     player2.getDisplayName() + "'s Offer: &6" + player2CreditsOffer).asItem());
             Text.applyText(player, "&aAdded &6" + creditsOffered + " Nuggets &ato the trade!");
-            Text.applyText(player1, "&a" + player.getDisplayName() + "added &6" + creditsOffered + " Nuggets &ato the trade!");
+            Text.applyText(player1, "&a" + player.getDisplayName() + " added &6" + creditsOffered + " Nuggets &ato the trade!");
         }
     }
     public Inventory getInv(Player p) {
@@ -99,41 +104,42 @@ public class Trade {
         player1.openInventory(tradeInv1);
         player2.openInventory(tradeInv2);
     }
-    public void addItem(Player player, CraftingIngrediant item) {
+    public void addItem(Player player, TradeItem tradeItem) {
         List<Integer> tradeSlots1 = Arrays.asList(1, 2, 3, 10, 11, 12, 19, 20, 21);
         List<Integer> tradeSlots2 = Arrays.asList(5, 6, 7, 14, 15, 16, 23, 24, 25);
+        Items item = tradeItem.getItemInfo().getItem();
         if (player1.getUniqueId() == player.getUniqueId()) {
-            player1Offer.add(item);
+            player1Offer.add(tradeItem);
             for (int i : tradeSlots1) {
                 if (tradeInv1.getItem(i) == null) {
-                    ItemStack itemStack = Items.buildItem(item.getItems());
-                    itemStack.setAmount(item.getAmount());
+                    ItemStack itemStack = Items.buildItem(item);
+                    itemStack.setAmount(tradeItem.getAmount());
                     tradeInv1.setItem(i, itemStack);
                     break;
                 }
             }
             for (int i : tradeSlots2) {
                 if (tradeInv2.getItem(i) == null) {
-                    ItemStack itemStack = Items.buildItem(item.getItems());
-                    itemStack.setAmount(item.getAmount());
+                    ItemStack itemStack = Items.buildItem(item);
+                    itemStack.setAmount(tradeItem.getAmount());
                     tradeInv2.setItem(i, itemStack);
                     break;
                 }
             }
         } else {
-            player2Offer.add(item);
+            player2Offer.add(tradeItem);
             for (int i : tradeSlots1) {
                 if (tradeInv2.getItem(i) == null) {
-                    ItemStack itemStack = Items.buildItem(item.getItems());
-                    itemStack.setAmount(item.getAmount());
+                    ItemStack itemStack = Items.buildItem(item);
+                    itemStack.setAmount(tradeItem.getAmount());
                     tradeInv2.setItem(i, itemStack);
                     break;
                 }
             }
             for (int i : tradeSlots2) {
                 if (tradeInv1.getItem(i) == null) {
-                    ItemStack itemStack = Items.buildItem(item.getItems());
-                    itemStack.setAmount(item.getAmount());
+                    ItemStack itemStack = Items.buildItem(item);
+                    itemStack.setAmount(tradeItem.getAmount());
                     tradeInv1.setItem(i, itemStack);
                     break;
                 }
@@ -141,14 +147,17 @@ public class Trade {
         }
     }
     public void deny() {
-        for (CraftingIngrediant item : player1Offer) {
-            ItemStack itemStack = Items.buildItem(item.getItems());
-            itemStack.setAmount(item.getAmount());
+        for (TradeItem tradeItem : player1Offer) {
+
+            ItemStack itemStack = Items.buildItem(tradeItem.getItemInfo().getItem());
+            Items.updateItem(itemStack, tradeItem.getItemInfo());
+            itemStack.setAmount(tradeItem.getAmount());
             player1.getInventory().addItem(itemStack);
         }
-        for (CraftingIngrediant item : player2Offer) {
-            ItemStack itemStack = Items.buildItem(item.getItems());
-            itemStack.setAmount(item.getAmount());
+        for (TradeItem tradeItem : player2Offer) {
+            ItemStack itemStack = Items.buildItem(tradeItem.getItemInfo().getItem());
+            Items.updateItem(itemStack, tradeItem.getItemInfo());
+            itemStack.setAmount(tradeItem.getAmount());
             player2.getInventory().addItem(itemStack);
         }
         Text.applyText(player1, "&cTrade cancelled!");
@@ -175,31 +184,35 @@ public class Trade {
             player2Accepted = true;
         }
         if (player1Accepted && player2Accepted) {
-            for (CraftingIngrediant item : player1Offer) {
-                ItemStack itemStack = Items.buildItem(item.getItems());
-                itemStack.setAmount(item.getAmount());
+            for (TradeItem tradeItem : player1Offer) {
+                ItemStack itemStack = Items.buildItem(tradeItem.getItemInfo().getItem());
+                Items.updateItem(itemStack, tradeItem.getItemInfo());
+                itemStack.setAmount(tradeItem.getAmount());
                 player2.getInventory().addItem(itemStack);
             }
-            for (CraftingIngrediant item : player2Offer) {
-                ItemStack itemStack = Items.buildItem(item.getItems());
-                itemStack.setAmount(item.getAmount());
+            for (TradeItem tradeItem : player2Offer) {
+                ItemStack itemStack = Items.buildItem(tradeItem.getItemInfo().getItem());
+                Items.updateItem(itemStack, tradeItem.getItemInfo());
+                itemStack.setAmount(tradeItem.getAmount());
                 player1.getInventory().addItem(itemStack);
             }
             Text.applyText(player1, "&aTrade &e" + player1.getDisplayName() + " &e☛ " +
                       " ☚ " + player2.getDisplayName() + " &aCOMPLETE!");
             Text.applyText(player2, "&aTrade &e" + player2.getDisplayName() + " &e☛ " +
                     " ☚ " + player1.getDisplayName() + " &aCOMPLETE!");
-            for (CraftingIngrediant item : player1Offer) {
-                Text.applyText(player1, "&c&l- &r" +
-                        item.getItems().getRarity().getColor() + item.getItems().getName());
-                Text.applyText(player2, "&a&l+ &r" +
-                        item.getItems().getRarity().getColor() + item.getItems().getName());
+            for (TradeItem tradeItem : player1Offer) {
+                Items item = tradeItem.getItemInfo().getItem();
+                Text.applyText(player1, "&7x" + tradeItem.getAmount() + " &c&l- &r" +
+                        item.getRarity().getColor() + item.getName());
+                Text.applyText(player2, "&7x" + tradeItem.getAmount() + " &a&l+ &r" +
+                        item.getRarity().getColor() + item.getName());
             }
-            for (CraftingIngrediant item : player2Offer) {
-                Text.applyText(player2, "&c&l- &r" +
-                        item.getItems().getRarity().getColor() + item.getItems().getName());
-                Text.applyText(player1, "&a&l+ &r" +
-                        item.getItems().getRarity().getColor() + item.getItems().getName());
+            for (TradeItem tradeItem : player2Offer) {
+                Items item = tradeItem.getItemInfo().getItem();
+                Text.applyText(player2, "&7x" + tradeItem.getAmount() + " &c&l- &r" +
+                        item.getRarity().getColor() + item.getName());
+                Text.applyText(player1, "&7x" + tradeItem.getAmount() + " &a&l+ &r" +
+                        item.getRarity().getColor() + item.getName());
             }
             if (player1CreditsOffer != 0) {
                 playerData1.setCredits(playerData1.getCredits() - player1CreditsOffer);
@@ -210,8 +223,8 @@ public class Trade {
                         player1CreditsOffer + " Nuggets");
             }
             if (player2CreditsOffer != 0) {
-                playerData1.setCredits(playerData1.getCredits() + player1CreditsOffer);
-                playerData2.setCredits(playerData2.getCredits() - player1CreditsOffer);
+                playerData1.setCredits(playerData1.getCredits() + player2CreditsOffer);
+                playerData2.setCredits(playerData2.getCredits() - player2CreditsOffer);
                 Text.applyText(player2, "&c&l- &6" +
                         player2CreditsOffer + " Nuggets");
                 Text.applyText(player1, "&a&l+ &6" +

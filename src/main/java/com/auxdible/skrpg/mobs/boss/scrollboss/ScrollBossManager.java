@@ -83,20 +83,18 @@ public class ScrollBossManager {
             } else if (lootWeight.get(player) >= 50) {
                 if (lootWeight.get(player) >= 100) {
                     Random random = new Random();
-                    int randomItem = random.nextInt(2);
-                    if (randomItem == 1) {
-                        player.getInventory().addItem(Items.buildItem(Items.CRAB_CLAW));
-                        Bukkit.broadcastMessage(Text.color("&6&lSWEET! &8| &r&a" + player.getDisplayName() + " &7picked up the &5Crab Claw&7!"));
-                    } else {
-                        player.getInventory().addItem(Items.buildItem(Items.CRAB_CROWN));
-                        Bukkit.broadcastMessage(Text.color("&6&lSWEET! &8| &r&a" + player.getDisplayName() + " &7picked up the &5Crab Crown&7!"));
-                    }
+                    int randomItem = random.nextInt(scrollBoss.getRareItem().size());
+                    Items items = scrollBoss.getRareItem().get(randomItem);
+                    player.getInventory().addItem(Items.buildItem(items));
+                    Bukkit.broadcastMessage(Text.color("&6&lSWEET! &8| &r&a" + player.getDisplayName() + " &7picked up the " +
+                            items.getRarity().getColor() + items.getName() + "&7!"));
+
 
                 }
                 if (lootWeight.get(player) >= 75) {
-                    player.getInventory().addItem(Items.buildItem(Items.CRAB_FRAGMENT));
+                    player.getInventory().addItem(Items.buildItem(scrollBoss.getCommonItem()));
                 }
-                player.getInventory().addItem(Items.buildItem(Items.CRAB_FRAGMENT));
+                player.getInventory().addItem(Items.buildItem(scrollBoss.getCommonItem()));
             }
         }
 

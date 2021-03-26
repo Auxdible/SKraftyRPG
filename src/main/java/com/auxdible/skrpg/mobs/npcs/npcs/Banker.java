@@ -99,7 +99,7 @@ public class Banker implements NPC {
 
     @Override
     public void onInteract(Player p, PlayerData playerData, SKRPG skrpg) {
-        PlayerListener.openBankMenu(p, playerData);
+        playerData.getPlayerActionManager().openBankMenu();
     }
 
     @Override

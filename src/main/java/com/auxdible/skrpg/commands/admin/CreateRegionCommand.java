@@ -40,6 +40,12 @@ public class CreateRegionCommand implements CommandExecutor {
                 return false;
             }
             skrpg.getPlayersInRegionSetup().remove(skrpg.getSetup(player));
+        } else if (args[0].equalsIgnoreCase("setloc")) {
+            if (args.length == 1) {
+                Text.applyText(player, "&cEnter a location ID!");
+                return false;
+            }
+            skrpg.getLocationManager().getLocations().put(args[1], player.getLocation());
         }
 
         return false;

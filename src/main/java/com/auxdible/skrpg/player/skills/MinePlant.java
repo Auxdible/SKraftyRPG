@@ -10,8 +10,8 @@ public enum MinePlant {
     CARROT(Items.CARROT, null, Material.CARROTS, 3),
     CANE(Items.CANE, null, Material.SUGAR_CANE, 2),
     POTATO(Items.POTATO, null, Material.POTATOES, 3),
-    SWEET_BERRIES(Items.SWEET_BERRIES, null, Material.SWEET_BERRY_BUSH, 7),
-    BEETROOT(Items.BEETROOT, null, Material.BEETROOTS, 5),
+    SWEET_BERRIES(Items.SWEET_BERRIES, null, Material.SWEET_BERRY_BUSH, 3),
+    BEETROOT(Items.BEETROOT, null, Material.BEETROOTS, 4),
     PUMPKIN(Items.PUMPKIN, null, Material.PUMPKIN, 10),
     MELON(Items.MELON, null, Material.MELON, 10);
     private Items commonDrop;

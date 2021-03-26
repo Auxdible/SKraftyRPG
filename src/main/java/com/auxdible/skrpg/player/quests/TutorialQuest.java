@@ -2,6 +2,7 @@ package com.auxdible.skrpg.player.quests;
 
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.items.CraftingIngrediant;
+import com.auxdible.skrpg.items.ItemInfo;
 import com.auxdible.skrpg.items.Items;
 import com.auxdible.skrpg.mobs.npcs.NPC;
 import com.auxdible.skrpg.mobs.npcs.NpcType;
@@ -15,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class TutorialQuest implements Quest {
     @Override
@@ -42,16 +44,24 @@ public class TutorialQuest implements Quest {
         return null;
     }
 
-    public void giveItems(Player player, PlayerData playerData, ItemStack itemStack, Items itemType, SKRPG skrpg) {
+    public void giveItems(Player player, PlayerData playerData, Items itemType, SKRPG skrpg) {
         if (playerData.getActiveQuest() != Quests.TUTORIAL) { return; }
-
-        if (itemType.equals(Items.WOOD) && itemStack.getAmount() >= 5 && playerData.getQuestPhase() == 2) {
+        int amount = 0;
+        for (ItemStack itemStack : Arrays.asList(player.getInventory().getContents())) {
+            ItemInfo itemInfo = ItemInfo.parseItemInfo(itemStack);
+            if (itemInfo != null) {
+                if (itemInfo.getItem() == itemType) {
+                    amount = amount + itemStack.getAmount();
+                }
+            }
+        }
+        if (itemType.equals(Items.WOOD) && amount >= 5 && playerData.getQuestPhase() == 2) {
             executePhase(3, player, skrpg);
-        } else if (itemType.equals(Items.WOODEN_PICKAXE) && itemStack.getAmount() >= 1 && playerData.getQuestPhase() == 3) {
+        } else if (itemType.equals(Items.WOODEN_PICKAXE) && amount >= 1 && playerData.getQuestPhase() == 3) {
             executePhase(4, player, skrpg);
-        } else if (itemType.equals(Items.STONE) && itemStack.getAmount() >= 25 && playerData.getQuestPhase() == 4) {
+        } else if (itemType.equals(Items.STONE) && amount >= 25 && playerData.getQuestPhase() == 4) {
             executePhase(5, player, skrpg);
-        } else if (itemType.equals(Items.WHEAT) && itemStack.getAmount() >= 50 && playerData.getQuestPhase() == 5) {
+        } else if (itemType.equals(Items.WHEAT) && amount >= 50 && playerData.getQuestPhase() == 5) {
             executePhase(6, player, skrpg);
         }
     }
@@ -160,5 +170,10 @@ public class TutorialQuest implements Quest {
 
 
 }
+
+    @Override
+    public String name() {
+        return "Beginnings";
+    }
 }
 

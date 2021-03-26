@@ -51,23 +51,23 @@ public class MenuCommand implements CommandExecutor {
                         Text.color("&8&m>               <")
                 )).asItem());
         ItemStack itemHelmet = new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE, 0).setName("&cNO HELMET").asItem();
-        if (player.getInventory().getHelmet().getType() != Material.AIR) {
+        if (player.getInventory().getHelmet() != null) {
             itemHelmet = player.getInventory().getHelmet();
         }
         ItemStack itemChestplate = new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE, 0).setName("&cNO CHESTPLATE").asItem();
-        if (player.getInventory().getChestplate().getType() != Material.AIR) {
+        if (player.getInventory().getChestplate() != null) {
             itemChestplate = player.getInventory().getChestplate();
         }
         ItemStack itemLeggings = new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE, 0).setName("&cNO LEGGINGS").asItem();
-        if (player.getInventory().getLeggings().getType() != Material.AIR) {
+        if (player.getInventory().getLeggings() != null) {
             itemLeggings = player.getInventory().getLeggings();
         }
         ItemStack itemBoots = new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE, 0).setName("&cNO BOOTS").asItem();
-        if (player.getInventory().getBoots().getType() != Material.AIR) {
+        if (player.getInventory().getBoots() != null) {
             itemBoots = player.getInventory().getBoots();
         }
         ItemStack item = new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE, 0).setName("&cNO ITEM").asItem();
-        if (player.getInventory().getItemInMainHand().getType() != Material.AIR) {
+        if (player.getInventory().getItemInMainHand() != null && player.getInventory().getItemInMainHand().getType() != Material.AIR) {
             item = player.getInventory().getItemInMainHand();
         }
         inv.setItem(10, itemHelmet);
@@ -82,7 +82,7 @@ public class MenuCommand implements CommandExecutor {
             inv.setItem(22, new ItemBuilder(Material.ENCHANTING_TABLE, 0).setName("&5Runic Table").asItem());
         }
         inv.setItem(13, new ItemBuilder(Material.CRAFTING_TABLE, 0).setName("&aCrafting Table").asItem());
-        int totalBalanceInBank = 0;
+        double totalBalanceInBank = 0;
         boolean hasBankLevel = false;
         List<String> lore = new ArrayList<>();
 

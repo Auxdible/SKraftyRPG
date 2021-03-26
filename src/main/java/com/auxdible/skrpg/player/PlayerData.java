@@ -7,6 +7,8 @@ import com.auxdible.skrpg.mobs.npcs.NPC;
 import com.auxdible.skrpg.player.collections.Collection;
 import com.auxdible.skrpg.player.economy.Bank;
 import com.auxdible.skrpg.player.economy.Trade;
+import com.auxdible.skrpg.player.effects.ActiveEffect;
+import com.auxdible.skrpg.player.effects.Effects;
 import com.auxdible.skrpg.player.quests.Quests;
 import com.auxdible.skrpg.player.skills.*;
 import com.auxdible.skrpg.regions.Region;
@@ -35,7 +37,7 @@ public class PlayerData {
     private int baseDefence;
     private int runicPoints;
     private UUID uuid;
-    private int credits;
+    private double credits;
     private Region region;
     private Combat combat;
     private Mining mining;
@@ -55,7 +57,9 @@ public class PlayerData {
     private Runics runics;
     private HashMap<RunicUpgrades, Integer> runicUpgrades;
     private int fifthRunicPoint;
-    public PlayerData(int maxHP, int maxEnergy, int strength, int defence, int speed, UUID uuid, int credits, Combat combat,
+    private PlayerAction playerAction;
+    private ArrayList<ActiveEffect> activeEffects;
+    public PlayerData(SKRPG skrpg, int maxHP, int maxEnergy, int strength, int defence, int speed, UUID uuid, double credits, Combat combat,
                       Mining mining, Herbalism herbalism, Crafting crafting, Runics runics, ArrayList<Bank> banks,
                       Date intrestDate, ArrayList<Collection> collections, Rarity sellAboveRarity, boolean toggleTrade, ArrayList<Quests> quests,
                       int runicPoints, HashMap<RunicUpgrades, Integer> runicUpgrades, int questPhase, Quests currentQuest) {
@@ -92,8 +96,54 @@ public class PlayerData {
         this.runics = runics;
         this.runicUpgrades = runicUpgrades;
         this.fifthRunicPoint = 0;
+        this.activeEffects = new ArrayList<>();
     }
 
+    public ArrayList<ActiveEffect> getActiveEffects() { return activeEffects; }
+    public void addEffect(ActiveEffect activeEffect) {
+        Player p = Bukkit.getPlayer(uuid);
+        int seconds = activeEffect.getSeconds() % 60;
+        int minutes = (activeEffect.getSeconds() / 60) % 60;
+        if (getEffect(activeEffect.getEffectType()) != null) {
+            if (getEffect(activeEffect.getEffectType()).getLevel() < activeEffect.getLevel()) {
+                activeEffects.remove(getEffect(activeEffect.getEffectType()));
+                activeEffects.add(activeEffect);
+            }
+            if (getEffect(activeEffect.getEffectType()).getSeconds() < activeEffect.getSeconds()) {
+                activeEffects.remove(getEffect(activeEffect.getEffectType()));
+                activeEffects.add(activeEffect);
+            }
+        } else {
+            activeEffects.add(activeEffect);
+        }
+        Text.applyText(p, "&7You applied " + activeEffect.getEffectType().getName() + " " + activeEffect.getLevel() + " &7for &a" + minutes + ":" + seconds + "&7!");
+    }
+    public ActiveEffect getEffect(Effects effects) {
+        for (ActiveEffect activeEffect : activeEffects) {
+            if (activeEffect.getEffectType() == effects) {
+                return activeEffect;
+            }
+        }
+        return null;
+    }
+    public void updateEffects() {
+        Player p = Bukkit.getPlayer(uuid);
+        List<ActiveEffect> expiredEffects = new ArrayList<>();
+        for (ActiveEffect activeEffect : getActiveEffects()) {
+            activeEffect.setSeconds(activeEffect.getSeconds() - 1);
+            if (activeEffect.getSeconds() <= 0) {
+                expiredEffects.add(activeEffect);
+            }
+        }
+        for (ActiveEffect expiredEffect : expiredEffects) {
+            activeEffects.remove(expiredEffect);
+            Text.applyText(p, "&cYour " + expiredEffect.getEffectType().getName() + " " + expiredEffect.getLevel() + " &cexpired!");
+        }
+    }
+
+    public void setActiveEffects(ArrayList<ActiveEffect> activeEffects) { this.activeEffects = activeEffects; }
+
+    public void setPlayerAction(PlayerAction playerAction) { this.playerAction = playerAction; }
     public HashMap<RunicUpgrades, Integer> getRunicUpgrades() { return runicUpgrades; }
     public Runics getRunics() { return runics; }
     public int getRunicPoints() { return runicPoints; }
@@ -122,6 +172,7 @@ public class PlayerData {
         getRunics().levelUpSkill(p, this, skrpg);
         this.runicPoints = runicPoints + runicPointsGained; }
     public List<NPC> getRenderedNPCs() { return renderedNPCs; }
+    public PlayerAction getPlayerActionManager() { return playerAction; }
     public void setQuestPhase(int questPhase) { this.questPhase = questPhase; }
     public int getQuestPhase() { return questPhase; }
     public void setActiveQuest(Quests activeQuest) { this.activeQuest = activeQuest; }
@@ -156,6 +207,9 @@ public class PlayerData {
         }
 
     }
+
+    public void setRenderedNPCs(List<NPC> renderedNPCs) { this.renderedNPCs = renderedNPCs; }
+
     public Date getIntrestDate() { return intrestDate; }
     public void setIntrestDate(Date intrestDate) { this.intrestDate = intrestDate; }
     public ArrayList<Bank> getBanks() { return banks; }
@@ -171,8 +225,8 @@ public class PlayerData {
     public int getBaseEnergy() { return baseEnergy; }
     public int getBaseHP() { return baseHP; }
     public int getBaseStrength() { return baseStrength; }
-    public int getCredits() { return credits; }
-    public void setCredits(int credits) { this.credits = credits;
+    public double getCredits() { return credits; }
+    public void setCredits(double credits) { this.credits = credits;
     Bukkit.getPlayer(uuid).getScoreboard().getTeam("credits").setSuffix(credits + "");
     }
     public void setDefence(int defence) { this.defence = defence; }
@@ -188,7 +242,9 @@ public class PlayerData {
             setHp(getMaxHP());
         } else {
             if (Math.round(getHp() * 20
-                    / getMaxHP()) != 0) {
+                    / getMaxHP()) != 0 && !(Math.round(getHp() * 20
+                    / getMaxHP()) < 0)) {
+
                 Bukkit.getPlayer(uuid).setHealth(Math.round(getHp() * 20
                         / getMaxHP()));
             } else {
@@ -207,124 +263,8 @@ public class PlayerData {
     public void setBaseHP(int setBaseHP) { this.baseHP = setBaseHP; this.maxHP = setBaseHP; }
     public void setBaseStrength(int setBaseStrength) { this.baseStrength = setBaseStrength; this.strength = setBaseStrength; }
     public Crafting getCrafting() { return crafting; }
-    public void damage(int damage, SKRPG skrpg) {
-        Player player = Bukkit.getPlayer(uuid);
-        if (skrpg.getRaidManager().isInRaid(player)) {
-            Text.applyText(player, "&cYou deflected a hit because you are in a raid!");
-            player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 1.0f);
-            return;
-        }
-        double damageReduction = (skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getDefence() /
-                (100.0 + skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getDefence()));
-        int nerfedDamage = (int) Math.round(damage - (damage *
-                damageReduction));
-        if (skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getHp() - nerfedDamage < 0) {
-            skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setHp(0);
-        } else {
-            skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setHp(
-                    skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getHp() - nerfedDamage);
-        }
-        if (getHp() <= 0) {
-            kill(player, skrpg);
-        }
-        ArmorStand damageIndictator = (ArmorStand) player.getWorld()
-                .spawnEntity(player.getLocation(), EntityType.ARMOR_STAND);
-        damageIndictator.setInvulnerable(true);
-        damageIndictator.setCollidable(false);
-        damageIndictator.setInvisible(true);
-        damageIndictator.setCustomName(Text.color("&c" + nerfedDamage + " &4&l☄"));
-        damageIndictator.setCustomNameVisible(true);
-        damageIndictator.setSmall(true);
-        damageIndictator.setVelocity(new Vector(0, 0.5, 0));
-        new BukkitRunnable() {
-            int quarterSecondsAlive = 0;
-            @Override
-            public void run() {
-                quarterSecondsAlive++;
-                if (quarterSecondsAlive == 8) {
-                    damageIndictator.remove();
-                    cancel();
-                }
-            }
-        }.runTaskTimer(skrpg, 0, 5);
-    }
-    public void damagePlayer(Player damager, int damage, SKRPG skrpg) {
-        Player player = Bukkit.getPlayer(getUuid());
-        if (player == null) { return; }
-        if (skrpg.getRaidManager().isInRaid(player)) {
-            Text.applyText(player, "&cYou deflected a hit from a player! (" + damager.getDisplayName() + ") because you are in a raid!");
-            player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 1.0f);
-            return;
-        }
-        double damageReduction = (skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getDefence() /
-                (2000.0 + skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getDefence()));
-        int nerfedDamage = (int) Math.round(damage - (damage *
-                damageReduction));
-
-        if (skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getHp() - nerfedDamage < 0) {
-            skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setHp(0);
-        } else {
-            skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setHp(
-                    skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getHp() - nerfedDamage);
-        }
-        Text.applyText(player, "&c" + damager.getDisplayName() + " hit you for " + nerfedDamage + "♥!");
-        Text.applyText(damager, "&cHit " + player.getDisplayName() + " for " + nerfedDamage + "♥!");
-        if (getDefence() > 250 && getHp() > 100) {
-            damager.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 0.5f, 0.4f);
-        }
-        if (getHp() <= 0) {
-            killPlayer(damager, skrpg);
-        }
-        ArmorStand damageIndictator = (ArmorStand) player.getWorld()
-                .spawnEntity(player.getLocation(), EntityType.ARMOR_STAND);
-        damageIndictator.setInvulnerable(true);
-        damageIndictator.setCollidable(false);
-        damageIndictator.setInvisible(true);
-        damageIndictator.setCustomName(Text.color("&c" + nerfedDamage + " &4&l☄"));
-        damageIndictator.setCustomNameVisible(true);
-        damageIndictator.setSmall(true);
-        damageIndictator.setVelocity(new Vector(0, 0.5, 0));
-        new BukkitRunnable() {
-            int quarterSecondsAlive = 0;
-            @Override
-            public void run() {
-                quarterSecondsAlive++;
-                if (quarterSecondsAlive == 8) {
-                    damageIndictator.remove();
-                    cancel();
-                }
-            }
-        }.runTaskTimer(skrpg, 0, 5);
 
 
-    }
-    public void kill(Player player, SKRPG skrpg) {
 
-            if (skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getRegion() != null) {
-                player.teleport(skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getRegion().getSpawnLocation());
-            } else {
-                player.teleport(Bukkit.getWorld(skrpg.getConfig().getString("rpgWorld")).getSpawnLocation());
-            }
-            player.playSound(player.getLocation(), Sound.ENTITY_BLAZE_DEATH, 1.0f, 0.5f);
-            player.sendTitle(Text.color("&4&l☠"), Text.color("&c&lYOU DIED"), 40, 100, 10);
-            Text.applyText(player, "&cYou lost &6" + skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getCredits() / 2 + " Nuggets&c!");
-            skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setCredits(skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getCredits() / 2);
 
-            skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setHp(
-                    skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getMaxHP());
-    }
-    public void killPlayer(Player killer, SKRPG skrpg) {
-        Player player = Bukkit.getPlayer(uuid);
-        if (skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getRegion() != null) {
-            player.teleport(skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getRegion().getSpawnLocation());
-        } else {
-            player.teleport(Bukkit.getWorld(skrpg.getConfig().getString("rpgWorld")).getSpawnLocation());
-        }
-        player.playSound(player.getLocation(), Sound.ENTITY_BLAZE_DEATH, 1.0f, 0.5f);
-        player.sendTitle(Text.color("&4&l☠"), Text.color("&c&lYOU DIED"), 40, 100, 10);
-        Text.applyText(player, "&cYou were killed by " + killer.getDisplayName() + "&c!");
-
-        skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setHp(
-                skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getMaxHP());
-    }
 }

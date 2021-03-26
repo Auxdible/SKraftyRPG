@@ -15,7 +15,9 @@ public enum CollectionType {
     OBSIDIAN(Items.OBSIDIAN, Arrays.asList(Tiers._1, Tiers._2), Arrays.asList(Arrays.asList(Items.COMPACT_OBSIDIAN), Arrays.asList(
             Items.MINER_HELMET, Items.MINER_CHESTPLATE, Items.MINER_LEGGINGS, Items.MINER_BOOTS))),
     IRON(Items.IRON_INGOT, Arrays.asList(Tiers._1), Arrays.asList(Arrays.asList(Items.COMPACT_IRON))),
-    DIAMONDS(Items.DIAMOND, Arrays.asList(Tiers._1), Arrays.asList(Arrays.asList(Items.COMPACT_DIAMOND)));
+    DIAMONDS(Items.DIAMOND, Arrays.asList(Tiers._1), Arrays.asList(Arrays.asList(Items.COMPACT_DIAMOND))),
+    CRYSTALLITE(Items.CRYSTALLITE, Arrays.asList(Tiers._1), Arrays.asList(Arrays.asList(Items.COMPACT_CRYSTALLITE))),
+    STRING(Items.STRING, Arrays.asList(Tiers._1), Arrays.asList(Arrays.asList(Items.COMPACT_STRING)));
     private Items item;
     private List<Tiers> tiers;
     private List<List<Items>> tierRewards;

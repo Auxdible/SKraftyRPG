@@ -5,6 +5,8 @@ import com.auxdible.skrpg.mobs.npcs.NPC;
 import com.auxdible.skrpg.mobs.npcs.NpcType;
 import com.auxdible.skrpg.mobs.npcs.PurchasableItem;
 import com.auxdible.skrpg.player.PlayerData;
+import com.auxdible.skrpg.player.quests.Quests;
+import com.auxdible.skrpg.utils.ItemBuilder;
 import com.auxdible.skrpg.utils.Text;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
@@ -17,7 +19,10 @@ import org.bukkit.Sound;
 import org.bukkit.craftbukkit.v1_16_R3.CraftServer;
 import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
 import org.bukkit.entity.*;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -92,6 +97,66 @@ public class OldMiner implements NPC {
     @Override
     public void onInteract(Player p, PlayerData playerData, SKRPG skrpg) {
         p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_HURT, 1.0f, 0.3f);
+        if (playerData.getActiveQuest() != Quests.ABANDONED_MINES && !playerData.getCompletedQuests().contains(Quests.ABANDONED_MINES)) {
+            Text.applyText(p, "&e&lOld Miner &r&8| &r&7Hello. These mines have been long abandoned, but many adventurers wish to explore them.");
+            new BukkitRunnable() {
+
+                @Override
+                public void run() {
+                    p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_HURT, 1.0f, 0.3f);
+                    Text.applyText(p, "&e&lOld Miner &r&8| &7I see you are intrested as well, come with me.");
+                }
+            }.runTaskLater(skrpg, 30);
+            new BukkitRunnable() {
+
+                @Override
+                public void run() {
+                    Quests.startQuest(Quests.ABANDONED_MINES, p, playerData, skrpg);
+                }
+            }.runTaskLater(skrpg, 60);
+            new BukkitRunnable() {
+
+                @Override
+                public void run() {
+                        playerData.setQuestPhase(2);
+                }
+            }.runTaskLater(skrpg, 400);
+        } else if (playerData.getActiveQuest() == Quests.ABANDONED_MINES && playerData.getQuestPhase() == 2) {
+            playerData.getActiveQuest().getQuest().executePhase(3, p, skrpg);
+        } else {
+            Inventory inv = Bukkit.createInventory(null, 54, "The Lift");
+            for (int i = 0; i <= 17; i++) {
+                inv.setItem(i, new ItemBuilder(Material.WHITE_STAINED_GLASS_PANE, 0).asItem());
+            }
+            for (int i = 18; i <= 26; i++) {
+                inv.setItem(i, new ItemBuilder(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 0).asItem());
+            }
+            for (int i = 18; i <= 44; i++) {
+                inv.setItem(i, new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE, 0).asItem());
+            }
+            for (int i = 45; i <= 53; i++) {
+                inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).asItem());
+            }
+            inv.setItem(3, new ItemBuilder(Material.GRASS_BLOCK, 0).setName("&aSurface")
+                    .setLore(Arrays.asList(" ", Text.color("&7Return to the &aSurface"), " ")).asItem());
+            inv.setItem(4, new ItemBuilder(Material.COAL_ORE, 0).setName("&aThe Coal Mines")
+                    .setLore(Arrays.asList(" ", Text.color("&7Required Mining Level: &60"), " ")).asItem());
+            inv.setItem(13, new ItemBuilder(Material.IRON_ORE, 0).setName("&aIron Quarry")
+                    .setLore(Arrays.asList(" ", Text.color("&7Required Mining Level: &62"), " ")).asItem());
+            inv.setItem(22, new ItemBuilder(Material.GOLD_ORE, 0).setName("&aGold Caves")
+                    .setLore(Arrays.asList(" ", Text.color("&7Required Mining Level: &65"), " ")).asItem());
+            inv.setItem(31, new ItemBuilder(Material.LAPIS_ORE, 0).setName("&aLapis Tunnels")
+                    .setLore(Arrays.asList(" ", Text.color("&7Required Mining Level: &67"), " ")).asItem());
+            inv.setItem(33, new ItemBuilder(Material.REDSTONE_ORE, 0).setName("&aRedstone Ravine")
+                    .setLore(Arrays.asList(" ", Text.color("&7Required Mining Level: &68"), " ")).asItem());
+            inv.setItem(40, new ItemBuilder(Material.WHITE_STAINED_GLASS, 0).setName("&aCrystallite Cavern")
+                    .setLore(Arrays.asList(" ", Text.color("&7Required Mining Level: &610"), " ")).asItem());
+            inv.setItem(49, new ItemBuilder(Material.DIAMOND_ORE, 0).setName("&aDiamond Depths")
+                    .setLore(Arrays.asList(" ", Text.color("&7Required Mining Level: &612"), " ")).asItem());
+            inv.setItem(51, new ItemBuilder(Material.OBSIDIAN, 0).setName("&aObsidian Reserve")
+                    .setLore(Arrays.asList(" ", Text.color("&7Required Mining Level: &614"), " ")).asItem());
+            p.openInventory(inv);
+        }
     }
 
     @Override
