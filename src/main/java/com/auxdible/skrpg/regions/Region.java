@@ -5,6 +5,8 @@ import com.auxdible.skrpg.utils.Text;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 
+import java.util.List;
+
 
 public class Region {
     private double x;
@@ -18,9 +20,11 @@ public class Region {
     private Location raidLocation;
     private Guild controllingGuild;
     private boolean loaded;
+    private List<RegionFlags> regionFlagsList;
     private ArmorStand stand;
     public Region(double x, double z, double x2, double z2, String name, int id, Location spawnLocation,
-                  Location bannerLocation, Guild controllingGuild, Location raidLocation, boolean loaded) {
+                  Location bannerLocation, Guild controllingGuild, Location raidLocation, boolean loaded,
+                  List<RegionFlags> regionFlagsList) {
         this.x = x;
         this.z = z;
         this.x2 = x2;
@@ -32,7 +36,10 @@ public class Region {
         this.controllingGuild = controllingGuild;
         this.loaded = loaded;
         this.raidLocation = raidLocation;
+        this.regionFlagsList = regionFlagsList;
     }
+
+    public List<RegionFlags> getRegionFlagsList() { return regionFlagsList; }
     public ArmorStand getStand() { return stand; }
     public void setStand(ArmorStand stand) { this.stand = stand; }
     public Location getRaidLocation() { return raidLocation; }

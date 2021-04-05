@@ -94,7 +94,7 @@ public class TutorialQuest implements Quest {
                         }
                     }
                 }
-            }.runTaskTimer(skrpg, 0, 10);
+            }.runTaskTimer(skrpg, 0, 60);
         } else if (phase == 2) {
             playerData.setQuestPhase(2);
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_AMBIENT, 1.0f, 1.0f);

@@ -61,18 +61,22 @@ public class ValissaArachneScrollBoss implements ScrollBoss {
             public void run() {
                 if (isDead) {
                     cancel();
+                    return;
                 }
                 if (mob == null) {
                     cancel();
+                    return;
                 }
                 if (mob.getEnt() == null) {
                     cancel();
+                    return;
                 }
                 if (skrpg.getMobManager().getMobData(mob.getEnt()) == null) {
                     cancel();
+                    return;
                 }
                 Random random = new Random();
-                int attack = random.nextInt(4);
+                int attack = random.nextInt(2);
                 if (attack == 0) {
                     if (lastDamager != null) {
                         mob.getEnt().teleport(lastDamager.getLocation());
@@ -139,7 +143,7 @@ public class ValissaArachneScrollBoss implements ScrollBoss {
                     }
                 }
 
-        }.runTaskTimer(skrpg, 0, 160);
+        }.runTaskTimer(skrpg, 0, 400);
     }
     @Override
     public MobType bossMobType() {

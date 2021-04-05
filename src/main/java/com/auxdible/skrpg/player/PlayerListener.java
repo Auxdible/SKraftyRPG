@@ -25,6 +25,7 @@ import com.auxdible.skrpg.player.quests.TutorialQuest;
 import com.auxdible.skrpg.player.skills.*;
 import com.auxdible.skrpg.mobs.Mob;
 import com.auxdible.skrpg.mobs.MobType;
+import com.auxdible.skrpg.regions.RegionFlags;
 import com.auxdible.skrpg.utils.ItemBuilder;
 import com.auxdible.skrpg.utils.ItemTweaker;
 import com.auxdible.skrpg.utils.Text;
@@ -299,7 +300,13 @@ public class PlayerListener implements Listener {
             return;
         }
         PlayerData playerData = skrpg.getPlayerManager().getPlayerData(p.getUniqueId());
-
+        if (playerData.getRegion() != null) {
+            if (playerData.getRegion().getRegionFlagsList().contains(RegionFlags.DECORATION_REGION)) {
+                p.playSound(p.getLocation(), Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f);
+                e.setCancelled(true);
+                return;
+            }
+        }
         playerData.getPlayerActionManager().onBreakBlock(e.getBlock());
         e.setCancelled(true);
     }
@@ -736,14 +743,6 @@ public class PlayerListener implements Listener {
                             playerData.getTrade().addItem(p, new TradeItem(itemInfo, e.getCurrentItem().getAmount()));
                             e.getClickedInventory().setItem(e.getSlot(), null);
                         }
-                    }
-                    for (Items items : EnumSet.allOf(Items.class)) {
-
-                            if (ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName()).equals(items.getName())) {
-
-
-                                break;
-                            }
                     }
                 }
                 if (e.getCurrentItem() != null) {
@@ -1557,7 +1556,12 @@ public class PlayerListener implements Listener {
                                     }
                                 }
                             }
-                            if (coalTotal < ((itemInfo.getRarity().getPriority() * itemInfo.getQuality().getStar() * 5)
+                            if (coalTotal > ((itemItemInfo.getRarity().getPriority() * itemItemInfo.getQuality().getStar() * 5)
+                                    * e.getInventory().getItem(22).getAmount())) {
+                                coalTotal = ((itemItemInfo.getRarity().getPriority() * itemItemInfo.getQuality().getStar() * 5)
+                                        * e.getInventory().getItem(22).getAmount());
+                            }
+                            if (coalTotal < ((itemItemInfo.getRarity().getPriority() * itemItemInfo.getQuality().getStar() * 5)
                                     * e.getInventory().getItem(22).getAmount())) {
                                 Text.applyText(p, "&cYou need more &8Coal &cto process this!");
                                 p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
@@ -1615,7 +1619,12 @@ public class PlayerListener implements Listener {
                                     }
                                 }
                             }
-                            if (ironTotal < ((itemInfo.getRarity().getPriority() * itemInfo.getQuality().getStar() * 5)
+                            if (ironTotal > ((itemItemInfo.getRarity().getPriority() * itemItemInfo.getQuality().getStar() * 5)
+                                    * e.getInventory().getItem(22).getAmount())) {
+                                ironTotal = ((itemItemInfo.getRarity().getPriority() * itemItemInfo.getQuality().getStar() * 5)
+                                        * e.getInventory().getItem(22).getAmount());
+                            }
+                            if (ironTotal < ((itemItemInfo.getRarity().getPriority() * itemItemInfo.getQuality().getStar() * 5)
                                     * e.getInventory().getItem(22).getAmount())) {
                                 Text.applyText(p, "&cYou need more &fIron &cto process this!");
                                 p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
@@ -1626,7 +1635,10 @@ public class PlayerListener implements Listener {
                                 e.getInventory().removeItem(e.getInventory().getItem(22));
                                 p.playSound(p.getLocation(), Sound.BLOCK_NETHER_SPROUTS_BREAK, 1.0f, 0.2f);
                                 for (ItemStack itemStack : removedIron) {
-                                    p.getInventory().removeItem(itemStack);
+                                    if (itemStack.getAmount() > ironTotal) {
+                                        itemStack.setAmount(itemStack.getAmount() - ironTotal);
+                                    }
+                                    ironTotal = ironTotal - itemStack.getAmount();
                                 }
                             }
 
@@ -1635,8 +1647,6 @@ public class PlayerListener implements Listener {
                 }
             }
             updateProcess(e.getView().getTopInventory());
-        } else if (e.getView().getTitle().equals("Cook Food Base")) {
-
         }
     }
     public void updateProcess(Inventory inv) {
@@ -1732,10 +1742,11 @@ public class PlayerListener implements Listener {
         for (Foods foods : EnumSet.allOf(Foods.class)) {
             if (foods.getOriginalBase() == foodBase) {
                 if (foods.getAppliedItem() == itemInfoItem.getItem()) {
-                    if (foods.isProcessed() == itemInfoItem.isProcessed() || foods.isCooked() == itemInfoItem.isCooked()) {
-                        food = foods;
+                    if (foods.getOriginalBase() != null) {
+                        if (foods.isProcessed() == itemInfoItem.isProcessed() || foods.isCooked() == itemInfoItem.isCooked()) {
+                            food = foods;
+                        }
                     }
-
                 }
             }
         }
@@ -1938,9 +1949,9 @@ public class PlayerListener implements Listener {
     public void onChatEvent(AsyncPlayerChatEvent e) {
         Player p = e.getPlayer();
         if (skrpg.getSetup(p) != null) {
-            if (e.getMessage().equals("okay") && skrpg.getSetup(p).getStage() != 6) {
+            if (e.getMessage().equals("okay") && skrpg.getSetup(p).getStage() != 6 && skrpg.getSetup(p).getStage() != 7) {
                 skrpg.getSetup(p).nextStage(null);
-            } else if (skrpg.getSetup(p).getStage() == 6) {
+            } else if (skrpg.getSetup(p).getStage() == 6 || skrpg.getSetup(p).getStage() == 7) {
                 skrpg.getSetup(p).nextStage(e.getMessage());
             }
         }

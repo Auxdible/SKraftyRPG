@@ -120,9 +120,9 @@ public class OldMiner implements NPC {
                 public void run() {
                         playerData.setQuestPhase(2);
                 }
-            }.runTaskLater(skrpg, 400);
+            }.runTaskLater(skrpg, 200);
         } else if (playerData.getActiveQuest() == Quests.ABANDONED_MINES && playerData.getQuestPhase() == 2) {
-            playerData.getActiveQuest().getQuest().executePhase(3, p, skrpg);
+            playerData.getActiveQuest().getQuest().executePhase(2   , p, skrpg);
         } else {
             Inventory inv = Bukkit.createInventory(null, 54, "The Lift");
             for (int i = 0; i <= 17; i++) {

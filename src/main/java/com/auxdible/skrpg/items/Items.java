@@ -27,7 +27,7 @@ public enum Items {
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.WOOD, 32), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.WOOD, 32), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.WOOD, 32), new CraftingIngrediant(Items.NONE, 0)), 1, 100, SellMerchant.WOODCUTTING, 300, true),
-    STONE(Rarity.UNCOMMON, "Stone", new ItemBuilder(Material.COBBLESTONE, 0).asItem(), 0, 0, 0, 0, 0, 0,
+    STONE(Rarity.COMMON, "Stone", new ItemBuilder(Material.COBBLESTONE, 0).asItem(), 0, 0, 0, 0, 0, 0,
             "STONE", ItemType.MATERIAL, null, SellMerchant.MINING, 1, false),
     /* ------ STONE COLLECTION ------ */
     COMPACT_STONE(Rarity.RARE, "Compact Stone", new ItemBuilder(Material.STONE, 0).asItem(),
@@ -36,7 +36,7 @@ public enum Items {
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STONE, 32), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.STONE, 32), new CraftingIngrediant(Items.NONE, 0)), 1, 50, SellMerchant.MINING, 100, true),
     GEMSTONE_ORE(Rarity.UNCOMMON, "Gemstone Ore", new ItemBuilder(Material.EMERALD, 0).asItem(), 0, 0, 0, 0, 0, 0, "GEMSTONE", ItemType.MATERIAL, Arrays.asList(Text.color("&7An uncommon material extracted from any ore.")), SellMerchant.MINING, 50, true),
-    COMPACT_GEMSTONE(Rarity.EPIC, "Compact Gemstone", new ItemBuilder(Material.EMERALD_BLOCK, 0).asItem(),
+    COMPACT_GEMSTONE(Rarity.RARE, "Compact Gemstone", new ItemBuilder(Material.EMERALD_BLOCK, 0).asItem(),
             0, 0, 0, 0, 0, 0, "COMPACT_GEMSTONE", ItemType.MATERIAL, null, Arrays.asList(
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.GEMSTONE_ORE, 32), new CraftingIngrediant(Items.NONE, 0),
             new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.GEMSTONE_ORE, 32), new CraftingIngrediant(Items.NONE, 0),
@@ -87,7 +87,7 @@ public enum Items {
                     new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.NONE, 0)), 1, 24, SellMerchant.COMBAT, 25000, true),
     MINER_CHESTPLATE(Rarity.UNCOMMON, "Miner Chestplate", ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 53, 0, 68), 0, 0, 100, 0, 0, 125, "MINER_CHESTPLATE", ItemType.ARMOR, null,
             Arrays.asList(new CraftingIngrediant(Items.COMPACT_OBSIDIAN, 1), new CraftingIngrediant(Items.NONE, 0), new CraftingIngrediant(Items.COMPACT_OBSIDIAN, 1),
-                    new CraftingIngrediant(Items.COMPACT_OBSIDIAN, 1), new CraftingIngrediant(Items.COMPACT_STONE, 8), new CraftingIngrediant(Items.COMPACT_OBSIDIAN, 1),
+                    new CraftingIngrediant(Items.COMPACT_OBSIDIAN, 1), new CraftingIngrediant(Items.COMPACT_STONE, 2), new CraftingIngrediant(Items.COMPACT_OBSIDIAN, 1),
                     new CraftingIngrediant(Items.COMPACT_OBSIDIAN, 1), new CraftingIngrediant(Items.COMPACT_OBSIDIAN, 1), new CraftingIngrediant(Items.COMPACT_OBSIDIAN, 1)), 1, 24, SellMerchant.COMBAT, 25000, true),
     MINER_LEGGINGS(Rarity.UNCOMMON, "Miner Leggings", ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 53, 0, 68), 0, 0, 100, 0, 0, 125, "MINER_LEGGINGS", ItemType.ARMOR, null,
             Arrays.asList(new CraftingIngrediant(Items.COMPACT_OBSIDIAN, 1), new CraftingIngrediant(Items.COMPACT_DIAMOND, 1), new CraftingIngrediant(Items.COMPACT_OBSIDIAN, 1),
@@ -383,11 +383,19 @@ public enum Items {
             "56f88d31-bbf3-497a-923c-2b4c5c29e4d6"), 0, 0, 0, 0, 0, 0, "REDSTONE_CIRCUIT", ItemType.RUNIC_STONE, Arrays.asList(Text.color("&7Apply the &5Circuited &7Runic Stone to your item.")), SellMerchant.COMBAT, 7, true),
     /* ------ FOODS ------- */
     /* --- Food Bases --- */
-    /* Fruit Bases */
     LOW_QUALITY_FRUIT(Rarity.COMMON, "Low Quality Fruit", new ItemBuilder(Material.APPLE, 0).asItem(), 0, 0, 0, 0, 0, 0, "LOW_QUALITY_FRUIT",
             ItemType.FOOD_BASE, null, SellMerchant.FARMING, 1, false),
+    /* --- Foods --- */
     BERRYFRUIT(Rarity.COMMON, "Berryfruit", ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNmVlOTc2NDliZDk5OTk1NTQxM2ZjYmYwYjI2OWM5MWJlNDM0MmIxMGQwNzU1YmFkN2ExN2U5NWZjZWZkYWIwIn19fQ==",
-            "2c382f99-71f3-4461-9861-4a9a361b8474"), 0, 0, 0, 0, 0, 0, "BERRYFRUIT", ItemType.FOOD, null, SellMerchant.FARMING, 7, false);
+            "2c382f99-71f3-4461-9861-4a9a361b8474"), 0, 0, 0, 0, 0, 0, "BERRYFRUIT", ItemType.FOOD, Arrays.asList(Text.color("&7Grants &cRegeneration 1 &7for &a30 &7seconds when used.")), SellMerchant.FARMING, 7, false),
+    STRENGTH_COLA(Rarity.COMMON, "Strength Cola", ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOTNiMDFmYjJmNmJhNDdjOWQ3NjM4NDkxZjM3Y2Q4NTgyYTkzNzczMTE4NmRmNGQxZWNjZDU5YjY1YmYzNyJ9fX0=",
+            "8a145e5e-957d-418c-b000-511c971ae698"), 0, 0, 0, 0, 0, 0, "STRENGTH_COLA", ItemType.FOOD, Arrays.asList(Text.color("&7Grants &4Strength 2 &7for &a30 &7seconds when used.")), SellMerchant.COMBAT, 1, false),
+    OVERLY_CAFFINATED_COFFEE(Rarity.COMMON, "Overly-Caffeinated Coffee", ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOGYxMzIzYzlmZWYyMDY5Y2I0NWE0OTE0M2IzZjI1ZDg4NjRhYTY0YTQ5OTgxOWIxZjQyZDkzMzY3YTU5MzNlIn19fQ==",
+            "daa163ef-1f93-471f-995f-6c63d04fcea8"), 0, 0, 0, 0, 0, 0, "OVERLY_CAFFINATED_COFFEE", ItemType.FOOD, Arrays.asList(Text.color("&7Grants &fSpeed 2 &7for &a30 &7seconds when used.")), SellMerchant.COMBAT, 1, false),
+    SUPER_CANDY(Rarity.COMMON, "Super Candy", ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGNjM2Y3ODFjOTIzYTI4ODdmMTRjMWVlYTExMDUwMTY2OTY2ZjI2MDI1Nzg0MDFmMTQ1MWU2MDk3Yjk3OWRmIn19fQ==",
+            "201bdf0f-79ec-444f-a5ec-1a855fcddaf7"), 0, 0, 0, 0, 0, 0, "SUPER_CANDY", ItemType.FOOD, Arrays.asList(Text.color("&7Grants &eEnergetic 2 &7for &a30 &7seconds when used.")), SellMerchant.COMBAT, 1, false),
+    LEMON_TEA(Rarity.COMMON, "Lemon Tea", ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZDhlOTRkZGQ3NjlhNWJlYTc0ODM3NmI0ZWM3MzgzZmQzNmQyNjc4OTRkN2MzYmVlMDExZThlNGY1ZmNkNyJ9fX0=",
+            "2a3545d4-3ea5-4d26-9033-c280476696e0"), 0, 0, 0, 0, 0, 0, "LEMON_TEA", ItemType.FOOD, Arrays.asList(Text.color("&7Grants &aPlated 2 &7for &a30 &7seconds when used.")), SellMerchant.COMBAT, 1, false);
     private Rarity rarity;
     private String name;
     private ItemStack itemStack;
@@ -490,7 +498,8 @@ public enum Items {
     public int getEnergy() { return energy; }
     public List<CraftingIngrediant> getCraftingRecipe() { return craftingRecipe; }
     public int getCraftingAmount() { return craftingAmount; }
-
+    public ItemInfo generateItemInfo() { return new ItemInfo(id, rarity, new ArrayList<>(), 0, 0, 0, 0, 0, 0,
+            null, null, false, false); }
     public List<String> getLore() { return lore; }
     public int getHp() { return hp; }
     public int getCraftingXPGained() { return craftingXPGained; }

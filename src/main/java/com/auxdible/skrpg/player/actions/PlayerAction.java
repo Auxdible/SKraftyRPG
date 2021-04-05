@@ -1,11 +1,13 @@
-package com.auxdible.skrpg.player;
+package com.auxdible.skrpg.player.actions;
 
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.items.ItemInfo;
 import com.auxdible.skrpg.items.ItemType;
 import com.auxdible.skrpg.items.Items;
 import com.auxdible.skrpg.items.Quality;
+import com.auxdible.skrpg.player.PlayerData;
 import com.auxdible.skrpg.player.collections.Collection;
+import com.auxdible.skrpg.player.economy.TradeItem;
 import com.auxdible.skrpg.player.quests.Quests;
 import com.auxdible.skrpg.player.skills.*;
 import com.auxdible.skrpg.utils.ItemBuilder;
@@ -14,13 +16,8 @@ import com.auxdible.skrpg.utils.Text;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.Ageable;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -30,9 +27,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 public class PlayerAction {
     private Player player;
@@ -172,263 +167,138 @@ public class PlayerAction {
     public void onBreakBlock(Block block) {
         Player p = player;
         if (p.getGameMode().equals(GameMode.CREATIVE)) { return; }
-        for (MineBlock mineBlock : EnumSet.allOf(MineBlock.class)) {
-            if (block.getType() == mineBlock.getBlockObtainedFrom()) {
-                addNewItem(mineBlock.getCommonDrop());
-                for (Collection collection : playerData.getCollections()) {
-                    if (collection.getCollectionType().getItem().equals(mineBlock.getCommonDrop())) {
-                        collection.setCollectionAmount(collection.getCollectionAmount() + 1);
-                        collection.levelUpCollection(p, playerData);
-                    }
-                }
-                double random = Math.random();
-                double random2 = Math.random();
-                if (mineBlock.getDrops() != null) {
-                    for (Drop drop : mineBlock.getDrops()) {
-                        if (drop.getChance() >= random) {
-                            addNewItem(drop.getItems());
-                            Text.applyText(p, "&r&5&lSPECIAL DROP! &r&8| " + drop.getItems()
-                                    .getRarity().getColor() + drop.getItems().getName());
-                            new BukkitRunnable() {
-                                int seconds = 1;
-                                @Override
-                                public void run() {
-                                    if (seconds == 1) {
-                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f);
-                                    } else if (seconds == 2) {
-                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 0.5f);
-                                    } else if (seconds == 3) {
-                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 2.0f);
-                                        cancel();
-                                    }
-                                    seconds++;
-                                }
-                            }.runTaskTimer(skrpg, 0, 4);
-                        }
-                    }
-                }
-                if (Integer.parseInt(playerData.getMining().getLevel().toString()
-                        .replace("_", "")) * 0.04 >= random2) {
-                    p.getInventory().addItem(Items.buildItem(mineBlock.getCommonDrop()));
-                    playerData.addRunicPoints(1, skrpg);
-                }
-                playerData.addRunicPoints(1, skrpg);
-                playerData.getMining().setXpTillNext(playerData.getMining().getXpTillNext() +
-                        mineBlock.getXpObtained());
-                playerData.getMining().setTotalXP(playerData.getMining().getTotalXP()
-                        + mineBlock.getXpObtained());
-                playerData.getMining().levelUpSkill(p, playerData, skrpg);
+        BlockInformation blockData = BlockInformation.getBlockData(block.getType());
+        if (blockData == null) { return; }
+        List<Integer> bounds = new ArrayList<>();
+        for (int i = blockData.getLowerBoundDropAmount(); i <= blockData.getUpperBoundDropAmount(); i++) {
+            bounds.add(i);
+        }
+        playerData.addRunicPoints(1, skrpg);
+        Random randomizer = new Random();
 
-                p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(
-                        Text.color("&e+ " + mineBlock.getXpObtained() + " Mining XP (" + playerData.getMining()
-                                .getXpTillNext() + "/" + Level.valueOf("_" +
-                                (Integer.parseInt(playerData.getMining().getLevel().toString()
-                                        .replace("_", "")) + 1)).getXpRequired() + ")")));
-                p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f);
-                block.setType(Material.BEDROCK);
-                new BukkitRunnable() {
-                    int seconds = 0;
-                    @Override
-                    public void run() {
-                        seconds++;
-                        if (seconds == 10) {
-                            block.setType(mineBlock.getBlockObtainedFrom());
-                            cancel();
-                        }
-                    }
-                }.runTaskTimer(skrpg, 0, 20);
+        int randomInt = randomizer.nextInt(bounds.size() + 1);
+        for (Collection collection : playerData.getCollections()) {
+            if (collection.getCollectionType().getItem().equals(blockData.getCommonDrop())) {
+                collection.setCollectionAmount(collection.getCollectionAmount() + randomInt);
+                collection.levelUpCollection(p, playerData);
             }
         }
-        for (MineCrafting mineCrafting : EnumSet.allOf(MineCrafting.class)) {
-            if (block.getType() == mineCrafting.getBlockObtainedFrom()) {
-                addNewItem(mineCrafting.getCommonDrop());
-                for (Collection collection : playerData.getCollections()) {
-                    if (collection.getCollectionType().getItem().equals(mineCrafting.getCommonDrop())) {
-                        collection.setCollectionAmount(collection.getCollectionAmount() + 1);
-                        collection.levelUpCollection(p, playerData);
-                    }
-                }
-                double random = Math.random();
-                if (mineCrafting.getDrops() != null) {
-                    for (Drop drop : mineCrafting.getDrops()) {
-                        if (drop.getChance() >= random) {
-                            addNewItem(drop.getItems());
-                            Text.applyText(p, "&r&6&lSPECIAL DROP! &r&8| " + drop.getItems()
-                                    .getRarity().getColor() + drop.getItems().getName());
-                            new BukkitRunnable() {
-                                int seconds = 1;
-                                @Override
-                                public void run() {
-                                    if (seconds == 1) {
-                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f);
-                                    } else if (seconds == 2) {
-                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.5f);
-                                    } else if (seconds == 3) {
-                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 2.0f);
-                                        cancel();
-                                    }
-                                    seconds++;
-                                }
-                            }.runTaskTimer(skrpg, 0, 4);
-                        }
-                    }
-                }
-                playerData.addRunicPoints(1, skrpg);
-                playerData.getCrafting().setXpTillNext(playerData.getCrafting().getXpTillNext() +
-                        mineCrafting.getXpObtained());
-                playerData.getCrafting().setTotalXP(playerData.getCrafting().getTotalXP()
-                        + mineCrafting.getXpObtained());
-                playerData.getCrafting().levelUpSkill(p, playerData, skrpg);
-
-                p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(
-                        Text.color("&e+ " + mineCrafting.getXpObtained() + " Crafting XP (" + playerData.getCrafting()
-                                .getXpTillNext() + "/" + Level.valueOf("_" +
-                                (Integer.parseInt(playerData.getCrafting().getLevel().toString()
-                                        .replace("_", "")) + 1)).getXpRequired() + ")")));
-                p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f);
-                block.setType(Material.AIR);
-                new BukkitRunnable() {
-                    int seconds = 0;
-                    @Override
-                    public void run() {
-                        seconds++;
-                        if (seconds == 10) {
-                            block.setType(mineCrafting.getBlockObtainedFrom());
-                            cancel();
-                        }
-                    }
-                }.runTaskTimer(skrpg, 0, 20);
-            }
-        }
-        for (MinePlant minePlant : EnumSet.allOf(MinePlant.class)) {
-            if (block.getType() == minePlant.getBlockObtainedFrom()) {
-                addNewItem(minePlant.getObtainedItem());
-                for (Collection collection : playerData.getCollections()) {
-                    if (collection.getCollectionType().getItem().equals(minePlant.getObtainedItem())) {
-                        collection.setCollectionAmount(collection.getCollectionAmount() + 1);
-                        collection.levelUpCollection(p, playerData);
-                    }
-                }
-                int caneHeight = 0;
-                double random = Math.random();
-                double random2 = Math.random();
-                if (minePlant.getDrops() != null) {
-                    for (Drop drop : minePlant.getDrops()) {
-                        if (drop.getChance() >= random) {
-                            p.getInventory().addItem(Items.buildItem(drop.getItems()));
-                            Text.applyText(p, "&r&5&lSPECIAL DROP! &r&8| " + drop.getItems()
-                                    .getRarity().getColor() + drop.getItems().getName());
-                            new BukkitRunnable() {
-                                int seconds = 1;
-                                @Override
-                                public void run() {
-                                    if (seconds == 1) {
-                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f);
-                                    } else if (seconds == 2) {
-                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.5f);
-                                    } else if (seconds == 3) {
-                                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 2.0f);
-                                        cancel();
-                                    }
-                                    seconds++;
-                                }
-                            }.runTaskTimer(skrpg, 0, 4);
-                        }
-                    }
-                }
-                if (Integer.parseInt(playerData.getHerbalism().getLevel().toString()
-                        .replace("_", "")) * 0.04 >= random2) {
-                    addNewItem(minePlant.getObtainedItem());
-                    playerData.addRunicPoints(1, skrpg);
-                }
-                if (block.getType().equals(Material.SUGAR_CANE)) {
-                    if (block.getRelative(BlockFace.UP).getType().equals(Material.SUGAR_CANE)) {
-                        if (block.getRelative(BlockFace.UP).getRelative(BlockFace.UP).getType()
-                                .equals(Material.SUGAR_CANE)) {
-                            block.getRelative(BlockFace.UP).getRelative(BlockFace.UP).setType(Material.AIR);
-                            block.getRelative(BlockFace.UP).setType(Material.AIR);
-                            caneHeight = 3;
-                            playerData.getHerbalism().setXpTillNext(playerData.getHerbalism().getXpTillNext() +
-                                    (minePlant.getXpObtained() * 3));
-                            playerData.getHerbalism().setTotalXP(playerData.getHerbalism().getTotalXP()
-                                    + (minePlant.getXpObtained() * 3));
-                            playerData.addRunicPoints(1, skrpg);
-                            addNewItem(minePlant.getObtainedItem());
-                            addNewItem(minePlant.getObtainedItem());
+        addItem(new TradeItem(blockData.getCommonDrop().generateItemInfo(), randomInt));
+        double randomDouble = Math.random();
+        double randomDouble2 = Math.random();
+        if (blockData.getDrops() != null) {
+            for (Drop drop : blockData.getDrops()) {
+                if (drop.getChance() >= randomDouble) {
+                    addItem(new TradeItem(drop.getItems().generateItemInfo(), 1));
+                    if (drop.getDropRarity() != DropRarity.NORMAL) {
+                        if (drop.getDropRarity().getPriority() < 3) {
+                            p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 0.2f);
                         } else {
-                            block.getRelative(BlockFace.UP).setType(Material.AIR);
-                            playerData.getHerbalism().setXpTillNext(playerData.getHerbalism().getXpTillNext() +
-                                    (minePlant.getXpObtained() * 2));
-                            playerData.getHerbalism().setTotalXP(playerData.getHerbalism().getTotalXP()
-                                    + (minePlant.getXpObtained() * 2));
-                            playerData.addRunicPoints(1, skrpg);
-                            caneHeight = 2;
-                            addNewItem(minePlant.getObtainedItem());
+                            p.playSound(p.getLocation(), Sound.ITEM_TOTEM_USE, 1.0f, 2.0f);
                         }
-                    } else {
-                        playerData.addRunicPoints(1, skrpg);
-                        playerData.getHerbalism().setXpTillNext(playerData.getHerbalism().getXpTillNext() +
-                                minePlant.getXpObtained());
-                        playerData.getHerbalism().setTotalXP(playerData.getHerbalism().getTotalXP()
-                                + minePlant.getXpObtained());
-                        caneHeight = 1;
-
+                        Text.applyText(p, drop.getDropRarity().getName() + " DROP! &r&8| &r&7You dropped a " + drop.getItems().getRarity().getColor() + drop.getItems().getName());
                     }
-                } else {
-                    playerData.getHerbalism().setXpTillNext(playerData.getHerbalism().getXpTillNext() +
-                            minePlant.getXpObtained());
-                    playerData.getHerbalism().setTotalXP(playerData.getHerbalism().getTotalXP()
-                            + minePlant.getXpObtained());
-
                 }
-                playerData.getHerbalism().levelUpSkill(p, playerData, skrpg);
+            }
+        }
+        if (blockData.getXpObtained().get(1) != 0.0) {
+            if (Integer.parseInt(playerData.getMining().getLevel().toString()
+                    .replace("_", "")) * 0.04 >= randomDouble2) {
+                addItem(new TradeItem(blockData.getCommonDrop().generateItemInfo(), randomInt));
+                playerData.addRunicPoints(1, skrpg);
+            }
+            playerData.getMining().setXpTillNext(playerData.getMining().getXpTillNext() +
+                    blockData.getXpObtained().get(1));
+            playerData.getMining().setTotalXP(playerData.getMining().getTotalXP()
+                    + blockData.getXpObtained().get(1));
+            playerData.getMining().levelUpSkill(p, playerData, skrpg);
+            p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(
+                    Text.color("&e+ " + blockData.getXpObtained().get(1) + " Mining XP (" + playerData.getMining()
+                            .getXpTillNext() + "/" + Level.valueOf("_" +
+                            (Integer.parseInt(playerData.getMining().getLevel().toString()
+                                    .replace("_", "")) + 1)).getXpRequired() + ")")));
+            p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f);
+        } else if (blockData.getXpObtained().get(2) != 0.0) {
+            if (Integer.parseInt(playerData.getHerbalism().getLevel().toString()
+                    .replace("_", "")) * 0.04 >= randomDouble2) {
+                addItem(new TradeItem(blockData.getCommonDrop().generateItemInfo(), randomInt));
+                playerData.addRunicPoints(1, skrpg);
+            }
+            p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(
+                    Text.color("&e+ " + blockData.getXpObtained().get(2) + " Herbalism XP (" + playerData.getHerbalism()
+                            .getXpTillNext() + "/" + Level.valueOf("_" +
+                            (Integer.parseInt(playerData.getHerbalism().getLevel().toString()
+                                    .replace("_", "")) + 1)).getXpRequired() + ")")));
+            playerData.getHerbalism().setXpTillNext(playerData.getHerbalism().getXpTillNext() +
+                    blockData.getXpObtained().get(2));
+            playerData.getHerbalism().setTotalXP(playerData.getHerbalism().getTotalXP()
+                    + blockData.getXpObtained().get(2));
+            playerData.getHerbalism().levelUpSkill(p, playerData, skrpg);
+        } else if (blockData.getXpObtained().get(3) != 0.0) {
+            if (Integer.parseInt(playerData.getCrafting().getLevel().toString()
+                    .replace("_", "")) * 0.04 >= randomDouble2) {
+                addItem(new TradeItem(blockData.getCommonDrop().generateItemInfo(), randomInt));
+                playerData.addRunicPoints(1, skrpg);
+            }
+            p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(
+                    Text.color("&e+ " + blockData.getXpObtained().get(3) + " Crafting XP (" + playerData.getCrafting()
+                            .getXpTillNext() + "/" + Level.valueOf("_" +
+                            (Integer.parseInt(playerData.getCrafting().getLevel().toString()
+                                    .replace("_", "")) + 1)).getXpRequired() + ")")));
+            playerData.getCrafting().setXpTillNext(playerData.getCrafting().getXpTillNext() +
+                    blockData.getXpObtained().get(3));
+            playerData.getCrafting().setTotalXP(playerData.getCrafting().getTotalXP()
+                    + blockData.getXpObtained().get(3));
+            playerData.getCrafting().levelUpSkill(p, playerData, skrpg);
+        }
+        boolean air = !blockData.isStone();
+
+        BrokenBlock brokenBlock = new BrokenBlock(skrpg, blockData, block.getBlockData(), block.getLocation(), false, false, blockData.isStone(), air);
+        if (blockData.equals(BlockInformation.CANE)) {
+            Location originLocation = block.getLocation();
+            int blockBroken = block.getY();
+            int roof = 0;
+            int ground = 0;
+            for (int i = 0; i <= blockBroken; i++) {
+                if (new Location(originLocation.getWorld(), originLocation.getX(), blockBroken - i, originLocation.getZ()).getBlock().getType() != Material.SUGAR_CANE &&
+                        new Location(originLocation.getWorld(), originLocation.getX(), blockBroken - i, originLocation.getZ()).getBlock().getType() != Material.AIR) {
+                    ground = blockBroken - i + 1;
+
+                    BrokenBlock brokenBlockStem = new BrokenBlock(skrpg, blockData, block.getBlockData(), block.getLocation(), true, false, false, false);
+                    break;
+                }
+            }
+            for (int i = 0; i <= blockBroken; i++) {
+                if (new Location(originLocation.getWorld(), originLocation.getX(), blockBroken + i, originLocation.getZ()).getBlock().getType() != Material.SUGAR_CANE) {
+                    roof = blockBroken + i - 1;
+                    break;
+                }
+            }
+            for (int i = blockBroken + 1; i <= roof; i++) {
+                new Location(originLocation.getWorld(), originLocation.getX(), i, originLocation.getZ()).getBlock().setBlockData(Material.AIR.createBlockData());
+                if (Integer.parseInt(playerData.getHerbalism().getLevel().toString()
+                        .replace("_", "")) * 0.04 >= randomDouble2) {
+                    addItem(new TradeItem(blockData.getCommonDrop().generateItemInfo(), randomInt));
+                    playerData.addRunicPoints(1, skrpg);
+                }
                 p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(
-                        Text.color("&e+ " + minePlant.getXpObtained() + " Herbalism XP (" + playerData.getHerbalism()
+                        Text.color("&e+ " + blockData.getXpObtained().get(2) + " Herbalism XP (" + playerData.getHerbalism()
                                 .getXpTillNext() + "/" + Level.valueOf("_" +
                                 (Integer.parseInt(playerData.getHerbalism().getLevel().toString()
                                         .replace("_", "")) + 1)).getXpRequired() + ")")));
-                p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f);
-                block.setType(Material.AIR);
-                int finalCaneHeight = caneHeight;
-                new BukkitRunnable() {
-                    int seconds = 0;
+                playerData.getHerbalism().setXpTillNext(playerData.getHerbalism().getXpTillNext() +
+                        blockData.getXpObtained().get(2));
+                playerData.getHerbalism().setTotalXP(playerData.getHerbalism().getTotalXP()
+                        + blockData.getXpObtained().get(2));
+                playerData.getHerbalism().levelUpSkill(p, playerData, skrpg);
+                BrokenBlock brokenBlockCanePart = new BrokenBlock(skrpg, blockData, block.getBlockData(), block.getLocation(), false, false, false, true);
 
-                    @Override
-                    public void run() {
-                        seconds++;
-                        if (seconds == 15) {
-                            block.setType(minePlant.getBlockObtainedFrom());
-                            if (block.getBlockData() instanceof Ageable) {
-                                Ageable ageable = (Ageable) block.getBlockData();
-                                ageable.setAge(ageable.getMaximumAge());
-                                block.setBlockData(ageable);
-                            }
-                            if (block.getType().equals(Material.SUGAR_CANE)) {
-                                for (int i = 0; i <= finalCaneHeight; i++) {
-                                    if (block.getRelative(BlockFace.DOWN).getType().equals(Material.SUGAR_CANE) &&
-                                            !block.getRelative(BlockFace.DOWN).getRelative(BlockFace.DOWN)
-                                                    .getType().equals(Material.SUGAR_CANE)) {
-                                        block.getRelative(BlockFace.UP).setType(Material.SUGAR_CANE);
-                                    }
-
-                                }
-                                if (!block.getRelative(BlockFace.DOWN).getType().equals(Material.SUGAR_CANE)) {
-                                    block.getRelative(BlockFace.UP).setType(Material.SUGAR_CANE);
-                                    block.getRelative(BlockFace.UP).getRelative(BlockFace.UP).setType(Material.SUGAR_CANE);
-                                }
-
-                            }
-                            cancel();
-
-                        }
-                    }
-                }.runTaskTimer(skrpg, 0, 20);
             }
         }
     }
     public void openStovetop() {
         Inventory inv = Bukkit.createInventory(null, 27, "Stovetop");
-        for (int i = 0; i <= 44; i++) {
+        for (int i = 0; i <= 26; i++) {
             inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
         }
         inv.setItem(11, new ItemBuilder(Material.FURNACE, 0).setName("&aSmelt").setLore(Arrays.asList(" ", Text.color("&7Smelt meat and apply them to foods!"), " ", Text.color("&7Smelting meat costs &fCoal&7."), " ")).asItem());
@@ -457,10 +327,9 @@ public class PlayerAction {
         }
         player.openInventory(inv);
     }
-    public void addNewItem(Items items) {
-        ItemStack itemStack = Items.buildItem(items);
-        ItemInfo itemInfo = ItemInfo.parseItemInfo(itemStack);
-        if (items.getItemType() == ItemType.MATERIAL) {
+    public void addItem(TradeItem tradeItem) {
+        ItemInfo itemInfo = tradeItem.getItemInfo();
+        if (itemInfo.getItem().getItemType() == ItemType.MATERIAL) {
             double randomChance = Math.random();
             if (randomChance <= 0.005) {
                 itemInfo.setQuality(Quality.TOP_QUALITY);
@@ -476,8 +345,58 @@ public class PlayerAction {
                 itemInfo.setQuality(Quality.STAR1);
             }
         }
-        Items.updateItem(itemStack, itemInfo);
-        player.getInventory().addItem(itemStack);
+        if (player.getInventory().firstEmpty() == -1) {
+            playerData.getStash().add(tradeItem);
+            Text.applyText(player, "&4&l!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            Text.applyText(player, " ");
+            Text.applyText(player, "&cAn item was sent to your stash!");
+            Text.applyText(player, "&cDo /stash when you don't have a full inventory to pick up the items!");
+            Text.applyText(player, " ");
+            Text.applyText(player, "&4&l!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            new BukkitRunnable() {
+                int seconds = 0;
+                @Override
+                public void run() {
+                    if (seconds == 30) {
+                        cancel();
+                    }
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_FLUTE, 1.0f, 2.0f);
+                    seconds++;
+                }
+            }.runTaskTimer(skrpg, 0, 2);
+        } else {
+            ItemStack itemStack = Items.buildItem(tradeItem.getItemInfo().getItem());
+            Items.updateItem(itemStack, tradeItem.getItemInfo());
+            itemStack.setAmount(tradeItem.getAmount());
+        }
+    }
+    public void addExistingItem(TradeItem tradeItem) {
+        ItemInfo itemInfo = tradeItem.getItemInfo();
+
+        if (player.getInventory().firstEmpty() == -1) {
+            playerData.getStash().add(tradeItem);
+            Text.applyText(player, "&4&l!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            Text.applyText(player, " ");
+            Text.applyText(player, "&cAn item was sent to your stash!");
+            Text.applyText(player, "&cDo /stash when you don't have a full inventory to pick up the items!");
+            Text.applyText(player, " ");
+            Text.applyText(player, "&4&l!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            new BukkitRunnable() {
+                int seconds = 0;
+                @Override
+                public void run() {
+                    if (seconds == 30) {
+                        cancel();
+                    }
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_FLUTE, 1.0f, 2.0f);
+                    seconds++;
+                }
+            }.runTaskTimer(skrpg, 0, 2);
+        } else {
+            ItemStack itemStack = Items.buildItem(tradeItem.getItemInfo().getItem());
+            Items.updateItem(itemStack, tradeItem.getItemInfo());
+            itemStack.setAmount(tradeItem.getAmount());
+        }
     }
     public void buildRunicTable() {
         Inventory inv = Bukkit.createInventory(null, 54, Text.color("&5&k=Auxd &r&8Runic Table &r&5&kible="));

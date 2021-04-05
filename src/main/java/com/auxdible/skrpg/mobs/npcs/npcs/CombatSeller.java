@@ -15,7 +15,6 @@ import org.bukkit.entity.*;
 import org.bukkit.inventory.Inventory;
 
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class CombatSeller implements NPC {

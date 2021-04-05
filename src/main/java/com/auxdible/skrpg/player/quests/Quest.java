@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface Quest {
-    ArrayList<CraftingIngrediant> getItemRewards();
+    List<CraftingIngrediant> getItemRewards();
 
     int getCreditsReward();
 
@@ -20,7 +20,7 @@ public interface Quest {
 
     // INDEXES
     // 0 = COMBAT, 1 = MINING, 2 = HERBALISM, 3 = CRAFTING
-    ArrayList<Integer> xpRewards();
+    List<Integer> xpRewards();
 
     void executePhase(int phase, Player player, SKRPG skrpg);
 

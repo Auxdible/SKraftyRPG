@@ -8,19 +8,19 @@ import org.bukkit.entity.Player;
 
 public class Combat {
     private Level level;
-    private int totalXP;
-    private int xpTillNext;
-    public Combat(Level level, int totalXP, int xpTillNext) {
+    private double totalXP;
+    private double xpTillNext;
+    public Combat(Level level, double totalXP, double xpTillNext) {
         this.level = level;
         this.totalXP = totalXP;
         this.xpTillNext = xpTillNext;
     }
     public Level getLevel() { return level; }
-    public int getTotalXP() { return totalXP; }
-    public int getXpTillNext() { return xpTillNext; }
+    public double getTotalXP() { return totalXP; }
+    public double getXpTillNext() { return xpTillNext; }
     public void setLevel(int level) { this.level = Level.valueOf("_" + level); }
-    public void setTotalXP(int totalXP) { this.totalXP = totalXP; }
-    public void setXpTillNext(int xpTillNext) { this.xpTillNext = xpTillNext; }
+    public void setTotalXP(double totalXP) { this.totalXP = totalXP; this.totalXP = Math.round(totalXP * 100.0) / 100.0; }
+    public void setXpTillNext(double xpTillNext) { this.xpTillNext = xpTillNext; this.xpTillNext = Math.round(xpTillNext * 100.0) / 100.0; }
     public void levelUpSkill(Player player, PlayerData playerData, SKRPG skrpg) {
         if (getLevel() != Level._50 && getXpTillNext() >= Level.valueOf("_" +
                 (Integer.parseInt(getLevel().toString()

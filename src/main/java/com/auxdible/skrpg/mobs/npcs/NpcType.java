@@ -1,14 +1,6 @@
 package com.auxdible.skrpg.mobs.npcs;
 
-import com.auxdible.skrpg.items.Items;
 import com.auxdible.skrpg.mobs.npcs.npcs.*;
-import com.auxdible.skrpg.player.economy.Bank;
-import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public enum NpcType {
     BANKER(Banker.class), WEAPON_FORGER_SALESMAN(WeaponForgerSalesman.class),
@@ -21,7 +13,11 @@ public enum NpcType {
     WOODCUTTING_SELLER(WoodcuttingSeller.class),
     MINING_SELLER(MiningSeller.class),
     STONE_FORGER(StoneForger.class),
-    OLD_MINER(OldMiner.class);
+    OLD_MINER(OldMiner.class),
+    FARMER_JOE(FarmerJoe.class),
+    ARBOL(Arbol.class),
+    BARTENDER(Bartender.class),
+    VILLAGER(VillagerNPC.class);
 
     private Class npc;
 

@@ -2,11 +2,12 @@ package com.auxdible.skrpg.player;
 
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.items.Rarity;
-import com.auxdible.skrpg.mobs.MobType;
 import com.auxdible.skrpg.mobs.npcs.NPC;
+import com.auxdible.skrpg.player.actions.PlayerAction;
 import com.auxdible.skrpg.player.collections.Collection;
 import com.auxdible.skrpg.player.economy.Bank;
 import com.auxdible.skrpg.player.economy.Trade;
+import com.auxdible.skrpg.player.economy.TradeItem;
 import com.auxdible.skrpg.player.effects.ActiveEffect;
 import com.auxdible.skrpg.player.effects.Effects;
 import com.auxdible.skrpg.player.quests.Quests;
@@ -15,11 +16,7 @@ import com.auxdible.skrpg.regions.Region;
 import com.auxdible.skrpg.utils.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.*;
-import org.bukkit.ChatColor;
 import org.bukkit.Sound;
-
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
 
 import java.util.*;
 
@@ -59,6 +56,7 @@ public class PlayerData {
     private int fifthRunicPoint;
     private PlayerAction playerAction;
     private ArrayList<ActiveEffect> activeEffects;
+    private List<TradeItem> stash;
     public PlayerData(SKRPG skrpg, int maxHP, int maxEnergy, int strength, int defence, int speed, UUID uuid, double credits, Combat combat,
                       Mining mining, Herbalism herbalism, Crafting crafting, Runics runics, ArrayList<Bank> banks,
                       Date intrestDate, ArrayList<Collection> collections, Rarity sellAboveRarity, boolean toggleTrade, ArrayList<Quests> quests,
@@ -97,8 +95,10 @@ public class PlayerData {
         this.runicUpgrades = runicUpgrades;
         this.fifthRunicPoint = 0;
         this.activeEffects = new ArrayList<>();
+        this.stash = new ArrayList<>();
     }
 
+    public List<TradeItem> getStash() { return stash; }
     public ArrayList<ActiveEffect> getActiveEffects() { return activeEffects; }
     public void addEffect(ActiveEffect activeEffect) {
         Player p = Bukkit.getPlayer(uuid);

@@ -14,7 +14,8 @@ import javax.swing.*;
 
 public enum Quests {
     TUTORIAL(new TutorialQuest()),
-    ABANDONED_MINES(new AbandonedMinesQuest());
+    ABANDONED_MINES(new AbandonedMinesQuest()),
+    FARMING_QUEST(new FarmingQuest());
     private Quest quest;
     Quests(Quest quest) {
         this.quest = quest;
@@ -51,22 +52,22 @@ public enum Quests {
             playerData.setCredits(playerData.getCredits() + quest.getQuest().getCreditsReward());
         }
         if (quest.getQuest().xpRewards() != null) {
-            if (quest.getQuest().xpRewards().get(0) != null) {
+            if (quest.getQuest().xpRewards().get(0) != 0) {
                 Text.applyText(player, "&f+ &e" + quest.getQuest().xpRewards().get(0) + " &eCombat XP");
                 playerData.getCombat().setXpTillNext(playerData.getCombat().getXpTillNext() + quest.getQuest().xpRewards().get(0));
                 playerData.getCombat().setTotalXP(playerData.getCombat().getTotalXP() + quest.getQuest().xpRewards().get(0));
                 playerData.getCombat().levelUpSkill(player, playerData, skrpg);
-            } else if (quest.getQuest().xpRewards().get(1) != null) {
+            } else if (quest.getQuest().xpRewards().get(1) != 0) {
                 Text.applyText(player, "&f+ &e" + quest.getQuest().xpRewards().get(1) + " &eMining XP");
                 playerData.getMining().setXpTillNext(playerData.getMining().getXpTillNext() + quest.getQuest().xpRewards().get(1));
                 playerData.getMining().setTotalXP(playerData.getMining().getTotalXP() + quest.getQuest().xpRewards().get(1));
                 playerData.getMining().levelUpSkill(player, playerData, skrpg);
-            } else if (quest.getQuest().xpRewards().get(2) != null) {
+            } else if (quest.getQuest().xpRewards().get(2) != 0) {
                 Text.applyText(player, "&f+ &e" + quest.getQuest().xpRewards().get(2) + " &eHerbalism XP");
                 playerData.getHerbalism().setXpTillNext(playerData.getHerbalism().getXpTillNext() + quest.getQuest().xpRewards().get(2));
                 playerData.getHerbalism().setTotalXP(playerData.getHerbalism().getTotalXP() + quest.getQuest().xpRewards().get(2));
                 playerData.getHerbalism().levelUpSkill(player, playerData, skrpg);
-            } else if (quest.getQuest().xpRewards().get(3) != null) {
+            } else if (quest.getQuest().xpRewards().get(3) != 0) {
                 Text.applyText(player, "&f+ &e" + quest.getQuest().xpRewards().get(3) + " &eCrafting XP");
                 playerData.getCrafting().setXpTillNext(playerData.getCrafting().getXpTillNext() + quest.getQuest().xpRewards().get(3));
                 playerData.getCrafting().setTotalXP(playerData.getCrafting().getTotalXP() + quest.getQuest().xpRewards().get(3));

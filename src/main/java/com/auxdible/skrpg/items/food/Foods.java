@@ -9,7 +9,16 @@ import java.util.EnumSet;
 
 public enum Foods {
     BERRYFRUIT(Items.BERRYFRUIT, FoodActions.REGENERATION_FOOD_ACTION, "Berryfruit", Items.SWEET_BERRIES,
-             FoodBase.LOW_QUALITY_FRUIT, true, false);
+             FoodBase.LOW_QUALITY_FRUIT, true, false),
+    STRENGTH_COLA(Items.STRENGTH_COLA, FoodActions.STRENGTH_COLA_ACTION, "Strength Cola", null, null,
+            false, false),
+    OVERLY_CAFFINATED_COFFEE(Items.OVERLY_CAFFINATED_COFFEE, FoodActions.OVERLY_CAFFINATED_COFFEE_ACTION,
+            "Overly Caffeinated Coffee", null, null,
+            false, false),
+    LEMON_TEA(Items.LEMON_TEA, FoodActions.LEMON_TEA_ACTION, "Lemon Tea", null, null,
+            false, false),
+    SUPER_CANDY(Items.SUPER_CANDY, FoodActions.SUPER_CANDY_ACTION, "Super Candy", null, null,
+            false, false);
     private Items foodItem;
     private FoodActions foodAction;
     private String name;

@@ -2,13 +2,20 @@ package com.auxdible.skrpg.player.quests;
 
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.items.CraftingIngrediant;
+import com.auxdible.skrpg.items.ItemInfo;
+import com.auxdible.skrpg.items.Items;
+import com.auxdible.skrpg.items.enchantments.Enchantment;
+import com.auxdible.skrpg.items.enchantments.Enchantments;
 import com.auxdible.skrpg.player.skills.Level;
 import com.auxdible.skrpg.utils.Text;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class AbandonedMinesQuest implements Quest {
     @Override
@@ -18,7 +25,7 @@ public class AbandonedMinesQuest implements Quest {
 
     @Override
     public int getCreditsReward() {
-        return 5000;
+        return 2500;
     }
 
     @Override
@@ -32,8 +39,8 @@ public class AbandonedMinesQuest implements Quest {
     }
 
     @Override
-    public ArrayList<Integer> xpRewards() {
-        return null;
+    public List<Integer> xpRewards() {
+        return Arrays.asList(0, 200, 0, 0);
     }
 
     @Override
@@ -51,8 +58,13 @@ public class AbandonedMinesQuest implements Quest {
             }.runTaskLater(skrpg, 60);
         } else if (phase == 2) {
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_YES, 1.0f, 0.2f);
-            Text.applyText(player, "&e&lOld Miner &r&8| &7You made it! The mines are now cleared out, thanks to you. Thank you adventurer. I will take you to the &esurface &7now.");
+            Text.applyText(player, "&e&lOld Miner &r&8| &7You made it! The mines are now cleared out, thanks to you. Take my old pickaxe, and some experience as a gift. &7See you soon.");
             Quests.completeQuest(Quests.ABANDONED_MINES, player, skrpg.getPlayerManager().getPlayerData(player.getUniqueId()), skrpg);
+            ItemStack itemStack = Items.buildItem(Items.STONE_PICKAXE);
+            ItemInfo itemInfo = ItemInfo.parseItemInfo(itemStack);
+            itemInfo.addEnchantment(new Enchantment(Enchantments.EFFICIENCY, 2));
+            Items.updateItem(itemStack, itemInfo);
+            player.getInventory().addItem(itemStack);
             new BukkitRunnable() {
 
                 @Override

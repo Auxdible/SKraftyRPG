@@ -14,6 +14,8 @@ import org.bukkit.entity.EntityType;
 
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.UUID;
 
 public class RegionManager {
@@ -55,8 +57,12 @@ public class RegionManager {
             } else {
                 skrpg.getConfig().set("regions." + region.getID() + ".guildId", -1);
             }
-
             skrpg.getConfig().set("regions." + region.getID() + ".name", region.getName());
+            StringJoiner stringJoiner = new StringJoiner(",");
+            for (RegionFlags regionFlags : region.getRegionFlagsList()) {
+                stringJoiner.add(regionFlags.toString());
+            }
+            skrpg.getConfig().set("regions." + region.getID() + ".regionFlags", stringJoiner.toString());
         }
         skrpg.saveConfig();
     }
@@ -85,13 +91,29 @@ public class RegionManager {
         double zRaid = skrpg.getConfig().getDouble("regions." + id + ".raid.z");
         String name = skrpg.getConfig().getString("regions." + id + ".name");
         int guildId = skrpg.getConfig().getInt("regions." + id + ".guildId");
+        String nonSplitList;
+        if (!skrpg.getConfig().contains("regions." + id + ".regionFlags")) {
+            nonSplitList = "";
+        } else {
+            nonSplitList = skrpg.getConfig().getString("regions." + id + ".regionFlags");
+        }
+        List<RegionFlags> regionFlags = new ArrayList<>();
+        if (!nonSplitList.equals(null) || !nonSplitList.equals("")) {
+            for (String string : nonSplitList.split(",")) {
+                try {
+                    regionFlags.add(RegionFlags.valueOf(string));
+                } catch (IllegalArgumentException e) {
+
+                }
+            }
+        }
         Region region = new Region(x, z, x2, z2, name, id,
                 new Location(Bukkit.getWorld(skrpg.getConfig().getString("rpgWorld")),
                         xSpawn, YSpawn, ZSpawn, (float) yawSpawn, (float) pitchSpawn),
                 new Location(Bukkit.getWorld(skrpg.getConfig().getString("rpgWorld")),
                         xRegion, yRegion, zRegion, 0.0f, 0.0f),
                 skrpg.getGuildManager().getGuild(guildId), new Location(Bukkit.getWorld(skrpg.getConfig().getString("rpgWorld")),
-                xRaid, yRaid, zRaid, 0.0f, 0.0f), false);
+                xRaid, yRaid, zRaid, 0.0f, 0.0f), false, regionFlags);
         if (!regions.contains(region)) {
             regions.add(region);
             buildRegion(region);
@@ -123,9 +145,9 @@ public class RegionManager {
         armorStand.setInvulnerable(true);
         armorStand.teleport(region.getBannerLocation().add(0.5, 0.0, 0.5));
     }
-    public void addRegion(int id, String name, double x, double z, double x2, double z2, Location spawnLocation, Location raidLocation, double bannerX, double bannerY, double bannerZ) {
+    public void addRegion(int id, String name, double x, double z, double x2, double z2, Location spawnLocation, Location raidLocation, double bannerX, double bannerY, double bannerZ, List<RegionFlags> regionFlags) {
         Region region = new Region(x, z, x2, z2, name, id, spawnLocation, new Location(Bukkit.getWorld(skrpg.getConfig().getString("rpgWorld")),
-                bannerX, bannerY, bannerZ, 0.0f, 0.0f), null, raidLocation,false);
+                bannerX, bannerY, bannerZ, 0.0f, 0.0f), null, raidLocation,false, regionFlags);
         regions.add(region);
         buildRegion(region);
     }

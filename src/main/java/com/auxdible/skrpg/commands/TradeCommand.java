@@ -67,6 +67,11 @@ public class TradeCommand implements CommandExecutor {
                 Text.applyText(player, "&cThis player has trades disabled!");
                 return false;
             }
+            if (Bukkit.getPlayer(args[0]).getLocation().distance(player.getLocation()) > 8) {
+                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                Text.applyText(player, "&cYou need to be within 8 blocks of the player to send a trade request!");
+                return false;
+            }
             Trade trade = new Trade(player, null);
             playerData.setTrade(trade);
             skrpg.getTradeManager().addTrade(Bukkit.getPlayer(args[0]), trade);

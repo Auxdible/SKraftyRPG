@@ -4,6 +4,7 @@ import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.player.PlayerData;
 import com.auxdible.skrpg.player.economy.Bank;
 import com.auxdible.skrpg.player.economy.BankLevel;
+import com.auxdible.skrpg.player.effects.ActiveEffect;
 import com.auxdible.skrpg.player.skills.Level;
 import com.auxdible.skrpg.utils.ItemBuilder;
 import com.auxdible.skrpg.utils.ItemTweaker;
@@ -69,6 +70,17 @@ public class MenuCommand implements CommandExecutor {
         ItemStack item = new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE, 0).setName("&cNO ITEM").asItem();
         if (player.getInventory().getItemInMainHand() != null && player.getInventory().getItemInMainHand().getType() != Material.AIR) {
             item = player.getInventory().getItemInMainHand();
+        }
+        if (!playerData.getActiveEffects().isEmpty()) {
+            List<String> lore = new ArrayList<>();
+            lore.add(" ");
+            for (ActiveEffect effect : playerData.getActiveEffects()) {
+                int seconds = effect.getSeconds() % 60;
+                int minutes = (effect.getSeconds() / 60) % 60;
+                lore.add(Text.color(effect.getEffectType().getName() + " &8| &7Level &a" + effect.getLevel() + " &8| &a" + minutes + "&7:&a" + seconds));
+            }
+            lore.add(" ");
+            inv.setItem(16, new ItemBuilder(Material.BREWING_STAND, 0).setName("&aActive Effects").setLore(lore).asItem());
         }
         inv.setItem(10, itemHelmet);
         inv.setItem(20, item);

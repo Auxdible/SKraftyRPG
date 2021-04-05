@@ -156,7 +156,7 @@ public class ItemInfo {
             cooked = compoundNbt.getBoolean("cookedRpg");
         }
         if (compoundNbt.hasKey("processedRpg")) {
-            processed = compoundNbt.getBoolean("cookedRpg");
+            processed = compoundNbt.getBoolean("processedRpg");
         }
             return new ItemInfo(items, rarity, enchantmentsList, bonusDamage, bonusStrength, bonusSpeed,
                     bonusEnergy, bonusHealth, bonusDefence, runicStones, quality, cooked, processed);

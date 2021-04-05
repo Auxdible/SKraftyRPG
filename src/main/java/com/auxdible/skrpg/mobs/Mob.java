@@ -10,7 +10,9 @@ import com.auxdible.skrpg.player.PlayerData;
 import com.auxdible.skrpg.player.collections.Collection;
 import com.auxdible.skrpg.player.collections.CollectionType;
 import com.auxdible.skrpg.player.collections.Tiers;
+import com.auxdible.skrpg.player.economy.TradeItem;
 import com.auxdible.skrpg.player.skills.Drop;
+import com.auxdible.skrpg.player.skills.DropRarity;
 import com.auxdible.skrpg.player.skills.Level;
 import com.auxdible.skrpg.player.skills.MobKill;
 import com.auxdible.skrpg.utils.Text;
@@ -92,7 +94,7 @@ public class Mob {
             for (MobKill mobKill : EnumSet.allOf(MobKill.class)) {
                 if (getMobType().getName().equals(mobKill.getMobType().getName())) {
                     if (mobKill.getDrop() != null) {
-                        playerData.getPlayerActionManager().addNewItem(mobKill.getDrop());
+                        playerData.getPlayerActionManager().addItem(new TradeItem(mobKill.getDrop().generateItemInfo(), 1));
                     }
                     for (Collection collection : playerData.getCollections()) {
                         if (collection.getCollectionType().getItem().equals(mobKill.getDrop())) {
@@ -100,31 +102,18 @@ public class Mob {
                             collection.levelUpCollection(player, playerData);
                         }
                     }
+                    double randomDouble = Math.random();
                     if (mobKill.getRareDrops() != null) {
-                        double random = Math.random();
-                        if (mobKill.getRareDrops() != null) {
-                            for (Drop drop : mobKill.getRareDrops()) {
-                                if (drop.getChance() >= random) {
-                                    player.getInventory().addItem(Items.buildItem(drop.getItems()));
-                                    Text.applyText(player, "&r&5&lSPECIAL DROP! &r&8| " + drop.getItems()
-                                            .getRarity().getColor() + drop.getItems().getName());
-                                    Player finalPlayer = player;
-                                    new BukkitRunnable() {
-                                        int seconds = 1;
-
-                                        @Override
-                                        public void run() {
-                                            if (seconds == 1) {
-                                                finalPlayer.playSound(finalPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f);
-                                            } else if (seconds == 2) {
-                                                finalPlayer.playSound(finalPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 0.5f);
-                                            } else if (seconds == 3) {
-                                                finalPlayer.playSound(finalPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 2.0f);
-                                                cancel();
-                                            }
-                                            seconds++;
-                                        }
-                                    }.runTaskTimer(skrpg, 0, 4);
+                        for (Drop drop : mobKill.getRareDrops()) {
+                            if (drop.getChance() >= randomDouble) {
+                                playerData.getPlayerActionManager().addItem(new TradeItem(drop.getItems().generateItemInfo(), 1));
+                                if (drop.getDropRarity() != DropRarity.NORMAL) {
+                                    if (drop.getDropRarity().getPriority() < 3) {
+                                        player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 0.2f);
+                                    } else {
+                                        player.playSound(player.getLocation(), Sound.ITEM_TOTEM_USE, 1.0f, 2.0f);
+                                    }
+                                    Text.applyText(player, drop.getDropRarity().getName() + " DROP! &r&8| &r&7You dropped a " + drop.getItems().getRarity().getColor() + drop.getItems().getName());
                                 }
                             }
                         }
@@ -274,7 +263,7 @@ public class Mob {
             for (MobKill mobKill : EnumSet.allOf(MobKill.class)) {
                 if (getMobType().getName().equals(mobKill.getMobType().getName())) {
                     if (mobKill.getDrop() != null) {
-                        playerData.getPlayerActionManager().addNewItem(mobKill.getDrop());
+                        playerData.getPlayerActionManager().addItem(new TradeItem(mobKill.getDrop().generateItemInfo(), 1));
                     }
                     for (Collection collection : playerData.getCollections()) {
                         if (collection.getCollectionType().getItem().equals(mobKill.getDrop())) {

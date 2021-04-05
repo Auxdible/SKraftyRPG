@@ -5,6 +5,7 @@ import com.auxdible.skrpg.items.Items;
 import com.auxdible.skrpg.mobs.MobType;
 import com.auxdible.skrpg.mobs.boss.scrollboss.KingCrabScrollBoss;
 import com.auxdible.skrpg.player.PlayerData;
+import com.auxdible.skrpg.regions.RegionFlags;
 import com.auxdible.skrpg.utils.Text;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -20,6 +21,13 @@ public class CrabKingSummonAbility implements Ability {
     @Override
     public void ability(PlayerData playerData, SKRPG skrpg) {
         Player p = Bukkit.getPlayer(playerData.getUuid());
+        if (playerData.getRegion() != null) {
+            if (playerData.getRegion().getRegionFlagsList().contains(RegionFlags.NO_SPAWNING_MONSTERS)) {
+                Text.applyText(p, "&cYou cannot spawn a boss in this region!");
+                p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.1f);
+                return;
+            }
+        }
         if (p.getInventory().getItemInMainHand().getAmount() > 1) {
             ItemStack itemStack = p.getInventory().getItemInMainHand();
             itemStack.setAmount(p.getInventory().getItemInMainHand().getAmount() - 1);

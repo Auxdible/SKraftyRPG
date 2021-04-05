@@ -41,5 +41,7 @@ commands:
   itemInfo:
     aliases: [iinfo, infoItem, iteminfo, infoitem]
     description: Look at the technical information of an item.
+  stash:
+    description: Clear your stash.
 
 

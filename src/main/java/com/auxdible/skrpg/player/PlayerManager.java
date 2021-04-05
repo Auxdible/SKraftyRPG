@@ -131,11 +131,11 @@ public class PlayerManager {
                 playerData = new PlayerData(skrpg, rsStats.getInt("baseHP"), rsStats.getInt("baseEnergy"),
                         rsStats.getInt("baseStrength"), rsStats.getInt("baseDefence"), rsStats.getInt("baseSpeed"),
                         player.getUniqueId(), Double.parseDouble(rsStats.getString("credits")),
-                        new Combat(Level.valueOf("_" + rsSkills.getInt("combatLevel")), rsSkills.getInt("combatXpTotal"), rsSkills.getInt("combatXpTill")),
-                        new Mining(Level.valueOf("_" + rsSkills.getInt("miningLevel")), rsSkills.getInt("miningXpTotal"), rsSkills.getInt("miningXpTill")),
-                        new Herbalism(Level.valueOf("_" + rsSkills.getInt("herbalismLevel")), rsSkills.getInt("herbalismXpTotal"), rsSkills.getInt("herbalismXpTill")),
-                        new Crafting(Level.valueOf("_" + rsSkills.getInt("craftingLevel")), rsSkills.getInt("craftingXpTotal"), rsSkills.getInt("craftingXpTill")),
-                        new Runics(Level.valueOf("_" + rsSkills.getInt("runicLevel")), rsSkills.getInt("runicXpTotal"), rsSkills.getInt("runicXpTill")),
+                        new Combat(Level.valueOf("_" + rsSkills.getInt("combatLevel")), Double.parseDouble(rsSkills.getString("combatXpTotal")), Double.parseDouble(rsSkills.getString("combatXpTill"))),
+                        new Mining(Level.valueOf("_" + rsSkills.getInt("miningLevel")), Double.parseDouble(rsSkills.getString("miningXpTotal")), Double.parseDouble(rsSkills.getString("miningXpTill"))),
+                        new Herbalism(Level.valueOf("_" + rsSkills.getInt("herbalismLevel")), Double.parseDouble(rsSkills.getString("herbalismXpTotal")), Double.parseDouble(rsSkills.getString("herbalismXpTill"))),
+                        new Crafting(Level.valueOf("_" + rsSkills.getInt("craftingLevel")), Double.parseDouble(rsSkills.getString("craftingXpTotal")), Double.parseDouble(rsSkills.getString("craftingXpTill"))),
+                        new Runics(Level.valueOf("_" + rsSkills.getInt("runicLevel")), Double.parseDouble(rsSkills.getString("runicXpTotal")), Double.parseDouble(rsSkills.getString("runicXpTill"))),
                         playerBanks, calendar.getTime(), collections, Rarity.valueOf(rarityValue), rsStats.getBoolean("canTrade"), processedQuests, rsStats.getInt("runicPoints"), runicUpgradesProcessed, rsStats.getInt("currentQuestState"),
                         quest);
                 if (getPlayerData(playerData.getUuid()) == null) {
@@ -241,11 +241,11 @@ public class PlayerManager {
                 playerData = new PlayerData(skrpg, rsStats.getInt("baseHP"), rsStats.getInt("baseEnergy"),
                         rsStats.getInt("baseStrength"), rsStats.getInt("baseDefence"), rsStats.getInt("baseSpeed"),
                         player.getUniqueId(), Double.parseDouble(rsStats.getString("credits")),
-                        new Combat(Level.valueOf("_" + rsSkills.getInt("combatLevel")), rsSkills.getInt("combatXpTotal"), rsSkills.getInt("combatXpTill")),
-                        new Mining(Level.valueOf("_" + rsSkills.getInt("miningLevel")), rsSkills.getInt("miningXpTotal"), rsSkills.getInt("miningXpTill")),
-                        new Herbalism(Level.valueOf("_" + rsSkills.getInt("herbalismLevel")), rsSkills.getInt("herbalismXpTotal"), rsSkills.getInt("herbalismXpTill")),
-                        new Crafting(Level.valueOf("_" + rsSkills.getInt("craftingLevel")), rsSkills.getInt("craftingXpTotal"), rsSkills.getInt("craftingXpTill")),
-                        new Runics(Level.valueOf("_" + rsSkills.getInt("runicLevel")), rsSkills.getInt("runicXpTotal"), rsSkills.getInt("runicXpTill")),
+                        new Combat(Level.valueOf("_" + rsSkills.getInt("combatLevel")), Double.parseDouble(rsSkills.getString("combatXpTotal")), Double.parseDouble(rsSkills.getString("combatXpTill"))),
+                        new Mining(Level.valueOf("_" + rsSkills.getInt("miningLevel")), Double.parseDouble(rsSkills.getString("miningXpTotal")), Double.parseDouble(rsSkills.getString("miningXpTill"))),
+                        new Herbalism(Level.valueOf("_" + rsSkills.getInt("herbalismLevel")), Double.parseDouble(rsSkills.getString("herbalismXpTotal")), Double.parseDouble(rsSkills.getString("herbalismXpTill"))),
+                        new Crafting(Level.valueOf("_" + rsSkills.getInt("craftingLevel")), Double.parseDouble(rsSkills.getString("craftingXpTotal")), Double.parseDouble(rsSkills.getString("craftingXpTill"))),
+                        new Runics(Level.valueOf("_" + rsSkills.getInt("runicLevel")), Double.parseDouble(rsSkills.getString("runicXpTotal")), Double.parseDouble(rsSkills.getString("runicXpTill"))),
                         playerBanks, calendar.getTime(), collections, Rarity.valueOf(rarityValue), rsStats.getBoolean("canTrade"), processedQuests, rsStats.getInt("runicPoints"), runicUpgradesProcessed, rsStats.getInt("currentQuestState"), quest);
                 if (getPlayerData(playerData.getUuid()) == null) {
                     players.add(playerData);

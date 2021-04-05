@@ -15,6 +15,7 @@ import com.auxdible.skrpg.player.PlayerData;
 import com.auxdible.skrpg.player.PlayerJoinLeaveListener;
 import com.auxdible.skrpg.player.PlayerListener;
 import com.auxdible.skrpg.player.PlayerManager;
+import com.auxdible.skrpg.player.actions.BrokenBlock;
 import com.auxdible.skrpg.player.economy.TradeManager;
 import com.auxdible.skrpg.player.effects.Effects;
 import com.auxdible.skrpg.player.guilds.GuildInviteManager;
@@ -47,6 +48,9 @@ import java.util.HashMap;
 import java.util.List;
 
 public class SKRPG extends JavaPlugin {
+    private HashMap<BrokenBlock, Integer> brokenBlocks;
+    public HashMap<BrokenBlock, Integer> getBrokenBlocks() { return brokenBlocks; }
+
     private ArrayList<Integer> renderedSpawns;
     private ArrayList<RegionSetup> playersInRegionSetup;
 
@@ -126,9 +130,18 @@ public class SKRPG extends JavaPlugin {
             prepareStatement("ALTER TABLE skills_table ADD COLUMN IF NOT EXISTS runicLevel INT(11) NOT NULL;").executeUpdate();
             prepareStatement("ALTER TABLE skills_table ADD COLUMN IF NOT EXISTS runicXpTill INT(11) NOT NULL;").executeUpdate();
             prepareStatement("ALTER TABLE skills_table ADD COLUMN IF NOT EXISTS runicXpTotal INT(11) NOT NULL;").executeUpdate();
+            prepareStatement("ALTER TABLE skills_table MODIFY runicXpTill VARCHAR(13);").executeUpdate();
+            prepareStatement("ALTER TABLE skills_table MODIFY runicXpTotal VARCHAR(13);").executeUpdate();
+            prepareStatement("ALTER TABLE skills_table MODIFY combatXpTill VARCHAR(13);").executeUpdate();
+            prepareStatement("ALTER TABLE skills_table MODIFY combatXpTotal VARCHAR(13);").executeUpdate();
+            prepareStatement("ALTER TABLE skills_table MODIFY miningXpTill VARCHAR(13);").executeUpdate();
+            prepareStatement("ALTER TABLE skills_table MODIFY miningXpTotal VARCHAR(13);").executeUpdate();
+            prepareStatement("ALTER TABLE skills_table MODIFY herbalismXpTill VARCHAR(13);").executeUpdate();
+            prepareStatement("ALTER TABLE skills_table MODIFY herbalismXpTotal VARCHAR(13);").executeUpdate();
             prepareStatement("CREATE TABLE IF NOT EXISTS banks_table(bank1Level varchar(36), bank1Credits int(11), bank2Level varchar(36)," +
                     "bank2Credits int(11), bank3Level varchar(36), bank3Credits int(11), bank4Level varchar(36), bank4Credits int(11), bank5Level varchar(36)," +
                     "bank5Credits int(11), bankAmount int(11), UUID varchar(36), PRIMARY KEY (UUID));").executeUpdate();
+
             prepareStatement("ALTER TABLE banks_table MODIFY bank1Credits VARCHAR(40);").executeUpdate();
             prepareStatement("ALTER TABLE banks_table MODIFY bank2Credits VARCHAR(40);").executeUpdate();
             prepareStatement("ALTER TABLE banks_table MODIFY bank3Credits VARCHAR(40);").executeUpdate();
@@ -182,11 +195,13 @@ public class SKRPG extends JavaPlugin {
         getCommand("skrpg").setExecutor(new SKRPGCommand(this));
         getCommand("recipe").setExecutor(new RecipeCommand(this));
         getCommand("itemInfo").setExecutor(new ItemDataCommand(this));
+        getCommand("stash").setExecutor(new StashCommand(this));
         getLogger().info("Loaded SKRPG core plugin!");
         renderedSpawns = new ArrayList<>();
         playersInRegionSetup = new ArrayList<>();
         npcCooldown = new ArrayList<>();
         cooldownsAbility = new HashMap<>();
+        brokenBlocks = new HashMap<>();
         SKRPG skrpg = this;
         new BukkitRunnable() {
             int oneSecond = 0;
@@ -197,247 +212,270 @@ public class SKRPG extends JavaPlugin {
                 // per 1 second
                 if (oneSecond == 10) {
                     oneSecond = 0;
+                    if (!brokenBlocks.isEmpty()) {
+                        List<BrokenBlock> removedBlocks = new ArrayList<>();
+                        for (BrokenBlock brokenBlock : brokenBlocks.keySet()) {
+                            brokenBlocks.put(brokenBlock, brokenBlocks.get(brokenBlock) - 1);
+                            if (brokenBlocks.get(brokenBlock) <= 0) {
+                                removedBlocks.add(brokenBlock);
+                                brokenBlock.create();
+                            }
+                        }
+                        for (BrokenBlock brokenBlock : removedBlocks) {
+                            brokenBlocks.remove(brokenBlock);
+                        }
+                    }
+
                     for (Player player : Bukkit.getOnlinePlayers()) {
                         PlayerData playerData = getPlayerManager().getPlayerData(player.getUniqueId());
                         if (playerData == null) {
                             player.kickPlayer("&cERROR: There was no account found under this UUID! Please contact an admin if this is an error. ");
                             getPlayerManager().createPlayer(player.getUniqueId());
                         } else {
-                            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(
-                                    Text.color(
-                                            "&c" + playerData.getHp() + "/" + playerData.getMaxHP() + " ♥ " +
-                                                    "&a" + playerData.getDefence() + " ✿ Defence " +
-                                                    "&e" + playerData.getEnergy() + "/" + playerData.getMaxEnergy() + " ☢ Energy" +
-                                                    " &5" + playerData.getRunicPoints() + " RP ஐ"
-                                    )
-                            ));
-                            playerData.updateEffects();
+                            if (player.getScoreboard().getTeam("regionOwner") == null) {
+                                PlayerJoinLeaveListener.buildScoreboard(player, skrpg);
+                            } else {
+                                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(
+                                        Text.color(
+                                                "&c" + playerData.getHp() + "/" + playerData.getMaxHP() + " ♥ &8&l| " +
+                                                        "&a" + playerData.getDefence() + " ✿ Defence &8&l|" +
+                                                        " &e" + playerData.getEnergy() + "/" + playerData.getMaxEnergy() + " ☢ Energy &8&l|" +
+                                                        " &5" + playerData.getRunicPoints() + " RP ஐ"
+                                        )
+                                ));
+                                playerData.updateEffects();
+                            }
                         }
                     }
                     for (Player player : Bukkit.getOnlinePlayers()) {
                         if (player.getScoreboard().getTeam("regionOwner") == null) {
                             PlayerJoinLeaveListener.buildScoreboard(player, skrpg);
-                        }
-                        PlayerData playerData = getPlayerManager().getPlayerData(player.getUniqueId());
-                        if (playerData.getHp() <= 0) {
-                            if (getPlayerManager().getPlayerData(player.getUniqueId()).getHp() <= 0) {
-                                playerData.getPlayerActionManager().killPlayer();
-                            }
-                        }
-                        boolean regionFound = false;
-                        for (Region region : getRegionManager().getRegions()) {
-                            if (locationIsInCuboid(player.getLocation(),
-                                    new Location(region.getSpawnLocation().getWorld(),
-                                            Math.min(region.getX(), region.getX2()), 0, Math.min(region.getZ(), region.getZ2())),
-                                    new Location(region.getSpawnLocation().getWorld(), Math.max(region.getX(), region.getX2()), 256, Math.max(region.getZ(), region.getZ2())))) {
-                                if (playerData.getRegion() != region) {
-                                    player.sendTitle(Text.color("&e&lYou are now entering"),
-                                            Text.color(region.getName()), 20, 40, 20);
+                        } else {
+                            PlayerData playerData = getPlayerManager().getPlayerData(player.getUniqueId());
+                            if (playerData.getHp() <= 0) {
+                                if (getPlayerManager().getPlayerData(player.getUniqueId()).getHp() <= 0) {
+                                    playerData.getPlayerActionManager().killPlayer();
                                 }
-                                if (region.getControllingGuild() != null) {
-                                    player.getScoreboard().getTeam("regionOwner")
-                                            .setSuffix(Text.color(region.getControllingGuild().getName()));
-                                } else {
-                                    player.getScoreboard().getTeam("regionOwner")
-                                            .setSuffix(Text.color("&8NONE"));
-                                }
-                                getPlayerManager().getPlayerData(player.getUniqueId()).setRegion(region);
-                                regionFound = true;
-                                break;
                             }
-                        }
+                            boolean regionFound = false;
+                            for (Region region : getRegionManager().getRegions()) {
+                                if (locationIsInCuboid(player.getLocation(),
+                                        new Location(region.getSpawnLocation().getWorld(),
+                                                Math.min(region.getX(), region.getX2()), 0, Math.min(region.getZ(), region.getZ2())),
+                                        new Location(region.getSpawnLocation().getWorld(), Math.max(region.getX(), region.getX2()), 256, Math.max(region.getZ(), region.getZ2())))) {
+                                    if (playerData.getRegion() != region) {
+                                        player.sendTitle(Text.color("&e&lYou are now entering"),
+                                                Text.color(region.getName()), 20, 40, 20);
+                                    }
+                                    if (region.getControllingGuild() != null) {
+                                        player.getScoreboard().getTeam("regionOwner")
+                                                .setSuffix(Text.color(region.getControllingGuild().getName()));
+                                    } else {
+                                        player.getScoreboard().getTeam("regionOwner")
+                                                .setSuffix(Text.color("&8NONE"));
+                                    }
+                                    getPlayerManager().getPlayerData(player.getUniqueId()).setRegion(region);
+                                    regionFound = true;
+                                    break;
+                                }
+                            }
 
-                        for (NPC npc : npcManager.getNpcs()) {
-                            if (npc.getEntityPlayer() != null) {
-                                if (player.getLocation().distance(npc.getLocation()) <= 80) {
-                                    if (!playerData.getRenderedNPCs().contains(npc)) {
-                                        PlayerConnection playerConnection = ((CraftPlayer) player).getHandle().playerConnection;
-                                        playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo
-                                                .EnumPlayerInfoAction.ADD_PLAYER, npc.getEntityPlayer()));
-                                        playerConnection.sendPacket(new PacketPlayOutNamedEntitySpawn(npc.getEntityPlayer()));
-                                        DataWatcher watcher = npc.getEntityPlayer().getDataWatcher();
-                                        Integer byteInt = 127;
-                                        watcher.set(new DataWatcherObject<>(16, DataWatcherRegistry.a), byteInt.byteValue());
-                                        playerConnection.sendPacket(new PacketPlayOutEntityMetadata(npc.getEntityPlayer().getId(),
-                                                npc.getEntityPlayer().getDataWatcher(), true));
-                                        playerConnection.sendPacket(new PacketPlayOutEntityHeadRotation(npc.getEntityPlayer(), (byte) (
-                                                npc.getLocation().getYaw() * 256 / 360)));
-                                        if (npc.getItemInHand() != null) {
-                                            List<Pair<EnumItemSlot, ItemStack>> itemList = new ArrayList<>();
-                                            itemList.add(Pair.of(EnumItemSlot.MAINHAND, CraftItemStack.asNMSCopy(new ItemBuilder(npc.getItemInHand(), 1).asItem())));
-                                            playerConnection.sendPacket(new PacketPlayOutEntityEquipment(npc.getEntityPlayer().getId(), itemList));
-                                        }
-                                        player.getScoreboard().getTeam("npcs").addEntry(npc.getEntityPlayer().getName());
-                                        new BukkitRunnable() {
-                                            @Override
-                                            public void run() {
-                                                playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, npc.getEntityPlayer()));
-                                            }
-                                        }.runTaskLater(skrpg,50);
-                                        playerData.getRenderedNPCs().add(npc);
-                                    }
-                                } else {
-                                    if (playerData.getRenderedNPCs() == null) {
-                                        playerData.setRenderedNPCs(new ArrayList<>());
-                                    }
-                                    if (playerData.getRenderedNPCs().contains(npc)) {
-                                        playerData.getRenderedNPCs().remove(npc);
-                                        if (npc.getEntityPlayer() != null) {
+                            for (NPC npc : npcManager.getNpcs()) {
+                                if (npc.getEntityPlayer() != null) {
+                                    if (player.getLocation().distance(npc.getLocation()) <= 80) {
+                                        if (!playerData.getRenderedNPCs().contains(npc)) {
                                             PlayerConnection playerConnection = ((CraftPlayer) player).getHandle().playerConnection;
-                                            playerConnection.sendPacket(new PacketPlayOutPlayerInfo(
-                                                    PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, npc.getEntityPlayer()));
-                                            playerConnection.sendPacket(new PacketPlayOutEntityDestroy(npc.getEntityPlayer().getId()));
-                                            playerData.getRenderedNPCs().remove(npc);
+                                            playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo
+                                                    .EnumPlayerInfoAction.ADD_PLAYER, npc.getEntityPlayer()));
+                                            playerConnection.sendPacket(new PacketPlayOutNamedEntitySpawn(npc.getEntityPlayer()));
+                                            DataWatcher watcher = npc.getEntityPlayer().getDataWatcher();
+                                            Integer byteInt = 127;
+                                            watcher.set(new DataWatcherObject<>(16, DataWatcherRegistry.a), byteInt.byteValue());
+                                            playerConnection.sendPacket(new PacketPlayOutEntityMetadata(npc.getEntityPlayer().getId(),
+                                                    npc.getEntityPlayer().getDataWatcher(), true));
+                                            playerConnection.sendPacket(new PacketPlayOutEntityHeadRotation(npc.getEntityPlayer(), (byte) (
+                                                    npc.getLocation().getYaw() * 256 / 360)));
+                                            if (npc.getItemInHand() != null) {
+                                                List<Pair<EnumItemSlot, ItemStack>> itemList = new ArrayList<>();
+                                                itemList.add(Pair.of(EnumItemSlot.MAINHAND, CraftItemStack.asNMSCopy(new ItemBuilder(npc.getItemInHand(), 1).asItem())));
+                                                playerConnection.sendPacket(new PacketPlayOutEntityEquipment(npc.getEntityPlayer().getId(), itemList));
+                                            }
+                                            player.getScoreboard().getTeam("npcs").addEntry(npc.getEntityPlayer().getName());
+                                            new BukkitRunnable() {
+                                                @Override
+                                                public void run() {
+                                                    playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, npc.getEntityPlayer()));
+                                                }
+                                            }.runTaskLater(skrpg, 50);
+                                            playerData.getRenderedNPCs().add(npc);
                                         }
+                                    } else {
+                                        if (playerData.getRenderedNPCs() == null) {
+                                            playerData.setRenderedNPCs(new ArrayList<>());
+                                        }
+                                        if (playerData.getRenderedNPCs().contains(npc)) {
+                                            playerData.getRenderedNPCs().remove(npc);
+                                            if (npc.getEntityPlayer() != null) {
+                                                PlayerConnection playerConnection = ((CraftPlayer) player).getHandle().playerConnection;
+                                                playerConnection.sendPacket(new PacketPlayOutPlayerInfo(
+                                                        PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, npc.getEntityPlayer()));
+                                                playerConnection.sendPacket(new PacketPlayOutEntityDestroy(npc.getEntityPlayer().getId()));
+                                                playerData.getRenderedNPCs().remove(npc);
+                                            }
+                                        }
+
+                                    }
+                                }
+                            }
+                            for (MobSpawn mobSpawn : skrpg.getMobSpawnManager().getMobSpawns()) {
+                                boolean spawnRendered = false;
+                                for (Player onlinePlayers : Bukkit.getOnlinePlayers()) {
+                                    if (onlinePlayers.getLocation().distance(mobSpawn.getLocation()) <= 80) {
+                                        spawnRendered = true;
+                                    }
+                                }
+                                if (!spawnRendered) {
+                                    if (renderedSpawns.contains(Integer.valueOf(mobSpawn.getId()))) {
+                                        renderedSpawns.remove(Integer.valueOf(mobSpawn.getId()));
                                     }
 
+                                    for (Mob mob : mobSpawn.getCurrentlySpawnedMobs()) {
+                                        mob.getEnt().remove();
+                                    }
+                                    mobSpawn.getCurrentlySpawnedMobs().clear();
+                                } else {
+                                    if (!renderedSpawns.contains(Integer.valueOf(mobSpawn.getId()))) {
+                                        renderedSpawns.add(Integer.valueOf(mobSpawn.getId()));
+                                    }
                                 }
                             }
-                        }
-                        for (MobSpawn mobSpawn : skrpg.getMobSpawnManager().getMobSpawns()) {
-                            boolean spawnRendered = false;
-                            for (Player onlinePlayers : Bukkit.getOnlinePlayers()) {
-                                if (onlinePlayers.getLocation().distance(mobSpawn.getLocation()) <= 80) {
-                                    spawnRendered = true;
+                            if (!regionFound) {
+                                getPlayerManager().getPlayerData(player.getUniqueId()).setRegion(null);
+                                player.getScoreboard().getTeam("regionOwner")
+                                        .setSuffix(Text.color("&8NONE"));
+                            }
+                            int strengthIncrease = 0;
+                            int defenceIncrease = 0;
+                            int energyIncrease = 0;
+                            int hpIncrease = 0;
+                            int speedIncrease = 0;
+                            boolean wearingCrabHat = false;
+                            ItemInfo iteminfoHand = ItemInfo.parseItemInfo(player.getInventory().getItemInMainHand());
+                            ItemInfo itemInfoHelmet = ItemInfo.parseItemInfo(player.getInventory().getHelmet());
+                            ItemInfo itemInfoChestplate = ItemInfo.parseItemInfo(player.getInventory().getChestplate());
+                            ItemInfo itemInfoLeggings = ItemInfo.parseItemInfo(player.getInventory().getLeggings());
+                            ItemInfo itemInfoBoots = ItemInfo.parseItemInfo(player.getInventory().getBoots());
+                            if (iteminfoHand != null) {
+                                if (iteminfoHand.getItem().getItemType() != ItemType.ARMOR) {
+                                    strengthIncrease = strengthIncrease + iteminfoHand.getItem().getStrength() + iteminfoHand.getBonusStrength();
+                                    defenceIncrease = defenceIncrease + iteminfoHand.getItem().getDefence() + iteminfoHand.getBonusDefence();
+                                    energyIncrease = energyIncrease + iteminfoHand.getItem().getEnergy() + iteminfoHand.getBonusEnergy();
+                                    hpIncrease = hpIncrease + iteminfoHand.getItem().getHp() + iteminfoHand.getBonusHealth();
+                                    speedIncrease = speedIncrease + iteminfoHand.getItem().getSpeed() + iteminfoHand.getBonusSpeed();
                                 }
                             }
-                            if (!spawnRendered) {
-                                if (renderedSpawns.contains(Integer.valueOf(mobSpawn.getId()))) {
-                                    renderedSpawns.remove(Integer.valueOf(mobSpawn.getId()));
+                            if (itemInfoHelmet != null) {
+                                strengthIncrease = strengthIncrease + itemInfoHelmet.getItem().getStrength() + itemInfoHelmet.getBonusStrength();
+                                defenceIncrease = defenceIncrease + itemInfoHelmet.getItem().getDefence() + itemInfoHelmet.getBonusDefence();
+                                energyIncrease = energyIncrease + itemInfoHelmet.getItem().getEnergy() + itemInfoHelmet.getBonusEnergy();
+                                hpIncrease = hpIncrease + itemInfoHelmet.getItem().getHp() + itemInfoHelmet.getBonusHealth();
+                                speedIncrease = speedIncrease + itemInfoHelmet.getItem().getSpeed() + itemInfoHelmet.getBonusSpeed();
+                                if (itemInfoHelmet.getItem() == Items.CRAB_CROWN) {
+                                    wearingCrabHat = true;
                                 }
+                                if (itemInfoHelmet.hasEnchantment(Enchantments.PROTECTION)) {
+                                    defenceIncrease = defenceIncrease + (itemInfoHelmet.getEnchantment(Enchantments.PROTECTION).getLevel() * 25);
+                                } else if (itemInfoHelmet.hasEnchantment(Enchantments.HEALTHY)) {
+                                    hpIncrease = hpIncrease + (itemInfoHelmet.getEnchantment(Enchantments.HEALTHY).getLevel() * 25);
+                                }
+                            }
+                            if (itemInfoChestplate != null) {
+                                strengthIncrease = strengthIncrease + itemInfoChestplate.getItem().getStrength() + itemInfoChestplate.getBonusStrength();
+                                defenceIncrease = defenceIncrease + itemInfoChestplate.getItem().getDefence() + itemInfoChestplate.getBonusDefence();
+                                energyIncrease = energyIncrease + itemInfoChestplate.getItem().getEnergy() + itemInfoChestplate.getBonusEnergy();
+                                hpIncrease = hpIncrease + itemInfoChestplate.getItem().getHp() + itemInfoChestplate.getBonusHealth();
+                                speedIncrease = speedIncrease + itemInfoChestplate.getItem().getSpeed() + itemInfoChestplate.getBonusSpeed();
+                                if (itemInfoChestplate.hasEnchantment(Enchantments.PROTECTION)) {
+                                    defenceIncrease = defenceIncrease + (itemInfoChestplate.getEnchantment(Enchantments.PROTECTION).getLevel() * 25);
+                                } else if (itemInfoChestplate.hasEnchantment(Enchantments.HEALTHY)) {
+                                    hpIncrease = hpIncrease + (itemInfoChestplate.getEnchantment(Enchantments.HEALTHY).getLevel() * 25);
+                                }
+                            }
+                            if (itemInfoLeggings != null) {
+                                strengthIncrease = strengthIncrease + itemInfoLeggings.getItem().getStrength() + itemInfoLeggings.getBonusStrength();
+                                defenceIncrease = defenceIncrease + itemInfoLeggings.getItem().getDefence() + itemInfoLeggings.getBonusDefence();
+                                energyIncrease = energyIncrease + itemInfoLeggings.getItem().getEnergy() + itemInfoLeggings.getBonusEnergy();
+                                hpIncrease = hpIncrease + itemInfoLeggings.getItem().getHp() + itemInfoLeggings.getBonusHealth();
+                                speedIncrease = speedIncrease + itemInfoLeggings.getItem().getSpeed() + itemInfoLeggings.getBonusSpeed();
+                                if (itemInfoLeggings.hasEnchantment(Enchantments.PROTECTION)) {
+                                    defenceIncrease = defenceIncrease + (itemInfoLeggings.getEnchantment(Enchantments.PROTECTION).getLevel() * 25);
+                                } else if (itemInfoLeggings.hasEnchantment(Enchantments.HEALTHY)) {
+                                    hpIncrease = hpIncrease + (itemInfoLeggings.getEnchantment(Enchantments.HEALTHY).getLevel() * 25);
+                                }
+                            }
+                            if (itemInfoBoots != null) {
+                                strengthIncrease = strengthIncrease + itemInfoBoots.getItem().getStrength() + itemInfoBoots.getBonusStrength();
+                                defenceIncrease = defenceIncrease + itemInfoBoots.getItem().getDefence() + itemInfoBoots.getBonusDefence();
+                                energyIncrease = energyIncrease + itemInfoBoots.getItem().getEnergy() + itemInfoBoots.getBonusEnergy();
+                                hpIncrease = hpIncrease + itemInfoBoots.getItem().getHp() + itemInfoBoots.getBonusHealth();
+                                speedIncrease = speedIncrease + itemInfoBoots.getItem().getSpeed() + itemInfoBoots.getBonusSpeed();
+                                if (itemInfoBoots.hasEnchantment(Enchantments.PROTECTION)) {
+                                    defenceIncrease = defenceIncrease + (itemInfoBoots.getEnchantment(Enchantments.PROTECTION).getLevel() * 25);
+                                } else if (itemInfoBoots.hasEnchantment(Enchantments.HEALTHY)) {
+                                    hpIncrease = hpIncrease + (itemInfoBoots.getEnchantment(Enchantments.HEALTHY).getLevel() * 25);
+                                }
+                                if (itemInfoBoots.getItem() == Items.SPIDER_BOOTS) {
+                                    player.setAllowFlight(true);
 
-                                for (Mob mob : mobSpawn.getCurrentlySpawnedMobs()) {
-                                    mob.getEnt().remove();
+                                } else {
+                                    if (player.getGameMode() != GameMode.CREATIVE && !skrpg.getRaidManager().isInRaid(player)) {
+                                        player.setAllowFlight(false);
+                                        player.setFlying(false);
+                                    }
                                 }
-                                mobSpawn.getCurrentlySpawnedMobs().clear();
-                            } else {
-                                if (!renderedSpawns.contains(Integer.valueOf(mobSpawn.getId()))) {
-                                    renderedSpawns.add(Integer.valueOf(mobSpawn.getId()));
-                                }
-                            }
-                        }
-                        if (!regionFound) {
-                            getPlayerManager().getPlayerData(player.getUniqueId()).setRegion(null);
-                            player.getScoreboard().getTeam("regionOwner")
-                                    .setSuffix(Text.color("&8NONE"));
-                        }
-                        int strengthIncrease = 0;
-                        int defenceIncrease = 0;
-                        int energyIncrease = 0;
-                        int hpIncrease = 0;
-                        int speedIncrease = 0;
-                        boolean wearingCrabHat = false;
-                        ItemInfo iteminfoHand = ItemInfo.parseItemInfo(player.getInventory().getItemInMainHand());
-                        ItemInfo itemInfoHelmet = ItemInfo.parseItemInfo(player.getInventory().getHelmet());
-                        ItemInfo itemInfoChestplate = ItemInfo.parseItemInfo(player.getInventory().getChestplate());
-                        ItemInfo itemInfoLeggings = ItemInfo.parseItemInfo(player.getInventory().getLeggings());
-                        ItemInfo itemInfoBoots = ItemInfo.parseItemInfo(player.getInventory().getBoots());
-                        if (iteminfoHand != null) {
-                            if (iteminfoHand.getItem().getItemType() != ItemType.ARMOR) {
-                                strengthIncrease = strengthIncrease + iteminfoHand.getItem().getStrength() + iteminfoHand.getBonusStrength();
-                                defenceIncrease = defenceIncrease + iteminfoHand.getItem().getDefence() + iteminfoHand.getBonusDefence();
-                                energyIncrease = energyIncrease + iteminfoHand.getItem().getEnergy() + iteminfoHand.getBonusEnergy();
-                                hpIncrease = hpIncrease + iteminfoHand.getItem().getHp() + iteminfoHand.getBonusHealth();
-                                speedIncrease = speedIncrease + iteminfoHand.getItem().getSpeed() + iteminfoHand.getBonusSpeed();
-                            }
-                        }
-                        if (itemInfoHelmet != null) {
-                            strengthIncrease = strengthIncrease + itemInfoHelmet.getItem().getStrength() + itemInfoHelmet.getBonusStrength();
-                            defenceIncrease = defenceIncrease + itemInfoHelmet.getItem().getDefence() + itemInfoHelmet.getBonusDefence();
-                            energyIncrease = energyIncrease + itemInfoHelmet.getItem().getEnergy() + itemInfoHelmet.getBonusEnergy();
-                            hpIncrease = hpIncrease + itemInfoHelmet.getItem().getHp() + itemInfoHelmet.getBonusHealth();
-                            speedIncrease = speedIncrease + itemInfoHelmet.getItem().getSpeed() + itemInfoHelmet.getBonusSpeed();
-                            if (itemInfoHelmet.getItem() == Items.CRAB_CROWN) {
-                                wearingCrabHat = true;
-                            }
-                            if (itemInfoHelmet.hasEnchantment(Enchantments.PROTECTION)) {
-                                defenceIncrease = defenceIncrease + (itemInfoHelmet.getEnchantment(Enchantments.PROTECTION).getLevel() * 25);
-                            } else if (itemInfoHelmet.hasEnchantment(Enchantments.HEALTHY)) {
-                                hpIncrease = hpIncrease + (itemInfoHelmet.getEnchantment(Enchantments.HEALTHY).getLevel() * 25);
-                            }
-                        }
-                        if (itemInfoChestplate != null) {
-                            strengthIncrease = strengthIncrease + itemInfoChestplate.getItem().getStrength() + itemInfoChestplate.getBonusStrength();
-                            defenceIncrease = defenceIncrease + itemInfoChestplate.getItem().getDefence() + itemInfoChestplate.getBonusDefence();
-                            energyIncrease = energyIncrease + itemInfoChestplate.getItem().getEnergy() + itemInfoChestplate.getBonusEnergy();
-                            hpIncrease = hpIncrease + itemInfoChestplate.getItem().getHp() + itemInfoChestplate.getBonusHealth();
-                            speedIncrease = speedIncrease + itemInfoChestplate.getItem().getSpeed() + itemInfoChestplate.getBonusSpeed();
-                            if (itemInfoChestplate.hasEnchantment(Enchantments.PROTECTION)) {
-                                defenceIncrease = defenceIncrease + (itemInfoChestplate.getEnchantment(Enchantments.PROTECTION).getLevel() * 25);
-                            } else if (itemInfoChestplate.hasEnchantment(Enchantments.HEALTHY)) {
-                                hpIncrease = hpIncrease + (itemInfoChestplate.getEnchantment(Enchantments.HEALTHY).getLevel() * 25);
-                            }
-                        }
-                        if (itemInfoLeggings != null) {
-                            strengthIncrease = strengthIncrease + itemInfoLeggings.getItem().getStrength() + itemInfoLeggings.getBonusStrength();
-                            defenceIncrease = defenceIncrease + itemInfoLeggings.getItem().getDefence() + itemInfoLeggings.getBonusDefence();
-                            energyIncrease = energyIncrease + itemInfoLeggings.getItem().getEnergy() + itemInfoLeggings.getBonusEnergy();
-                            hpIncrease = hpIncrease + itemInfoLeggings.getItem().getHp() + itemInfoLeggings.getBonusHealth();
-                            speedIncrease = speedIncrease + itemInfoLeggings.getItem().getSpeed() + itemInfoLeggings.getBonusSpeed();
-                            if (itemInfoLeggings.hasEnchantment(Enchantments.PROTECTION)) {
-                                defenceIncrease = defenceIncrease + (itemInfoLeggings.getEnchantment(Enchantments.PROTECTION).getLevel() * 25);
-                            } else if (itemInfoLeggings.hasEnchantment(Enchantments.HEALTHY)) {
-                                hpIncrease = hpIncrease + (itemInfoLeggings.getEnchantment(Enchantments.HEALTHY).getLevel() * 25);
-                            }
-                        }
-                        if (itemInfoBoots != null) {
-                            strengthIncrease = strengthIncrease + itemInfoBoots.getItem().getStrength() + itemInfoBoots.getBonusStrength();
-                            defenceIncrease = defenceIncrease + itemInfoBoots.getItem().getDefence() + itemInfoBoots.getBonusDefence();
-                            energyIncrease = energyIncrease + itemInfoBoots.getItem().getEnergy() + itemInfoBoots.getBonusEnergy();
-                            hpIncrease = hpIncrease + itemInfoBoots.getItem().getHp() + itemInfoBoots.getBonusHealth();
-                            speedIncrease = speedIncrease + itemInfoBoots.getItem().getSpeed() + itemInfoBoots.getBonusSpeed();
-                            if (itemInfoBoots.hasEnchantment(Enchantments.PROTECTION)) {
-                                defenceIncrease = defenceIncrease + (itemInfoBoots.getEnchantment(Enchantments.PROTECTION).getLevel() * 25);
-                            } else if (itemInfoBoots.hasEnchantment(Enchantments.HEALTHY)) {
-                                hpIncrease = hpIncrease + (itemInfoBoots.getEnchantment(Enchantments.HEALTHY).getLevel() * 25);
-                            }
-                            if (itemInfoBoots.getItem() == Items.SPIDER_BOOTS) {
-                                player.setAllowFlight(true);
-
                             } else {
                                 if (player.getGameMode() != GameMode.CREATIVE && !skrpg.getRaidManager().isInRaid(player)) {
                                     player.setAllowFlight(false);
                                     player.setFlying(false);
                                 }
                             }
-                        } else {
-                            if (player.getGameMode() != GameMode.CREATIVE && !skrpg.getRaidManager().isInRaid(player)) {
-                                player.setAllowFlight(false);
-                                player.setFlying(false);
+                            if (playerData.getEffect(Effects.STRENGTH) != null) {
+                                strengthIncrease = strengthIncrease + ((20 + (playerData.getStrength() / 10)) *
+                                        playerData.getEffect(Effects.STRENGTH).getLevel());
                             }
-                        }
-                        if (playerData.getEffect(Effects.STRENGTH) != null) {
-                            strengthIncrease = strengthIncrease + ((20 + (playerData.getStrength() / 10)) *
-                                    playerData.getEffect(Effects.STRENGTH).getLevel());
-                        }
-                        if (playerData.getEffect(Effects.PLATED) != null) {
-                            defenceIncrease = defenceIncrease + ((20 + (playerData.getDefence() / 10)) *
-                                    playerData.getEffect(Effects.PLATED).getLevel());
-                        }
-                        if (playerData.getEffect(Effects.ENERGETIC) != null) {
-                            energyIncrease = energyIncrease + ((20 + (playerData.getEnergy() / 10)) *
-                                    playerData.getEffect(Effects.ENERGETIC).getLevel());
-                        }
-                        playerData.setStrength(playerData.getBaseStrength() + strengthIncrease);
-                        playerData.setDefence(playerData.getBaseDefence() + defenceIncrease);
-                        playerData.setMaxEnergy(playerData.getBaseEnergy() + energyIncrease);
-                        if (wearingCrabHat) {
-                            playerData.setMaxHP(75);
-                            if (playerData.getHp() > 75) {
-                                playerData.setHp(75);
+                            if (playerData.getEffect(Effects.PLATED) != null) {
+                                defenceIncrease = defenceIncrease + ((20 + (playerData.getDefence() / 10)) *
+                                        playerData.getEffect(Effects.PLATED).getLevel());
                             }
-                        } else {
-                            playerData.setMaxHP(playerData.getBaseHP() + hpIncrease);
-                        }
+                            if (playerData.getEffect(Effects.ENERGETIC) != null) {
+                                energyIncrease = energyIncrease + ((20 + (playerData.getEnergy() / 10)) *
+                                        playerData.getEffect(Effects.ENERGETIC).getLevel());
+                            }
+                            if (playerData.getEffect(Effects.SPEED) != null) {
+                                speedIncrease = speedIncrease + (20 *
+                                        playerData.getEffect(Effects.SPEED).getLevel());
+                            }
+                            playerData.setStrength(playerData.getBaseStrength() + strengthIncrease);
+                            playerData.setDefence(playerData.getBaseDefence() + defenceIncrease);
+                            playerData.setMaxEnergy(playerData.getBaseEnergy() + energyIncrease);
+                            if (wearingCrabHat) {
+                                playerData.setMaxHP(75);
+                                if (playerData.getHp() > 75) {
+                                    playerData.setHp(75);
+                                }
+                            } else {
+                                playerData.setMaxHP(playerData.getBaseHP() + hpIncrease);
+                            }
 
-                        playerData.setSpeed(playerData.getBaseSpeed() + speedIncrease);
-                        if (playerData.getHp() > playerData.getMaxHP()) {
-                            playerData.setHp(playerData.getMaxHP());
-                        }
-                        if (playerData.getEnergy() > playerData.getMaxEnergy()) {
-                            playerData.setEnergy(playerData.getMaxEnergy());
-                        }
+                            playerData.setSpeed(playerData.getBaseSpeed() + speedIncrease);
+                            if (playerData.getHp() > playerData.getMaxHP()) {
+                                playerData.setHp(playerData.getMaxHP());
+                            }
+                            if (playerData.getEnergy() > playerData.getMaxEnergy()) {
+                                playerData.setEnergy(playerData.getMaxEnergy());
+                            }
 
+                        }
                     }
                     for (Player players : cooldownsAbility.keySet()) {
                         cooldownsAbility.put(players, cooldownsAbility.get(players) - 1);
@@ -538,6 +576,23 @@ public class SKRPG extends JavaPlugin {
             x.printStackTrace();
         }
         return ps;
+    }
+    public ArrayList<Location> getBlocksInArea(Location loc1, Location loc2){
+        int lowX = (loc1.getBlockX()<loc2.getBlockX()) ? loc1.getBlockX() : loc2.getBlockX();
+        int lowY = (loc1.getBlockY()<loc2.getBlockY()) ? loc1.getBlockY() : loc2.getBlockY();
+        int lowZ = (loc1.getBlockZ()<loc2.getBlockZ()) ? loc1.getBlockZ() : loc2.getBlockZ();
+
+        ArrayList<Location> locs = new ArrayList<>();
+
+        for(int x = 0; x<Math.abs(loc1.getBlockX()-loc2.getBlockX()); x++){
+            for(int y = 0; y<Math.abs(loc1.getBlockY()-loc2.getBlockY()); y++){
+                for(int z = 0; z<Math.abs(loc1.getBlockZ()-loc2.getBlockZ()); z++){
+                    locs.add(new Location(loc1.getWorld(),lowX+x, lowY+y, lowZ+z));
+                }
+            }
+        }
+
+        return locs;
     }
     public boolean locationIsInCuboid(Location playerLocation, Location min, Location max) {
         boolean trueOrNot = false;

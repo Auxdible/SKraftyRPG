@@ -1,6 +1,7 @@
 package com.auxdible.skrpg.items.abilities;
 
 import com.auxdible.skrpg.SKRPG;
+import com.auxdible.skrpg.items.ItemInfo;
 import com.auxdible.skrpg.items.ItemType;
 import com.auxdible.skrpg.items.Items;
 import com.auxdible.skrpg.mobs.Mob;
@@ -34,21 +35,17 @@ public class NatureLaunchAbility implements Ability {
                 mobsInRange.add(mobs);
             }
         }
-        int damage = 1;
+        int damage;
         for (Mob mob : mobsInRange) {
-            for (Items items : EnumSet.allOf(Items.class)) {
-                if (p.getInventory().getItemInMainHand().getType().equals(Material.AIR)) {
-                    damage = 1 + ((playerData.getStrength() / 5) *
-                            (1 + playerData.getStrength() / 100));
-                } else if (ChatColor.stripColor(p.getInventory().getItemInMainHand().getItemMeta().getDisplayName())
-                        .equals(ChatColor.stripColor(Text.color(items.getName())))) {
-                    damage = (5 + items.getDamage() + ((playerData.getStrength()) / 5)) *
-                            (1 + playerData.getStrength() / 100);
-                    
-                    damage = damage * (playerData.getMaxEnergy() / 100);
-                }
+            ItemInfo itemInfo = ItemInfo.parseItemInfo(p.getInventory().getItemInMainHand());
+            if (itemInfo != null) {
+                damage = playerData.getPlayerActionManager().calculateDamage();
+
+                damage = damage * (1 + (playerData.getMaxEnergy() / 100));
+                mob.damage(p, damage, skrpg);
             }
-            mob.damage(p, damage, skrpg);
+
+
         }
         natureLaunch.remove();
     }
