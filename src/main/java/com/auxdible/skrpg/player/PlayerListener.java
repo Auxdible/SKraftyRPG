@@ -22,6 +22,10 @@ import com.auxdible.skrpg.player.guilds.raid.RaidMob;
 import com.auxdible.skrpg.player.guilds.raid.RaidMobs;
 import com.auxdible.skrpg.player.quests.Quests;
 import com.auxdible.skrpg.player.quests.TutorialQuest;
+import com.auxdible.skrpg.player.quests.royaltyquests.RoyaltyQuest;
+import com.auxdible.skrpg.player.quests.royaltyquests.RoyaltyQuestDifficulty;
+import com.auxdible.skrpg.player.quests.royaltyquests.RoyaltyQuestType;
+import com.auxdible.skrpg.player.quests.royaltyquests.RoyaltyUpgrades;
 import com.auxdible.skrpg.player.skills.*;
 import com.auxdible.skrpg.mobs.Mob;
 import com.auxdible.skrpg.mobs.MobType;
@@ -31,9 +35,11 @@ import com.auxdible.skrpg.utils.ItemTweaker;
 import com.auxdible.skrpg.utils.Text;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.minecraft.server.v1_16_R3.NBTTagCompound;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Ageable;
+import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -1647,6 +1653,96 @@ public class PlayerListener implements Listener {
                 }
             }
             updateProcess(e.getView().getTopInventory());
+        } else if (e.getView().getTitle().equalsIgnoreCase(Text.color("&6♛ &7Royalty Menu &6♛"))) {
+            e.setCancelled(true);
+            if (e.getCurrentItem() != null) {
+                if (e.getCurrentItem().getItemMeta().getDisplayName().equals(Text.color("&7Refresh for &61000 Royalty Points"))) {
+                    if (!playerData.hasRefreshed()) {
+                        if (playerData.getRoyaltyPoints() < 1000) {
+                            Text.applyText(p, "&cYou need more Royalty Points to refresh!");
+                            p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.2f);
+                        } else {
+                            p.closeInventory();
+                            playerData.getRoyaltyQuests().clear();
+                            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_YES, 1.0f, 0.4f);
+                            p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_FLUTE, 1.0f, 0.2f);
+                            Text.applyText(p, "&aYour &6♛ Royalty Quests &aare refreshed!");
+                            Text.applyText(p, " ");
+                            List<RoyaltyQuestType> royaltyQuestTypes = new ArrayList<>(EnumSet.allOf(RoyaltyQuestType.class));
+                            for (int i = 0; i <= playerData.getRoyaltyQuestSlots(); i++) {
+                                int randomQuest = new Random().nextInt(royaltyQuestTypes.size());
+                                List<RoyaltyQuestDifficulty> validDifficulties = new ArrayList<>();
+
+                                for (RoyaltyQuestDifficulty royaltyQuestDifficulty : EnumSet.allOf(RoyaltyQuestDifficulty.class)) {
+                                    if (SKRPG.levelToInt(playerData.getCombat().getLevel().toString()) >= SKRPG.levelToInt(royaltyQuestDifficulty.getMinLevel().toString())) {
+                                        validDifficulties.add(royaltyQuestDifficulty);
+                                    }
+                                }
+                                int randomDifficulty = new Random().nextInt(validDifficulties.size());
+                                RoyaltyQuest royaltyQuest = new RoyaltyQuest(0,
+                                        royaltyQuestTypes.get(randomQuest).getAmountNeeded() * (validDifficulties.get(randomDifficulty).getPriority() + 1), royaltyQuestTypes.get(randomQuest), validDifficulties.get(randomDifficulty));
+                                Text.applyText(p, "&8&l>  &r&6" + royaltyQuest.getRoyaltyQuestType().getName() + " &8&l| &r" + royaltyQuest.getDifficulty().getColoredName());
+                                Text.applyText(p, "&7" + royaltyQuest.getRoyaltyQuestType().getObjective());
+                                Text.applyText(p, " ");
+                                Text.applyText(p, "&6" + royaltyQuest.getProgressInteger() + "&7/&6" + royaltyQuest.getAmountNeeded());
+
+                                playerData.getRoyaltyQuests().add(royaltyQuest);
+                            }
+                        }
+                    }
+
+                } else if (e.getCurrentItem().getItemMeta().getDisplayName().equals(Text.color("&6Royalty Shop"))) {
+                    playerData.getPlayerActionManager().openRoyaltyShop();
+                }
+            }
+        } else if (e.getView().getTitle().equals(Text.color("&6♛ &7Royalty Shop &6♛"))) {
+            e.setCancelled(true);
+            if (e.getCurrentItem() != null) {
+                net.minecraft.server.v1_16_R3.ItemStack stack = CraftItemStack.asNMSCopy(e.getCurrentItem());
+                NBTTagCompound nbtTagCompound = stack.getTag();
+                if (nbtTagCompound != null) {
+                    if (nbtTagCompound.hasKey("price")) {
+                        RoyaltyUpgrades royaltyUpgrades = null;
+                        switch (ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName())) {
+                            case "Increased Security":
+                                royaltyUpgrades = RoyaltyUpgrades.INCREASED_SECURITY;
+                                break;
+                            case "Long Live The King":
+                                royaltyUpgrades = RoyaltyUpgrades.LONG_LIVE_THE_KING;
+                                break;
+                            case "Price Reduction":
+                                royaltyUpgrades = RoyaltyUpgrades.REDUCE_PRICE;
+                                break;
+                            case "Allowance":
+                                royaltyUpgrades = RoyaltyUpgrades.ALLOWANCE;
+                                break;
+                        }
+                        if (royaltyUpgrades != null) {
+                            int price = nbtTagCompound.getInt("price");
+                            if (playerData.getRoyaltyPoints() < price) {
+                                Text.applyText(p, "&cYou need more Royalty Points to buy this!");
+                                p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.2f);
+                                return;
+                            }
+
+                            if (!playerData.getRoyaltyUpgrades().containsKey(royaltyUpgrades)) {
+                                playerData.getRoyaltyUpgrades().put(royaltyUpgrades, 1);
+                            } else {
+                                if (playerData.getRoyaltyUpgrades().get(royaltyUpgrades) == royaltyUpgrades.getMaxTier()) {
+                                    Text.applyText(p, "&cYou already have the maximum level for this upgrade!");
+                                    p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.2f);
+                                    return;
+                                }
+                                playerData.getRoyaltyUpgrades().put(royaltyUpgrades, playerData.getRoyaltyUpgrades().get(royaltyUpgrades) + 1);
+                            }
+                            playerData.setRoyaltyPoints(playerData.getRoyaltyPoints() - price);
+                            Text.applyText(p, "&7You purchased &6" + royaltyUpgrades.getRoyaltyUpgradeName() + " " + playerData.getRoyaltyUpgrades().get(royaltyUpgrades) + " &7for &6" + price + " Royalty Points&7.");
+                            p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 0.2f);
+                            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_YES, 1.0f, 0.2f);
+                        }
+                    }
+                }
+            }
         }
     }
     public void updateProcess(Inventory inv) {

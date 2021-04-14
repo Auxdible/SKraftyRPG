@@ -16,7 +16,8 @@ public enum Abilities {
     SPEED_BOOST(new SpeedBoostAbility()),
     NATURE_LAUNCH(new NatureLaunchAbility()),
     CRAB_KING_SUMMON(new CrabKingSummonAbility()),
-    VALISSA_ARACHNE_SUMMON(new ValissaArachneSummonAbility());
+    VALISSA_ARACHNE_SUMMON(new ValissaArachneSummonAbility()),
+    STUN(new StunAbility());
     private Ability ability;
     Abilities(Ability ability) {
         this.ability = ability;
@@ -41,13 +42,17 @@ public enum Abilities {
             }
         }
         if (ability == null) { return; }
-        if (playerData.getEnergy() < ability.getCost()) {
+        int cost = ability.getCost();
+        if (cost == -1) {
+            cost = playerData.getMaxEnergy();
+        }
+        if (playerData.getEnergy() < cost) {
             Text.applyText(p, "&cYou need more Energy to do this!");
             p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
             return;
         }
-        playerData.setEnergy(playerData.getEnergy() - ability.getCost());
-        Text.applyText(p, "&7Used &e" + ability.getName() + "&7! &7[&e-" + ability.getCost() + " Energy&7]");
+        playerData.setEnergy(playerData.getEnergy() - cost);
+        Text.applyText(p, "&7Used &e" + ability.getName() + "&7! &7[&e-" + cost + " Energy&7]");
         ability.ability(playerData, skrpg);
     }
 }

@@ -40,7 +40,7 @@ public class TutorialQuest implements Quest {
     }
 
     @Override
-    public ArrayList<Integer> xpRewards() {
+    public ArrayList<Double> xpRewards() {
         return null;
     }
 

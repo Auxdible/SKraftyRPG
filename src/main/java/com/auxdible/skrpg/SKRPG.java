@@ -32,6 +32,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.server.v1_16_R3.*;
 import org.bukkit.*;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Entity;
@@ -118,35 +119,15 @@ public class SKRPG extends JavaPlugin {
         try {
             prepareStatement("CREATE TABLE IF NOT EXISTS stat_table(" +
                     "UUID varchar(36), baseHP int(11), baseDefence int(11), baseStrength int(11), " +
-                    "baseEnergy int(11), baseSpeed int(11), credits int(11), interest varchar(36), canTrade tinyint(1), raritySell varchar(36), questsCompleted longtext, runicPoints int(11), PRIMARY KEY (UUID));").executeUpdate();
-            prepareStatement("ALTER TABLE stat_table ADD COLUMN IF NOT EXISTS runicPoints INT(11) NOT NULL;").executeUpdate();
-            prepareStatement("ALTER TABLE stat_table ADD COLUMN IF NOT EXISTS runicUpgrades LONGTEXT NOT NULL;").executeUpdate();
-            prepareStatement("ALTER TABLE stat_table ADD COLUMN IF NOT EXISTS currentQuestState INT(11) NOT NULL;").executeUpdate();
-            prepareStatement("ALTER TABLE stat_table ADD COLUMN IF NOT EXISTS currentQuest VARCHAR(36) NOT NULL;").executeUpdate();
-            prepareStatement("ALTER TABLE stat_table MODIFY credits VARCHAR(40);").executeUpdate();
+                    "baseEnergy int(11), baseSpeed int(11), credits int(11), interest varchar(36), canTrade tinyint(1), raritySell varchar(36), questsCompleted longtext, runicPoints int(11), runicUpgrades longtext, currentQuestState int(11), currentQuest varchar(36), royaltyQuestSlots int(5), royaltyPoints int(11), royaltyUpgrades longtext, PRIMARY KEY (UUID));").executeUpdate();
+            prepareStatement("ALTER TABLE stat_table ADD COLUMN IF NOT EXISTS royaltyPoints INT(11) NOT NULL AFTER royaltyQuestSlots;").executeUpdate();
+            prepareStatement("ALTER TABLE stat_table ADD COLUMN IF NOT EXISTS royaltyUpgrades LONGTEXT NOT NULL AFTER royaltyPoints;").executeUpdate();
             prepareStatement("CREATE TABLE IF NOT EXISTS skills_table(UUID varchar(36), miningLevel int(11), miningXpTill int(11), miningXpTotal int(11), herbalismLevel int(11), herbalismXpTill int(11), " +
                     "herbalismXpTotal int(11), craftingLevel int(11), craftingXpTill int(11), craftingXpTotal int(11), combatLevel int(11), combatXpTill int(11), combatXpTotal int(11), runicLevel int(11), runicXpTill int(11)," +
                     "runicXpTotal int(11), PRIMARY KEY (UUID));").executeUpdate();
-            prepareStatement("ALTER TABLE skills_table ADD COLUMN IF NOT EXISTS runicLevel INT(11) NOT NULL;").executeUpdate();
-            prepareStatement("ALTER TABLE skills_table ADD COLUMN IF NOT EXISTS runicXpTill INT(11) NOT NULL;").executeUpdate();
-            prepareStatement("ALTER TABLE skills_table ADD COLUMN IF NOT EXISTS runicXpTotal INT(11) NOT NULL;").executeUpdate();
-            prepareStatement("ALTER TABLE skills_table MODIFY runicXpTill VARCHAR(13);").executeUpdate();
-            prepareStatement("ALTER TABLE skills_table MODIFY runicXpTotal VARCHAR(13);").executeUpdate();
-            prepareStatement("ALTER TABLE skills_table MODIFY combatXpTill VARCHAR(13);").executeUpdate();
-            prepareStatement("ALTER TABLE skills_table MODIFY combatXpTotal VARCHAR(13);").executeUpdate();
-            prepareStatement("ALTER TABLE skills_table MODIFY miningXpTill VARCHAR(13);").executeUpdate();
-            prepareStatement("ALTER TABLE skills_table MODIFY miningXpTotal VARCHAR(13);").executeUpdate();
-            prepareStatement("ALTER TABLE skills_table MODIFY herbalismXpTill VARCHAR(13);").executeUpdate();
-            prepareStatement("ALTER TABLE skills_table MODIFY herbalismXpTotal VARCHAR(13);").executeUpdate();
             prepareStatement("CREATE TABLE IF NOT EXISTS banks_table(bank1Level varchar(36), bank1Credits int(11), bank2Level varchar(36)," +
                     "bank2Credits int(11), bank3Level varchar(36), bank3Credits int(11), bank4Level varchar(36), bank4Credits int(11), bank5Level varchar(36)," +
                     "bank5Credits int(11), bankAmount int(11), UUID varchar(36), PRIMARY KEY (UUID));").executeUpdate();
-
-            prepareStatement("ALTER TABLE banks_table MODIFY bank1Credits VARCHAR(40);").executeUpdate();
-            prepareStatement("ALTER TABLE banks_table MODIFY bank2Credits VARCHAR(40);").executeUpdate();
-            prepareStatement("ALTER TABLE banks_table MODIFY bank3Credits VARCHAR(40);").executeUpdate();
-            prepareStatement("ALTER TABLE banks_table MODIFY bank4Credits VARCHAR(40);").executeUpdate();
-            prepareStatement("ALTER TABLE banks_table MODIFY bank5Credits VARCHAR(40);").executeUpdate();
             prepareStatement("CREATE TABLE IF NOT EXISTS collection_table(UUID varchar(36), collectionsTier longtext, collectionsAmount longtext, PRIMARY KEY (UUID));").executeUpdate();
             prepareStatement("CREATE TABLE IF NOT EXISTS guilds_table(ID int(11), NAME varchar(16), MEMBERS longtext, RANKS longtext, PERMISSIONS longtext, REGIONS longtext, PRIMARY KEY (ID));").executeUpdate();
         } catch (SQLException e) {
@@ -229,7 +210,7 @@ public class SKRPG extends JavaPlugin {
                     for (Player player : Bukkit.getOnlinePlayers()) {
                         PlayerData playerData = getPlayerManager().getPlayerData(player.getUniqueId());
                         if (playerData == null) {
-                            player.kickPlayer("&cERROR: There was no account found under this UUID! Please contact an admin if this is an error. ");
+                            player.kickPlayer(Text.color("&cERROR: There was no account found under this UUID! Please contact an admin if this is an error. "));
                             getPlayerManager().createPlayer(player.getUniqueId());
                         } else {
                             if (player.getScoreboard().getTeam("regionOwner") == null) {
@@ -279,51 +260,52 @@ public class SKRPG extends JavaPlugin {
                                     break;
                                 }
                             }
-
-                            for (NPC npc : npcManager.getNpcs()) {
-                                if (npc.getEntityPlayer() != null) {
-                                    if (player.getLocation().distance(npc.getLocation()) <= 80) {
-                                        if (!playerData.getRenderedNPCs().contains(npc)) {
-                                            PlayerConnection playerConnection = ((CraftPlayer) player).getHandle().playerConnection;
-                                            playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo
-                                                    .EnumPlayerInfoAction.ADD_PLAYER, npc.getEntityPlayer()));
-                                            playerConnection.sendPacket(new PacketPlayOutNamedEntitySpawn(npc.getEntityPlayer()));
-                                            DataWatcher watcher = npc.getEntityPlayer().getDataWatcher();
-                                            Integer byteInt = 127;
-                                            watcher.set(new DataWatcherObject<>(16, DataWatcherRegistry.a), byteInt.byteValue());
-                                            playerConnection.sendPacket(new PacketPlayOutEntityMetadata(npc.getEntityPlayer().getId(),
-                                                    npc.getEntityPlayer().getDataWatcher(), true));
-                                            playerConnection.sendPacket(new PacketPlayOutEntityHeadRotation(npc.getEntityPlayer(), (byte) (
-                                                    npc.getLocation().getYaw() * 256 / 360)));
-                                            if (npc.getItemInHand() != null) {
-                                                List<Pair<EnumItemSlot, ItemStack>> itemList = new ArrayList<>();
-                                                itemList.add(Pair.of(EnumItemSlot.MAINHAND, CraftItemStack.asNMSCopy(new ItemBuilder(npc.getItemInHand(), 1).asItem())));
-                                                playerConnection.sendPacket(new PacketPlayOutEntityEquipment(npc.getEntityPlayer().getId(), itemList));
-                                            }
-                                            player.getScoreboard().getTeam("npcs").addEntry(npc.getEntityPlayer().getName());
-                                            new BukkitRunnable() {
-                                                @Override
-                                                public void run() {
-                                                    playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, npc.getEntityPlayer()));
-                                                }
-                                            }.runTaskLater(skrpg, 50);
-                                            playerData.getRenderedNPCs().add(npc);
-                                        }
-                                    } else {
-                                        if (playerData.getRenderedNPCs() == null) {
-                                            playerData.setRenderedNPCs(new ArrayList<>());
-                                        }
-                                        if (playerData.getRenderedNPCs().contains(npc)) {
-                                            playerData.getRenderedNPCs().remove(npc);
-                                            if (npc.getEntityPlayer() != null) {
+                            if (playerData.getRenderedNPCs() != null) {
+                                for (NPC npc : npcManager.getNpcs()) {
+                                    if (npc.getEntityPlayer() != null) {
+                                        if (player.getLocation().distance(npc.getLocation()) <= 80) {
+                                            if (!playerData.getRenderedNPCs().contains(npc)) {
                                                 PlayerConnection playerConnection = ((CraftPlayer) player).getHandle().playerConnection;
-                                                playerConnection.sendPacket(new PacketPlayOutPlayerInfo(
-                                                        PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, npc.getEntityPlayer()));
-                                                playerConnection.sendPacket(new PacketPlayOutEntityDestroy(npc.getEntityPlayer().getId()));
-                                                playerData.getRenderedNPCs().remove(npc);
+                                                playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo
+                                                        .EnumPlayerInfoAction.ADD_PLAYER, npc.getEntityPlayer()));
+                                                playerConnection.sendPacket(new PacketPlayOutNamedEntitySpawn(npc.getEntityPlayer()));
+                                                DataWatcher watcher = npc.getEntityPlayer().getDataWatcher();
+                                                Integer byteInt = 127;
+                                                watcher.set(new DataWatcherObject<>(16, DataWatcherRegistry.a), byteInt.byteValue());
+                                                playerConnection.sendPacket(new PacketPlayOutEntityMetadata(npc.getEntityPlayer().getId(),
+                                                        npc.getEntityPlayer().getDataWatcher(), true));
+                                                playerConnection.sendPacket(new PacketPlayOutEntityHeadRotation(npc.getEntityPlayer(), (byte) (
+                                                        npc.getLocation().getYaw() * 256 / 360)));
+                                                if (npc.getItemInHand() != null) {
+                                                    List<Pair<EnumItemSlot, ItemStack>> itemList = new ArrayList<>();
+                                                    itemList.add(Pair.of(EnumItemSlot.MAINHAND, CraftItemStack.asNMSCopy(new ItemBuilder(npc.getItemInHand(), 1).asItem())));
+                                                    playerConnection.sendPacket(new PacketPlayOutEntityEquipment(npc.getEntityPlayer().getId(), itemList));
+                                                }
+                                                player.getScoreboard().getTeam("npcs").addEntry(npc.getEntityPlayer().getName());
+                                                new BukkitRunnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, npc.getEntityPlayer()));
+                                                    }
+                                                }.runTaskLater(skrpg, 50);
+                                                playerData.getRenderedNPCs().add(npc);
                                             }
-                                        }
+                                        } else {
+                                            if (playerData.getRenderedNPCs() == null) {
+                                                playerData.setRenderedNPCs(new ArrayList<>());
+                                            }
+                                            if (playerData.getRenderedNPCs().contains(npc)) {
+                                                playerData.getRenderedNPCs().remove(npc);
+                                                if (npc.getEntityPlayer() != null) {
+                                                    PlayerConnection playerConnection = ((CraftPlayer) player).getHandle().playerConnection;
+                                                    playerConnection.sendPacket(new PacketPlayOutPlayerInfo(
+                                                            PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, npc.getEntityPlayer()));
+                                                    playerConnection.sendPacket(new PacketPlayOutEntityDestroy(npc.getEntityPlayer().getId()));
+                                                    playerData.getRenderedNPCs().remove(npc);
+                                                }
+                                            }
 
+                                        }
                                     }
                                 }
                             }
@@ -373,6 +355,8 @@ public class SKRPG extends JavaPlugin {
                                     hpIncrease = hpIncrease + iteminfoHand.getItem().getHp() + iteminfoHand.getBonusHealth();
                                     speedIncrease = speedIncrease + iteminfoHand.getItem().getSpeed() + iteminfoHand.getBonusSpeed();
                                 }
+
+
                             }
                             if (itemInfoHelmet != null) {
                                 strengthIncrease = strengthIncrease + itemInfoHelmet.getItem().getStrength() + itemInfoHelmet.getBonusStrength();
@@ -455,6 +439,21 @@ public class SKRPG extends JavaPlugin {
                                 speedIncrease = speedIncrease + (20 *
                                         playerData.getEffect(Effects.SPEED).getLevel());
                             }
+                            List<Entity> entitiesNearby = player.getNearbyEntities(5, 10, 5);
+                            for (Entity entity : entitiesNearby) {
+                                if (entity instanceof Player) {
+                                    Player p = (Player) entity;
+                                    if (p.getUniqueId() != player.getUniqueId()) {
+                                        ItemInfo itemInfo = ItemInfo.parseItemInfo(p.getInventory().getItemInMainHand());
+                                        if (itemInfo != null) {
+                                            if (itemInfo.getItem() == Items.TANK_PLATE) {
+                                                p.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, p.getLocation(), 5);
+                                                defenceIncrease = defenceIncrease + 250;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             playerData.setStrength(playerData.getBaseStrength() + strengthIncrease);
                             playerData.setDefence(playerData.getBaseDefence() + defenceIncrease);
                             playerData.setMaxEnergy(playerData.getBaseEnergy() + energyIncrease);
@@ -492,6 +491,22 @@ public class SKRPG extends JavaPlugin {
                             player.kickPlayer("&cERROR: There was no account found under this UUID! Please contact an admin if this is an error. ");
                             getPlayerManager().createPlayer(player.getUniqueId());
                         } else {
+                            ItemInfo iteminfoHand = ItemInfo.parseItemInfo(player.getInventory().getItemInMainHand());
+                            if (iteminfoHand != null) {
+                                if (iteminfoHand.getItem().equals(Items.HEALERS_BOOK)) {
+                                    List<Entity> entitiesNearby = player.getNearbyEntities(5, 10, 5);
+                                    for (Entity entity : entitiesNearby) {
+                                        if (entity instanceof Player) {
+                                            Player p = (Player) entity;
+                                            if (p.getUniqueId() != player.getUniqueId()) {
+                                                p.getWorld().spawnParticle(Particle.HEART, p.getEyeLocation(), 5);
+                                                PlayerData playerData1 = skrpg.getPlayerManager().getPlayerData(p.getUniqueId());
+                                                playerData1.setHp(playerData1.getHp() + (playerData1.getHp() / 10));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             if (playerData.getHp() < playerData.getMaxHP()) {
                                 if ((int) Math.round(playerData.getMaxHP() * 0.1) > playerData.getMaxHP()) {
                                     playerData.setHp(playerData.getMaxHP());
@@ -552,6 +567,9 @@ public class SKRPG extends JavaPlugin {
         locationManager.disable();
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.kickPlayer("The server is reloading!");
+        }
+        for (BrokenBlock brokenBlock : brokenBlocks.keySet()) {
+            brokenBlock.create();
         }
         for (Entity entity : Bukkit.getWorld(getConfig().getString("rpgWorld")).getEntities()) {
             entity.remove();

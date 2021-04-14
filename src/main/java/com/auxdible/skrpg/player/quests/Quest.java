@@ -20,7 +20,7 @@ public interface Quest {
 
     // INDEXES
     // 0 = COMBAT, 1 = MINING, 2 = HERBALISM, 3 = CRAFTING
-    List<Integer> xpRewards();
+    List<Double> xpRewards();
 
     void executePhase(int phase, Player player, SKRPG skrpg);
 

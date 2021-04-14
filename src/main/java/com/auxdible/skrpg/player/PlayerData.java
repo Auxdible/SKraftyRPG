@@ -11,6 +11,8 @@ import com.auxdible.skrpg.player.economy.TradeItem;
 import com.auxdible.skrpg.player.effects.ActiveEffect;
 import com.auxdible.skrpg.player.effects.Effects;
 import com.auxdible.skrpg.player.quests.Quests;
+import com.auxdible.skrpg.player.quests.royaltyquests.RoyaltyQuest;
+import com.auxdible.skrpg.player.quests.royaltyquests.RoyaltyUpgrades;
 import com.auxdible.skrpg.player.skills.*;
 import com.auxdible.skrpg.regions.Region;
 import com.auxdible.skrpg.utils.Text;
@@ -57,10 +59,16 @@ public class PlayerData {
     private PlayerAction playerAction;
     private ArrayList<ActiveEffect> activeEffects;
     private List<TradeItem> stash;
+    private int royaltyQuestSlots;
+    private List<RoyaltyQuest> royaltyQuests;
+    private int royaltyPoints;
+    private HashMap<RoyaltyUpgrades, Integer> royaltyUpgrades;
+    private boolean hasRefreshed;
     public PlayerData(SKRPG skrpg, int maxHP, int maxEnergy, int strength, int defence, int speed, UUID uuid, double credits, Combat combat,
                       Mining mining, Herbalism herbalism, Crafting crafting, Runics runics, ArrayList<Bank> banks,
                       Date intrestDate, ArrayList<Collection> collections, Rarity sellAboveRarity, boolean toggleTrade, ArrayList<Quests> quests,
-                      int runicPoints, HashMap<RunicUpgrades, Integer> runicUpgrades, int questPhase, Quests currentQuest) {
+                      int runicPoints, HashMap<RunicUpgrades, Integer> runicUpgrades, int questPhase, Quests currentQuest, int royaltyQuestSlots,
+                      int royaltyPoints, HashMap<RoyaltyUpgrades, Integer> royaltyUpgrades) {
         this.crafting = crafting;
         this.maxHP = maxHP;
         this.hp = maxHP;
@@ -96,7 +104,24 @@ public class PlayerData {
         this.fifthRunicPoint = 0;
         this.activeEffects = new ArrayList<>();
         this.stash = new ArrayList<>();
+        this.royaltyQuests = new ArrayList<>();
+        this.royaltyPoints = royaltyPoints;
+        this.royaltyUpgrades = royaltyUpgrades;
+        this.royaltyQuestSlots = royaltyQuestSlots;
+        this.hasRefreshed = false;
     }
+
+    public boolean hasRefreshed() { return hasRefreshed; }
+
+    public HashMap<RoyaltyUpgrades, Integer> getRoyaltyUpgrades() { return royaltyUpgrades; }
+    public int getRoyaltyPoints() { return royaltyPoints; }
+
+    public void setRoyaltyPoints(int royaltyPoints) { this.royaltyPoints = royaltyPoints; }
+
+    public List<RoyaltyQuest> getRoyaltyQuests() { return royaltyQuests; }
+    public int getRoyaltyQuestSlots() { return royaltyQuestSlots; }
+
+    public void setRoyaltyQuestSlots(int royaltyQuestSlots) { this.royaltyQuestSlots = royaltyQuestSlots; }
 
     public List<TradeItem> getStash() { return stash; }
     public ArrayList<ActiveEffect> getActiveEffects() { return activeEffects; }
@@ -251,6 +276,7 @@ public class PlayerData {
                 Bukkit.getPlayer(uuid).setHealth(1);
             }
         }
+        Bukkit.getPlayer(uuid).getScoreboard().getObjective("health").getScore(Bukkit.getPlayer(uuid).getDisplayName()).setScore(getHp());
 
     }
     public Combat getCombat() { return combat; }

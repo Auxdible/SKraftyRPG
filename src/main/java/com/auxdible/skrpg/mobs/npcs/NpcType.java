@@ -17,7 +17,8 @@ public enum NpcType {
     FARMER_JOE(FarmerJoe.class),
     ARBOL(Arbol.class),
     BARTENDER(Bartender.class),
-    VILLAGER(VillagerNPC.class);
+    VILLAGER(VillagerNPC.class),
+    LORD_BRYAN(LordBryan.class);
 
     private Class npc;
 

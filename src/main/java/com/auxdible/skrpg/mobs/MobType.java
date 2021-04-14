@@ -62,6 +62,11 @@ public enum MobType {
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 0, 255, 0),
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 0, 255, 0),
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 0, 255, 0), new ItemBuilder(Material.BOW, 0).asItem(), "CAMO_SKELETON"),
+    SWAMP_GUARDIAN("&2Swamp Guardian", 8, 400, 400, 0, 0.2, EntityType.DROWNED,
+            null,
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 0, 255, 50),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 0, 255, 50),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 0, 255, 50), new ItemBuilder(Material.KELP, 0).asItem(), "SWAMP_GUARDIAN"),
     SPIDER("Spider", 4, 100, 90, 25, 0.5, EntityType.SPIDER,
             null, null, null, null, null, "SPIDER"),
     VALISSAS_KEEPER("&c&lValissa's Keeper", 50, 2500, 300, 50, 0.3, EntityType.CAVE_SPIDER, null, null, null, null, null, "VALISSAS_KEEPER"),
@@ -115,7 +120,7 @@ public enum MobType {
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 99, 0, 120),
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 99, 0, 120),
             new ItemBuilder(Material.NETHERITE_SWORD, 0).asItem(), "OBSIDIAN_TITAN"),
-    /* ---- MUSHROOM FOREST (LVL 8) ---- */
+    /* ---- MUSHROOM PLAINS (LVL 8) ---- */
     WARPED_MOOSHROOM("&bWarped Mooshroom", 6, 500, 0, 100, 1.0, EntityType.MUSHROOM_COW,
             null, null, null, null, null, "WARPED_MOOSHROOM"),
     MOOSHROOM("&cMooshroom", 5, 10, 0, 0, 0.4, EntityType.MUSHROOM_COW,
@@ -127,7 +132,7 @@ public enum MobType {
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 255, 0, 0),
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 255, 0, 0),
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 255, 0, 0), null, "OVERGROWN_ZOMBIE");
-    /* ---- CRYSTALLITE HILLS (LVL 15) ---- */
+    /* ---- THE DESERT (LVL 10) ---- */
 
 
     private String name;

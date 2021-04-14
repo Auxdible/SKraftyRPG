@@ -40,9 +40,12 @@ public class Collection {
             Text.applyText(player, "&7You tiered up to " + getCollectionType().getItem().getName() + " &b" +
                     Integer.parseInt(getTier().toString().replace("_", "")));
 
-            Text.applyText(player, "&7Recipes Unlocked:");
-            for (Items itemLists : rewardsMap.get(getTier())) {
-                Text.applyText(player, itemLists.getRarity().getColor() + itemLists.getName());
+
+            if (rewardsMap.get(getTier()) != null) {
+                Text.applyText(player, "&7Recipes Unlocked:");
+                for (Items itemLists : rewardsMap.get(getTier())) {
+                    Text.applyText(player, itemLists.getRarity().getColor() + itemLists.getName());
+                }
             }
             Text.applyText(player, "&8&m>                                          ");
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 0.2f);

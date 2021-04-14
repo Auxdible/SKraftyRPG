@@ -3,14 +3,13 @@ package com.auxdible.skrpg.mobs;
 
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.items.ItemInfo;
-import com.auxdible.skrpg.items.ItemType;
 import com.auxdible.skrpg.items.Items;
 import com.auxdible.skrpg.items.enchantments.Enchantments;
 import com.auxdible.skrpg.player.PlayerData;
 import com.auxdible.skrpg.player.collections.Collection;
-import com.auxdible.skrpg.player.collections.CollectionType;
-import com.auxdible.skrpg.player.collections.Tiers;
 import com.auxdible.skrpg.player.economy.TradeItem;
+import com.auxdible.skrpg.player.quests.royaltyquests.RoyaltyQuest;
+import com.auxdible.skrpg.player.quests.royaltyquests.RoyaltyQuestType;
 import com.auxdible.skrpg.player.skills.Drop;
 import com.auxdible.skrpg.player.skills.DropRarity;
 import com.auxdible.skrpg.player.skills.Level;
@@ -21,7 +20,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.*;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -271,31 +269,36 @@ public class Mob {
                             collection.levelUpCollection(player, playerData);
                         }
                     }
+                    for (RoyaltyQuest royaltyQuest : playerData.getRoyaltyQuests()) {
+                        if (royaltyQuest.getRoyaltyQuestType().equals(RoyaltyQuestType.LUMBERJACK)
+                                && mobKill.getDrop().equals(Items.WOOD)) {
+                            royaltyQuest.progress(1, player, skrpg);
+                        } else if (royaltyQuest.getRoyaltyQuestType().equals(RoyaltyQuestType.FARMER)
+                                && mobKill.getDrop().equals(Items.WHEAT)) {
+                            royaltyQuest.progress(1, player, skrpg);
+                        } else if (royaltyQuest.getRoyaltyQuestType().equals(RoyaltyQuestType.MINER)
+                                && mobKill.getDrop().equals(Items.STONE)) {
+                            royaltyQuest.progress(1, player, skrpg);
+                        } else if (royaltyQuest.getRoyaltyQuestType().equals(RoyaltyQuestType.WARRIOR)
+                                && mobKill.getDrop().equals(Items.ROTTEN_FLESH)) {
+                            royaltyQuest.progress(1, player, skrpg);
+                        }
+                        if (royaltyQuest.getRoyaltyQuestType().equals(RoyaltyQuestType.OBTAIN_EXP_COMBAT)) {
+                            royaltyQuest.progress(mobKill.getXpGiven(), player, skrpg);
+                        }
+                    }
+                    double randomDouble = Math.random();
                     if (mobKill.getRareDrops() != null) {
-                        double random = Math.random();
-                        if (mobKill.getRareDrops() != null) {
-                            for (Drop drop : mobKill.getRareDrops()) {
-                                if (drop.getChance() >= random) {
-                                    player.getInventory().addItem(Items.buildItem(drop.getItems()));
-                                    Text.applyText(player, "&r&5&lSPECIAL DROP! &r&8| " + drop.getItems()
-                                            .getRarity().getColor() + drop.getItems().getName());
-                                    Player finalPlayer = player;
-                                    new BukkitRunnable() {
-                                        int seconds = 1;
-
-                                        @Override
-                                        public void run() {
-                                            if (seconds == 1) {
-                                                finalPlayer.playSound(finalPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f);
-                                            } else if (seconds == 2) {
-                                                finalPlayer.playSound(finalPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 0.5f);
-                                            } else if (seconds == 3) {
-                                                finalPlayer.playSound(finalPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 2.0f);
-                                                cancel();
-                                            }
-                                            seconds++;
-                                        }
-                                    }.runTaskTimer(skrpg, 0, 4);
+                        for (Drop drop : mobKill.getRareDrops()) {
+                            if (drop.getChance() >= randomDouble) {
+                                playerData.getPlayerActionManager().addExistingItem(new TradeItem(drop.getItems().generateItemInfo(), 1));
+                                if (drop.getDropRarity() != DropRarity.NORMAL) {
+                                    if (drop.getDropRarity().getPriority() < 3) {
+                                        player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 0.2f);
+                                    } else {
+                                        player.playSound(player.getLocation(), Sound.ITEM_TOTEM_USE, 1.0f, 2.0f);
+                                    }
+                                    Text.applyText(player, drop.getDropRarity().getName() + " DROP! &r&8| &r&7You dropped a " + drop.getItems().getRarity().getColor() + drop.getItems().getName());
                                 }
                             }
                         }
@@ -304,6 +307,7 @@ public class Mob {
                             mobKill.getXpGiven());
                     playerData.getCombat().setTotalXP(playerData.getCombat().getTotalXP()
                             + mobKill.getXpGiven());
+
                     playerData.getCombat().levelUpSkill(player, playerData, skrpg);
                     if (playerData.getCombat().getLevel() != Level._50) {
                         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(

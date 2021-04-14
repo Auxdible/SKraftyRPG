@@ -1,23 +1,27 @@
 package com.auxdible.skrpg.player.actions;
 
 import com.auxdible.skrpg.SKRPG;
-import com.auxdible.skrpg.items.ItemInfo;
-import com.auxdible.skrpg.items.ItemType;
-import com.auxdible.skrpg.items.Items;
-import com.auxdible.skrpg.items.Quality;
+import com.auxdible.skrpg.items.*;
 import com.auxdible.skrpg.player.PlayerData;
 import com.auxdible.skrpg.player.collections.Collection;
 import com.auxdible.skrpg.player.economy.TradeItem;
 import com.auxdible.skrpg.player.quests.Quests;
+import com.auxdible.skrpg.player.quests.royaltyquests.RoyaltyQuest;
+import com.auxdible.skrpg.player.quests.royaltyquests.RoyaltyQuestDifficulty;
+import com.auxdible.skrpg.player.quests.royaltyquests.RoyaltyQuestType;
+import com.auxdible.skrpg.player.quests.royaltyquests.RoyaltyUpgrades;
 import com.auxdible.skrpg.player.skills.*;
+import com.auxdible.skrpg.regions.RegionFlags;
 import com.auxdible.skrpg.utils.ItemBuilder;
 import com.auxdible.skrpg.utils.ItemTweaker;
 import com.auxdible.skrpg.utils.Text;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.minecraft.server.v1_16_R3.NBTTagCompound;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -167,8 +171,29 @@ public class PlayerAction {
     public void onBreakBlock(Block block) {
         Player p = player;
         if (p.getGameMode().equals(GameMode.CREATIVE)) { return; }
+        if (playerData.getRegion() != null && playerData.getRegion().getRegionFlagsList().contains(RegionFlags.DECORATION_REGION)) {
+            p.playSound(p.getLocation(), Sound.ENTITY_ITEM_BREAK, 1.0f, 0.2f);
+            return;
+        }
         BlockInformation blockData = BlockInformation.getBlockData(block.getType());
         if (blockData == null) { return; }
+        ItemInfo itemInfo = ItemInfo.parseItemInfo(p.getInventory().getItemInMainHand());
+        if (blockData.getToolType() != null && itemInfo == null) {
+            p.playSound(p.getLocation(), Sound.ENTITY_ITEM_BREAK, 1.0f, 0.2f);
+            return;
+        }
+        if (blockData.getAxePriority() != -1 && itemInfo == null) {
+            p.playSound(p.getLocation(), Sound.ENTITY_ITEM_BREAK, 1.0f, 0.2f);
+            return;
+        }
+        if (itemInfo != null) {
+            Tools tools = Tools.getTool(itemInfo.getItem());
+            if (tools != null && blockData.getAxePriority() > tools.getPriority()) {
+                p.playSound(p.getLocation(), Sound.ENTITY_ITEM_BREAK, 1.0f, 0.2f);
+                return;
+            }
+        }
+        p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f);
         List<Integer> bounds = new ArrayList<>();
         for (int i = blockData.getLowerBoundDropAmount(); i <= blockData.getUpperBoundDropAmount(); i++) {
             bounds.add(i);
@@ -177,13 +202,46 @@ public class PlayerAction {
         Random randomizer = new Random();
 
         int randomInt = randomizer.nextInt(bounds.size() + 1);
+
+
+        if (randomInt != 0) {
+            randomInt--;
+        }
         for (Collection collection : playerData.getCollections()) {
             if (collection.getCollectionType().getItem().equals(blockData.getCommonDrop())) {
-                collection.setCollectionAmount(collection.getCollectionAmount() + randomInt);
+                collection.setCollectionAmount(collection.getCollectionAmount() + bounds.get(randomInt));
                 collection.levelUpCollection(p, playerData);
             }
         }
-        addItem(new TradeItem(blockData.getCommonDrop().generateItemInfo(), randomInt));
+        for (int i = 0; i < playerData.getRoyaltyQuests().size(); i++) {
+            RoyaltyQuest royaltyQuest = playerData.getRoyaltyQuests().get(i);
+            if (royaltyQuest.getRoyaltyQuestType().equals(RoyaltyQuestType.LUMBERJACK)
+                    && blockData.getCommonDrop().equals(Items.WOOD)) {
+                royaltyQuest.progress(bounds.get(randomInt), player, skrpg);
+            } else if (royaltyQuest.getRoyaltyQuestType().equals(RoyaltyQuestType.FARMER)
+                    && blockData.getCommonDrop().equals(Items.WHEAT)) {
+                royaltyQuest.progress(bounds.get(randomInt), player, skrpg);
+            } else if (royaltyQuest.getRoyaltyQuestType().equals(RoyaltyQuestType.MINER)
+                    && blockData.getCommonDrop().equals(Items.STONE)) {
+                royaltyQuest.progress(bounds.get(randomInt), player, skrpg);
+            } else if (royaltyQuest.getRoyaltyQuestType().equals(RoyaltyQuestType.WARRIOR)
+                    && blockData.getCommonDrop().equals(Items.ROTTEN_FLESH)) {
+                royaltyQuest.progress(bounds.get(randomInt), player, skrpg);
+            }
+            if (royaltyQuest.getRoyaltyQuestType().equals(RoyaltyQuestType.OBTAIN_EXP_MINING)
+                    && blockData.getXpObtained().get(1) != 0.0) {
+                royaltyQuest.progress((int) Math.round(blockData.getXpObtained().get(1)), player, skrpg);
+            }
+            if (royaltyQuest.getRoyaltyQuestType().equals(RoyaltyQuestType.OBTAIN_EXP_FARMING)
+                    && blockData.getXpObtained().get(2) != 0.0) {
+                royaltyQuest.progress((int) Math.round(blockData.getXpObtained().get(2)), player, skrpg);
+            }
+            if (royaltyQuest.getRoyaltyQuestType().equals(RoyaltyQuestType.OBTAIN_EXP_WOODCUTTING)
+                    && blockData.getXpObtained().get(3) != 0.0) {
+                royaltyQuest.progress((int) Math.round(blockData.getXpObtained().get(3)), player, skrpg);
+            }
+        }
+        addItem(new TradeItem(blockData.getCommonDrop().generateItemInfo(), bounds.get(randomInt)));
         double randomDouble = Math.random();
         double randomDouble2 = Math.random();
         if (blockData.getDrops() != null) {
@@ -306,6 +364,133 @@ public class PlayerAction {
         inv.setItem(15, new ItemBuilder(Material.MUSHROOM_STEW, 0).setName("&aCook Food").setLore(Arrays.asList(" ", Text.color("&7Apply items to food bases to create food."), Text.color("&7Food will give you temporary status effects."),  Text.color("&c&lIf you log off or die, you will lose all active effects."))).asItem());
         player.openInventory(inv);
     }
+    public void completeRoyaltyQuest(RoyaltyQuest royaltyQuest) {
+        if (royaltyQuest.getProgressInteger() < royaltyQuest.getAmountNeeded()) { return; }
+        List<Drop> royaltyDrops = Arrays.asList(Drop.WARRIOR_BLADE, Drop.ARCHER_LONGBOW, Drop.TANK_PLATE, Drop.HEALER_BOOK, Drop.TRICKSTER_WAND);
+        player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 2.0f);
+        Text.applyText(player, "&8&m>                                          ");
+        Text.applyText(player, "&6&l           QUEST COMPELTE!");
+        Text.applyText(player, " ");
+        Text.applyText(player, "&7You completed the " + royaltyQuest.getDifficulty().getColor() + royaltyQuest.getRoyaltyQuestType().getName() + " &7quest!");
+        int randomPoints = new Random().nextInt(91);
+        randomPoints = randomPoints + 10;
+        randomPoints = randomPoints * (royaltyQuest.getDifficulty().getPriority() + 1);
+        playerData.setRoyaltyPoints(playerData.getRoyaltyPoints() + randomPoints);
+        Text.applyText(player, "&6+ " + randomPoints + " Royalty Points");
+        int randomNuggets = new Random().nextInt(2500);
+        randomNuggets = randomNuggets + 500;
+        randomNuggets = randomNuggets * (royaltyQuest.getDifficulty().getPriority() + 1);
+        playerData.setCredits(playerData.getCredits() + randomNuggets);
+        Text.applyText(player, "&6+ " + randomNuggets + " Nuggets");
+        Text.applyText(player, "&8&m>                                          ");
+        double randomDouble2 = Math.random();
+        for (Drop drop : royaltyDrops) {
+            if (randomDouble2 <= drop.getChance()) {
+                playerData.getPlayerActionManager().addExistingItem(new TradeItem(drop.getItems().generateItemInfo(), 1));
+                if (drop.getDropRarity() != DropRarity.NORMAL) {
+                    if (drop.getDropRarity().getPriority() < 3) {
+                        player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 0.2f);
+                    } else {
+                        player.playSound(player.getLocation(), Sound.ITEM_TOTEM_USE, 1.0f, 2.0f);
+                    }
+                    Text.applyText(player, drop.getDropRarity().getName() + " DROP! &r&8| &r&7You dropped a " + drop.getItems().getRarity().getColor() + drop.getItems().getName());
+                }
+
+            }
+        }
+        if (royaltyQuest.getDifficulty() == RoyaltyQuestDifficulty.INSANE) {
+            new BukkitRunnable() {
+
+                @Override
+                public void run() {
+                    double randomDouble = Math.random();
+                    if (randomDouble <= 0.00001) {
+                        int randomInt = new Random().nextInt(2);
+                        player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_DEATH, 1.0f, 0.2f);
+                        player.playSound(player.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1.0f, 0.2f);
+                        player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 0.2f);
+                        if (randomInt == 1) {
+                            playerData.getPlayerActionManager().addExistingItem(new TradeItem(Drop.KINGS_STAFF.getItems().generateItemInfo(), 1));
+                            Text.applyText(player, Drop.KINGS_STAFF.getDropRarity().getName() + " DROP! &r&8| &r&7You dropped a " + Drop.KINGS_STAFF.getItems().getRarity().getColor() + Drop.KINGS_STAFF.getItems().getName());
+                            for (Player players : Bukkit.getOnlinePlayers()) {
+                                players.playSound(players.getLocation(), Sound.ENTITY_WITHER_DEATH, 1.0f, 0.2f);
+                                Text.applyText(players, Drop.KINGS_STAFF.getDropRarity().getName() + " PLAYER DROP! &r&8| &r&6" + player.getDisplayName() + " &7dropped a " + Drop.KINGS_STAFF.getItems().getRarity().getColor() + Drop.KINGS_STAFF.getItems().getName() );
+                            }
+                        } else {
+                            playerData.getPlayerActionManager().addExistingItem(new TradeItem(Drop.EXCALIBUR.getItems().generateItemInfo(), 1));
+                            Text.applyText(player, Drop.EXCALIBUR.getDropRarity().getName() + " DROP! &r&8| &r&7You dropped a " + Drop.EXCALIBUR.getItems().getRarity().getColor() + Drop.EXCALIBUR.getItems().getName());
+                            for (Player players : Bukkit.getOnlinePlayers()) {
+                                players.playSound(players.getLocation(), Sound.ENTITY_WITHER_DEATH, 1.0f, 0.2f);
+                                Text.applyText(players, Drop.EXCALIBUR.getDropRarity().getName() + " PLAYER DROP! &r&8| &r&6" + player.getDisplayName() + " &7dropped a " + Drop.EXCALIBUR.getItems().getRarity().getColor() + Drop.EXCALIBUR.getItems().getName() );
+                            }
+                        }
+                    }
+
+                }
+            }.runTaskLater(skrpg, 20);
+
+        }
+        playerData.getRoyaltyQuests().remove(royaltyQuest);
+
+    }
+    public void openRoyaltyShop() {
+        Inventory inv = Bukkit.createInventory(null, 27, Text.color("&6♛ &7Royalty Shop &6♛"));
+        for (int i = 0; i <= 26; i++) {
+            inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
+        }
+        ItemStack allowance = new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&6Allowance").asItem();
+        net.minecraft.server.v1_16_R3.ItemStack nbtStack = CraftItemStack.asNMSCopy(allowance);
+        NBTTagCompound nbtTagCompound = (nbtStack.hasTag()) ? nbtStack.getTag() : new NBTTagCompound();
+        nbtTagCompound.setInt("price",
+                1000);
+
+        inv.setItem(10, CraftItemStack.asBukkitCopy(nbtStack));
+        ItemStack reduction = new ItemBuilder(Material.ARROW, 0).setName("&6Price Reduction").asItem();
+        net.minecraft.server.v1_16_R3.ItemStack reductionStack = CraftItemStack.asNMSCopy(reduction);
+        NBTTagCompound reductionTagCompound = (reductionStack.hasTag()) ? reductionStack.getTag() : new NBTTagCompound();
+        reductionTagCompound.setInt("price",
+                2000);
+        inv.setItem(12, CraftItemStack.asBukkitCopy(reductionStack));
+        ItemStack longLiveKing = new ItemBuilder(Material.GOLDEN_HELMET, 0).setName("&6Long Live The King").asItem();
+        net.minecraft.server.v1_16_R3.ItemStack longLiveKingStack = CraftItemStack.asNMSCopy(longLiveKing);
+        NBTTagCompound longLiveKingTagCompound = (longLiveKingStack.hasTag()) ? longLiveKingStack.getTag() : new NBTTagCompound();
+        longLiveKingTagCompound.setInt("price",
+                2500);
+        inv.setItem(14, CraftItemStack.asBukkitCopy(longLiveKingStack));
+        ItemStack increasedSecurity = new ItemBuilder(Material.IRON_SWORD, 0).setName("&6Increased Security").asItem();
+        net.minecraft.server.v1_16_R3.ItemStack increasedSecurityStack = CraftItemStack.asNMSCopy(increasedSecurity);
+        NBTTagCompound increasedSecurityTagCompound = (increasedSecurityStack.hasTag()) ? increasedSecurityStack.getTag() : new NBTTagCompound();
+        increasedSecurityTagCompound.setInt("price",
+                3000);
+        inv.setItem(16, CraftItemStack.asBukkitCopy(increasedSecurityStack));
+        player.openInventory(inv);
+    }
+    public void openRoyaltyMenu() {
+        Inventory inv = Bukkit.createInventory(null, 54, Text.color("&6♛ &7Royalty Menu &6♛"));
+        for (int i = 0; i <= 53; i++) {
+            inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
+        }
+        inv.setItem(49, new ItemBuilder(Material.GOLD_NUGGET, 0).setName("&7Your Royalty Points: &6" + playerData.getRoyaltyPoints()).asItem());
+        List<Integer> slots = Arrays.asList(11, 13, 15, 29, 33);
+        for (int i = 0; i < playerData.getRoyaltyQuests().size(); i++) {
+            RoyaltyQuest royaltyQuest = playerData.getRoyaltyQuests().get(i);
+            inv.setItem(slots.get(i), new ItemBuilder(royaltyQuest.getRoyaltyQuestType().getIcon(), 0)
+                    .setName(royaltyQuest.getDifficulty().getColor() + royaltyQuest.getRoyaltyQuestType().getName()).setLore(
+                            Arrays.asList(" ", Text.color("&7" + royaltyQuest.getRoyaltyQuestType().getObjective()), " ", Text.color("&6" + royaltyQuest.getProgressInteger() + "&7/&6" + royaltyQuest.getAmountNeeded()), " ", Text.color(royaltyQuest.getDifficulty().getColoredName().toUpperCase()))
+                    ).asItem());
+        }
+        for (Integer slot : slots) {
+            if (inv.getItem(slot).getType() == Material.BLACK_STAINED_GLASS_PANE) {
+                inv.setItem(slot, new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE, 0).setName("&cNo Active Quest").asItem());
+            }
+        }
+        inv.setItem(48, new ItemBuilder(Material.GOLD_BLOCK, 0).setName("&6Royalty Shop").asItem());
+        if (!playerData.hasRefreshed()) {
+            inv.setItem(50, new ItemBuilder(Material.ARROW, 0).setName("&7Refresh for &61000 Royalty Points").asItem());
+        }
+
+        player.openInventory(inv);
+    }
     public void openBankMenu() {
         Inventory inv = Bukkit.createInventory(null, 27, "Banker");
         for (int i = 0; i <= 26; i++) {
@@ -368,6 +553,7 @@ public class PlayerAction {
             ItemStack itemStack = Items.buildItem(tradeItem.getItemInfo().getItem());
             Items.updateItem(itemStack, tradeItem.getItemInfo());
             itemStack.setAmount(tradeItem.getAmount());
+            player.getInventory().addItem(itemStack);
         }
     }
     public void addExistingItem(TradeItem tradeItem) {
@@ -396,6 +582,7 @@ public class PlayerAction {
             ItemStack itemStack = Items.buildItem(tradeItem.getItemInfo().getItem());
             Items.updateItem(itemStack, tradeItem.getItemInfo());
             itemStack.setAmount(tradeItem.getAmount());
+            player.getInventory().addItem(itemStack);
         }
     }
     public void buildRunicTable() {

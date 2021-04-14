@@ -15,7 +15,8 @@ import javax.swing.*;
 public enum Quests {
     TUTORIAL(new TutorialQuest()),
     ABANDONED_MINES(new AbandonedMinesQuest()),
-    FARMING_QUEST(new FarmingQuest());
+    FARMING_QUEST(new FarmingQuest()),
+    LORD_BRYAN(new LordBryanQuest());
     private Quest quest;
     Quests(Quest quest) {
         this.quest = quest;

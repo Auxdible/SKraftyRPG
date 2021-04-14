@@ -70,29 +70,29 @@ public class NPCManager {
         } catch (NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
         }
-        //npc.setId(id);
-        //npc.setLocation(new Location(Bukkit.getWor`ld(skrpg.getConfig().getString("rpgWorld")), x, y, z, yaw, pitch));
+
         npcs.add(npc);
         npc.buildNPC(skrpg);
         if (npc.getEntityPlayer() != null) {
             for (Player player : Bukkit.getOnlinePlayers()) {
-                PlayerConnection playerConnection = ((CraftPlayer) player).getHandle().playerConnection;
-                playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo
-                        .EnumPlayerInfoAction.ADD_PLAYER, npc.getEntityPlayer()));
-                playerConnection.sendPacket(new PacketPlayOutNamedEntitySpawn(npc.getEntityPlayer()));
-                DataWatcher watcher = npc.getEntityPlayer().getDataWatcher();
-                Integer byteInt = 127;
-                watcher.set(new DataWatcherObject<>(16, DataWatcherRegistry.a), byteInt.byteValue());
-                playerConnection.sendPacket(new PacketPlayOutEntityMetadata(npc.getEntityPlayer().getId(),
-                        watcher, true));
-                player.getScoreboard().getTeam("npcs").addEntry(npc.getEntityPlayer().getName());
-                playerConnection.sendPacket(new PacketPlayOutEntityHeadRotation(npc.getEntityPlayer(), (byte) (yaw * 256 / 360)));
-                if (npc.getItemInHand() != null) {
-                    List<Pair<EnumItemSlot, ItemStack>> itemList = new ArrayList<>();
-                    itemList.add(Pair.of(EnumItemSlot.MAINHAND, CraftItemStack.asNMSCopy(new ItemBuilder(npc.getItemInHand(), 1).asItem())));
-                    playerConnection.sendPacket(new PacketPlayOutEntityEquipment(npc.getEntityPlayer().getId(), itemList));
+                if (player.getScoreboard().getTeam("npcs") != null) {
+                    PlayerConnection playerConnection = ((CraftPlayer) player).getHandle().playerConnection;
+                    playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo
+                            .EnumPlayerInfoAction.ADD_PLAYER, npc.getEntityPlayer()));
+                    playerConnection.sendPacket(new PacketPlayOutNamedEntitySpawn(npc.getEntityPlayer()));
+                    DataWatcher watcher = npc.getEntityPlayer().getDataWatcher();
+                    Integer byteInt = 127;
+                    watcher.set(new DataWatcherObject<>(16, DataWatcherRegistry.a), byteInt.byteValue());
+                    playerConnection.sendPacket(new PacketPlayOutEntityMetadata(npc.getEntityPlayer().getId(),
+                            watcher, true));
+                    player.getScoreboard().getTeam("npcs").addEntry(npc.getEntityPlayer().getName());
+                    playerConnection.sendPacket(new PacketPlayOutEntityHeadRotation(npc.getEntityPlayer(), (byte) (yaw * 256 / 360)));
+                    if (npc.getItemInHand() != null) {
+                        List<Pair<EnumItemSlot, ItemStack>> itemList = new ArrayList<>();
+                        itemList.add(Pair.of(EnumItemSlot.MAINHAND, CraftItemStack.asNMSCopy(new ItemBuilder(npc.getItemInHand(), 1).asItem())));
+                        playerConnection.sendPacket(new PacketPlayOutEntityEquipment(npc.getEntityPlayer().getId(), itemList));
+                    }
                 }
-
             }
         }
     }

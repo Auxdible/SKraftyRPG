@@ -10,6 +10,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Calendar;
 import java.util.EnumSet;
 
 public class AddCreditsCommand implements CommandExecutor {
@@ -34,6 +38,13 @@ public class AddCreditsCommand implements CommandExecutor {
         try {
             Integer.parseInt(args[0]);
         } catch (NumberFormatException x) {
+            if (args[0].equalsIgnoreCase("resetInterest")) {
+                LocalDate localDate = LocalDate.now();
+                ZoneId zoneId = ZoneId.systemDefault();
+                skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setIntrestDate(Date.from(localDate.atStartOfDay(zoneId).toInstant()));
+                Text.applyText(player, "Reset your intrest date ((DEBUG))");
+                return false;
+            }
             Text.applyText(player, "&cPlease enter a valid number!");
             return false;
         }

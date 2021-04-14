@@ -38,8 +38,8 @@ public class FarmingQuest implements Quest {
     }
 
     @Override
-    public List<Integer> xpRewards() {
-        return Arrays.asList(0, 0, 200, 0 );
+    public List<Double> xpRewards() {
+        return Arrays.asList(0.0, 0.0, 200.0, 0.0);
     }
     public void giveItems(Player player, PlayerData playerData, Items itemType, ItemInfo itemInfo, SKRPG skrpg) {
         if (playerData.getActiveQuest() != Quests.FARMING_QUEST) { return; }

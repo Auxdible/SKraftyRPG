@@ -45,7 +45,7 @@ public class Guild {
     public ArrayList<Region> getOwnedRegions() { return ownedRegions; }
     public HashMap<PlayerData, GuildRank> getPlayersInGuild() { return playersInGuild; }
     public void takeOverRegion(Region region, Player player) {
-        // TODO REGION TAKEOVER SYSTEM
+
         for (PlayerData playerData : playersInGuild.keySet()) {
             if (Bukkit.getPlayer(playerData.getUuid()) != null) {
                 Bukkit.getPlayer(playerData.getUuid())
@@ -63,7 +63,7 @@ public class Guild {
 
     }
     public void loseRegion(Region region, Player player) {
-        // TODO REGION TAKEOVER SYSTEM
+
         for (PlayerData playerData : playersInGuild.keySet()) {
             if (Bukkit.getPlayer(playerData.getUuid()) != null) {
                 Bukkit.getPlayer(playerData.getUuid())

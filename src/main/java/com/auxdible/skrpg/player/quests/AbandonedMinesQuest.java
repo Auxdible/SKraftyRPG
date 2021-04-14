@@ -39,8 +39,8 @@ public class AbandonedMinesQuest implements Quest {
     }
 
     @Override
-    public List<Integer> xpRewards() {
-        return Arrays.asList(0, 200, 0, 0);
+    public List<Double> xpRewards() {
+        return Arrays.asList(0.0, 200.0, 0.0, 0.0);
     }
 
     @Override
