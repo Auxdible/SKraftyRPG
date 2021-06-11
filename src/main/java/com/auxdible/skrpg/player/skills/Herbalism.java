@@ -43,6 +43,7 @@ public class Herbalism {
             Text.applyText(player, "&8&m>                                         ");
             playerData.setBaseHP(playerData.getBaseHP() + 2);
             playerData.setCredits(playerData.getCredits() + creditsEarned);
+            playerData.getGlobal().calculateGlobalLevel(playerData, skrpg);
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f);
         }
     }

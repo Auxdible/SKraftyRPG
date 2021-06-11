@@ -6,6 +6,7 @@ import com.auxdible.skrpg.items.Items;
 import com.auxdible.skrpg.items.Rarity;
 import com.auxdible.skrpg.items.enchantments.Enchantment;
 import com.auxdible.skrpg.items.enchantments.Enchantments;
+import com.auxdible.skrpg.player.PlayerData;
 import com.auxdible.skrpg.utils.Text;
 
 import net.minecraft.server.v1_16_R3.NBTTagCompound;
@@ -32,9 +33,10 @@ public class ItemDataCommand implements CommandExecutor {
             return false;
         }
         Player p = (Player) sender;
-        if (p.getInventory().getItemInMainHand() != null) {
+        PlayerData playerData = skrpg.getPlayerManager().getPlayerData(p.getUniqueId());
+        if (playerData.getPlayerInventory().getItemInMainHand() != null) {
             if (args.length == 0) {
-                ItemInfo itemInfo = ItemInfo.parseItemInfo(p.getInventory().getItemInMainHand());
+                ItemInfo itemInfo = playerData.getPlayerInventory().getItemInMainHand().getItemInfo();
                 Text.applyText(p, "&7Enchantments:");
                 if (itemInfo.getEnchantmentsList().isEmpty()) {
                     Text.applyText(p, "&cNO ENCHANTMENTS");
@@ -46,7 +48,7 @@ public class ItemDataCommand implements CommandExecutor {
                 Text.applyText(p, "&7Rarity: " + itemInfo.getRarity().getNameColored());
                 Text.applyText(p, "&7Item Type: &e" + itemInfo.getItem().getName());
                 Text.applyText(p, "&7Bonus Damage: &e" + itemInfo.getBonusDamage());
-                Text.applyText(p, "&7Bonus Defence: &e" + itemInfo.getBonusDefence());
+                Text.applyText(p, "&7Bonus Defense: &e" + itemInfo.getBonusDefence());
                 Text.applyText(p, "&7Bonus Speed: &e" + itemInfo.getBonusSpeed());
                 Text.applyText(p, "&7Bonus Energy: &e" + itemInfo.getBonusEnergy());
                 Text.applyText(p, "&7Bonus Strength: &e" + itemInfo.getBonusStrength());

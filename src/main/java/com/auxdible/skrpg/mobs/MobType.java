@@ -21,6 +21,13 @@ import javax.naming.Name;
 import java.util.EnumSet;
 
 public enum MobType {
+    /* ---- THE MONOLITH ---- */
+    MONOLITH_DUMMY("Monolith Dummy", 1, 100, 0, 0, 0.1, EntityType.ZOMBIE,
+            ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjRiYWE5ZGNmODQyNTU3ODJiNTcyMjM1NzQzNzllNDJjMjM1MGYzYjg4ODE5YmE1YWVmZGRhNGVjMGU3In19fQ==",
+                    "044e4002-0012-45a8-9e58-739c39fdfb6c"),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 137, 8, 137),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 137, 8, 137),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 137, 8, 137), null, "MONOLITH_DUMMY"),
     /* ---- THE HOSTILE PLAINS (LVL 1) ---- */
     ZOMBIE("Zombie", 1, 100, 50,  0, 0.2, EntityType.ZOMBIE,
             null, null, null, null, null, "ZOMBIE"),
@@ -33,6 +40,40 @@ public enum MobType {
             EntityType.COW, null, null, null, null, null, "COW"),
     CHICKEN("Chicken", 0, 10, 0, 0, 0.4,
             EntityType.CHICKEN, null, null, null, null, null, "CHICKEN"),
+    /* ---- FISHING MOBS ---- */
+    FLOPPY_FISH("&bFloppy Fish", 1, 200, 0, 0, 0.5, EntityType.TROPICAL_FISH,
+            null, null, null, null, null, "FLOPPY_FISH"),
+    FISH("&bFish", 1, 5, 0, 0, 0, EntityType.SALMON, null, null, null, null, null, "FISH"),
+    SQUID("&bSquid", 1, 100, 0, 0, 0.2, EntityType.SQUID, null, null, null, null, null, "SQUID"),
+    WATER_WEAKLING("&bWater Weakling", 2, 50, 100, 0, 0.4, EntityType.DROWNED, null, null, null, null, null, "WATER_WEAKLING"),
+    WATER_ARCHER("&bWater Archer", 3, 100, 125, 0, 0.2, EntityType.STRAY,
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_HELMET, 0).asItem(), 0, 0, 255),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 0, 0, 255),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 0, 0, 255),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 0, 0, 255), null, "WATER_ARCHER"),
+    WATER_WARRIOR("&bWater Warrior", 4, 200, 125, 0, 0.4, EntityType.DROWNED,
+            null,
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 0, 0, 255),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 0, 0, 255),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 0, 0, 255),  new ItemBuilder(Material.WOODEN_SWORD, 0).asItem(), "WATER_WARRIOR"),
+    // CRAB ZOMBIE FISHING LEVEL 5 MOB
+    WATERFISH("&bSea Parasite", 6, 250, 200, 0, 0.5, EntityType.SILVERFISH, null, null, null, null, null, "WATERFISH"),
+    SEA_HORSE("&bSea Horse", 7, 500, 0, 200, 0.5, EntityType.ZOMBIE_HORSE, null, null, null, null, null, "SEA_HORSE"),
+    SWAMP_GUARDIAN("&2Swamp Guardian", 8, 400, 400, 0, 0.2, EntityType.DROWNED,
+            null,
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 0, 255, 50),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 0, 255, 50),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 0, 255, 50), new ItemBuilder(Material.KELP, 0).asItem(), "SWAMP_GUARDIAN"),
+    SPEEDSTER_OF_THE_SEA("&bSpeedster of The Sea", 9, 500, 300, 100, 0.6, EntityType.DROWNED,
+            null,
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 0, 0, 255),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 0, 0, 255),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 255, 255, 255), new ItemBuilder(Material.SUGAR, 0).asItem(), "SPEEDSTER_OF_THE_SEA"),
+    SEA_LORD("&bSea Lord", 10, 800, 500, 200, 0.4, EntityType.DROWNED,
+            new ItemBuilder(Material.GOLDEN_HELMET, 0).asItem(),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 0, 0, 255),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 0, 0, 150),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 0, 0, 100), new ItemBuilder(Material.NETHERITE_SHOVEL, 0).asItem(), "SEA_LORD"),
     /* ---- THE COASTLINE (LVL 5) ---- */
     CRAB_ZOMBIE("Crab Zombie", 5, 500, 80, 0, 0.4, EntityType.ZOMBIE,
             ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3R" +
@@ -48,7 +89,7 @@ public enum MobType {
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 99, 0, 0),
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 99, 0, 0),
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 99, 0, 0), new ItemBuilder(Material.GOLDEN_SWORD, 0).asItem(), "CRAB_KING"),
-    FISH("Fish", 1, 5, 0, 0, 0, EntityType.TROPICAL_FISH, null, null, null, null, null, "FISH"),
+
     /* ---- THE THICKETS (LVL 4-5) ---- */
     NATURE_ZOMBIE("&aNature Zombie", 4, 300, 110, 0, 0.2, EntityType.ZOMBIE,
             ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90Z" +
@@ -58,15 +99,20 @@ public enum MobType {
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 0, 255, 0),
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 0, 255, 0), null, "NATURE_ZOMBIE"),
     CAMO_SKELETON("&aCamouflaged Skeleton", 5, 200, 300, 0, 0.5, EntityType.SKELETON,
-            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_HELMET, 0).asItem(), 0, 255, 0),
-            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 0, 255, 0),
-            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 0, 255, 0),
-            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 0, 255, 0), new ItemBuilder(Material.BOW, 0).asItem(), "CAMO_SKELETON"),
-    SWAMP_GUARDIAN("&2Swamp Guardian", 8, 400, 400, 0, 0.2, EntityType.DROWNED,
-            null,
-            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 0, 255, 50),
-            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 0, 255, 50),
-            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 0, 255, 50), new ItemBuilder(Material.KELP, 0).asItem(), "SWAMP_GUARDIAN"),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_HELMET, 0).asItem(), 0, 100, 0),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 0, 100, 0),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 0, 100, 0),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 0, 100, 0), new ItemBuilder(Material.BOW, 0).asItem(), "CAMO_SKELETON"),
+    MIDNIGHT_ZOMBIE("&bMidnight Zombie", 8, 750, 300, 0, 0.4, EntityType.ZOMBIE,
+            ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjdlMTFkYjhmMzkyNzI3YTFjNDU5ZWI1OTFkZDhhMGFhMzg2MWMyNzQ4N2UxMzg0YmIyMmY5MTU3M2JlNyJ9fX0=", "14cb891f-35b9-43ed-aa29-86a5aa77cba0"),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 0, 255, 255),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 0, 255, 255),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 0, 255, 255), null, "MIDNIGHT_ZOMBIE"),
+    MIDNIGHT_ARCHER("&bMidnight Archer", 8, 500, 450, 0, 0.4, EntityType.ZOMBIE,
+            ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjdlMTFkYjhmMzkyNzI3YTFjNDU5ZWI1OTFkZDhhMGFhMzg2MWMyNzQ4N2UxMzg0YmIyMmY5MTU3M2JlNyJ9fX0=", "14cb891f-35b9-43ed-aa29-86a5aa77cba0"),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 0, 255, 255),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 0, 255, 255),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 0, 255, 255), new ItemBuilder(Material.BOW, 0).asItem(), "MIDNIGHT_ARCHER"),
     SPIDER("Spider", 4, 100, 90, 25, 0.5, EntityType.SPIDER,
             null, null, null, null, null, "SPIDER"),
     VALISSAS_KEEPER("&c&lValissa's Keeper", 50, 2500, 300, 50, 0.3, EntityType.CAVE_SPIDER, null, null, null, null, null, "VALISSAS_KEEPER"),
@@ -121,18 +167,33 @@ public enum MobType {
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 99, 0, 120),
             new ItemBuilder(Material.NETHERITE_SWORD, 0).asItem(), "OBSIDIAN_TITAN"),
     /* ---- MUSHROOM PLAINS (LVL 8) ---- */
-    WARPED_MOOSHROOM("&bWarped Mooshroom", 6, 500, 0, 100, 1.0, EntityType.MUSHROOM_COW,
+    WARPED_MOOSHROOM("&bWarped Mooshroom", 12, 2000, 0, 100, 1.0, EntityType.MUSHROOM_COW,
             null, null, null, null, null, "WARPED_MOOSHROOM"),
-    MOOSHROOM("&cMooshroom", 5, 10, 0, 0, 0.4, EntityType.MUSHROOM_COW,
+    MOOSHROOM("&cMooshroom", 5, 100, 0, 0, 0.4, EntityType.MUSHROOM_COW,
             null, null, null, null, null, "MOOSHROOM"),
-    OVERGROWN_ZOMBIE("Overgrown Zombie", 8, 1000, 300, 0, 0.2,  EntityType.ZOMBIE,
+    OVERGROWN_ZOMBIE("Fungal Overgrow", 12, 2500, 1000, 0, 0.2,  EntityType.ZOMBIE,
             ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6" +
                     "Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjJlOTNkODY3MzQzM2" +
                     "NlYmJiYjMyMDgzYjg1NGFiMmJlZDE2NDFhZDA1YzQ2NGE5ZWYxNTljYjRiN2NlZTkifX19", "f57e3b0c-4038-4fc2-8d02-49bd2df7eea4"),
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 255, 0, 0),
             ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 255, 0, 0),
-            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 255, 0, 0), null, "OVERGROWN_ZOMBIE");
-    /* ---- THE DESERT (LVL 10) ---- */
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 255, 0, 0), null, "OVERGROWN_ZOMBIE"),
+    MUSHROOM_GUARD("Mushroom Guard", 9, 1000, 500, 0, 0.2, EntityType.ZOMBIE,
+            ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTY2ZTFlZDhiNWU3MTlkYzgzOTgwNDlmNmZjM2VmNmRjYjBkOTk2YWE5ZGFjYjcxY2NlM2QzNzliMDc2In19fQ==", "be9f1c4a-39b3-4a54-8801-3accac9327ce"),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 255, 0, 0),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 150, 0, 0),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 255, 0, 0), new ItemBuilder(Material.RED_MUSHROOM, 0).asItem(), "MUSHROOM_GUARD"),
+    MUSHROOM_ARCHER("Mushroom Archer", 9, 750, 750, 0, 0.4, EntityType.SKELETON,
+            ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzE2NDNkZWU0YzM3MmU4OTdmYjJlMTMyNTBjMDliMmZmZjc0MWNjZTU0MmMxN2I5ZWQ5ZWVjZGZjMjdiYjkyIn19fQ==", "750f049b-d42c-4cb8-a4c5-8d07809ea7c0"),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 0, 0, 255),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 0, 0, 150),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 0, 0, 255), new ItemBuilder(Material.BOW, 0).asItem(), "MUSHROOM_ARCHER"),
+    MUSHROOM_BERSERK("Mushroom Berserk", 20, 10000, 4000, 0, 0.4, EntityType.ZOMBIE,
+            ItemTweaker.createPlayerHeadFromData("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMjc5YTYyNTgyNGQzYjA0MjUwNThiNDZkMmYxNGU1NWRiNTRjZmJjM2YzOWRlNDQ2NmJlNGQ5ODgzYWUzMWYifX19", "16eb1d8d-3dbb-434d-8c6e-3ff11a18ebef"),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_CHESTPLATE, 0).asItem(), 162, 0, 255),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_LEGGINGS, 0).asItem(), 162, 0, 255),
+            ItemTweaker.dye(new ItemBuilder(Material.LEATHER_BOOTS, 0).asItem(), 162, 0, 255), new ItemBuilder(Material.NETHERITE_SWORD, 0).asItem(), "ROYAL_MUSHROOM_GUARDr");
+
 
 
     private String name;
@@ -186,6 +247,9 @@ public enum MobType {
                     Creature creature = (Creature) entity;
                     creature.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(mobType.getSpeed());
                     creature.setRemoveWhenFarAway(false);
+                    if (mobType == MobType.MONOLITH_DUMMY) {
+                        ((Creature) entity).setAI(false);
+                    }
                 }
                 if (entity instanceof Monster) {
                     Monster monster = (Monster) entity;
@@ -199,7 +263,8 @@ public enum MobType {
                         ((Zombie) monster).setBaby(false);
                     }
                 }
-                entity.setCustomName(Text.color("&7&l☠&e" + mobType.getLevel() + "&8 &r&8" + mobType.getName() + " " + "&c" +
+                entity.setPassenger(null);
+                entity.setCustomName(Text.color("&8&l[&c" + + mobType.getLevel() + "☠&8&l] &r&7" + mobType.getName() + " &a" +
                         mobType.getMaxHP() + "&c♥"));
                 entity.setCustomNameVisible(true);
                 PersistentDataContainer persistentDataContainer = entity.getPersistentDataContainer();
@@ -220,6 +285,9 @@ public enum MobType {
                     Creature creature = (Creature) entity;
                     creature.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(mobType.getSpeed());
                     creature.setRemoveWhenFarAway(false);
+                    if (mobType == MobType.MONOLITH_DUMMY) {
+                        ((Creature) entity).setAI(false);
+                    }
                 }
                 if (entity instanceof Monster) {
                     Monster monster = (Monster) entity;
@@ -233,9 +301,10 @@ public enum MobType {
                         ((Zombie) monster).setBaby(false);
                     }
                 }
-
-                entity.setCustomName(Text.color("&7&l☠&e" + mobType.getLevel() + "&8 &r&8" + mobType.getName() + " " + "&c" +
+                entity.setPassenger(null);
+                entity.setCustomName(Text.color("&8&l[&c" + + mobType.getLevel() + "☠&8&l] &r&7" + mobType.getName() + " &a" +
                         mobType.getMaxHP() + "&c♥"));
+
                 entity.setCustomNameVisible(true);
                 PersistentDataContainer persistentDataContainer = entity.getPersistentDataContainer();
                 persistentDataContainer.set(new NamespacedKey(skrpg, "mobId"),  PersistentDataType.STRING, mobType.getId());
@@ -254,6 +323,9 @@ public enum MobType {
                     Creature creature = (Creature) entity;
                     creature.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(mobType.getSpeed());
                     creature.setRemoveWhenFarAway(false);
+                    if (mobType == MobType.MONOLITH_DUMMY) {
+                        ((Creature) entity).setAI(false);
+                    }
                 }
                 if (entity instanceof Monster) {
                     Monster monster = (Monster) entity;
@@ -268,7 +340,7 @@ public enum MobType {
                     }
                 }
 
-                entity.setCustomName(Text.color("&7&l☠&e" + mobType.getLevel() + "&8 &r&8" + mobType.getName() + " " + "&c" +
+                entity.setCustomName(Text.color("&8&l[&c" + + mobType.getLevel() + "☠&8&l] &r&7" + mobType.getName() + " &a" +
                         mobType.getMaxHP() + "&c♥"));
                 entity.setCustomNameVisible(true);
                 PersistentDataContainer persistentDataContainer = entity.getPersistentDataContainer();

@@ -1,7 +1,7 @@
 package com.auxdible.skrpg.commands.admin;
 
 import com.auxdible.skrpg.SKRPG;
-import com.auxdible.skrpg.regions.RegionFlags;
+import com.auxdible.skrpg.locations.regions.RegionFlags;
 import com.auxdible.skrpg.utils.Text;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -72,7 +72,7 @@ public class RegionSetup {
 
                 @Override
                 public void run() {
-                    skrpg.getRegionManager().addRegion(skrpg.getRegionManager().getRegions().size(), nameTyped, x, z, x2, z2, spawnLocation, raidLocation,
+                    skrpg.getRegionManager().addRegion(name, x, z, x2, z2, spawnLocation, raidLocation,
                             bannerLocation.getX(), bannerLocation.getY(), bannerLocation.getZ(), regionFlags);
                 }
             }.runTaskLater(skrpg, 5);

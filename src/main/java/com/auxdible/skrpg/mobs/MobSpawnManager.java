@@ -24,7 +24,7 @@ public class MobSpawnManager {
             double z = skrpg.getConfig().getDouble("mobSpawns." + s + ".z");
             double y = skrpg.getConfig().getDouble("mobSpawns." + s + ".y");
             String mobType = skrpg.getConfig().getString("mobSpawns." + s + ".mob");
-            addMobSpawn(Integer.parseInt(s), MobType.valueOf(mobType), x, y, z);
+            addMobSpawn(MobType.valueOf(mobType), x, y, z);
         }
     }
     public void disable() {
@@ -47,10 +47,10 @@ public class MobSpawnManager {
         }
         return null;
     }
-    public void addMobSpawn(int id, MobType mobType, double x, double y, double z) {
+    public void addMobSpawn(MobType mobType, double x, double y, double z) {
         MobSpawn mobSpawn = new MobSpawn
                 (mobType, new Location(Bukkit.getWorld(skrpg.getConfig().getString("rpgWorld")),
-                x, y, z), id);
+                x, y, z), skrpg);
         mobSpawns.add(mobSpawn);
     }
 }

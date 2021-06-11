@@ -19,11 +19,11 @@ public class SKRPGCommand implements CommandExecutor {
         }
         Player p = (Player) sender;
         if (args.length == 0) {
-            p.performCommand("skrpg help");
+            p.performCommand("skquest help");
         } else if (args[0].equalsIgnoreCase("help")) {
-            Text.applyText(p, "&8&m>        &r&b⚔ &e&lSKRPG HELP &r&b⚔&8&m        <");
-            Text.applyTextWithHover(p, "&b• &e/skrpg", "&7Use the basic SKRPG commands.");
-            Text.applyTextWithHover(p, "&b• &e/menu", "&7Access the SKRPG menu.");
+            Text.applyText(p, "&8&m>        &r&b⚔ &e&lSKQuest HELP &r&b⚔&8&m        <");
+            Text.applyTextWithHover(p, "&b• &e/skquest", "&7Use the basic SKQuest commands.");
+            Text.applyTextWithHover(p, "&b• &e/menu", "&7Access the SKQuest menu.");
             Text.applyTextWithHover(p, "&b• &e/guild", "&7Access Guilds. &c(Must be Combat 10!)");
             Text.applyTextWithHover(p, "&b• &e/trade", "&7Trade with another player.");
             Text.applyText(p, "&8&m>                              <");

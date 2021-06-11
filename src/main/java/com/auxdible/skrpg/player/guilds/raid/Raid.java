@@ -3,7 +3,7 @@ package com.auxdible.skrpg.player.guilds.raid;
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.player.PlayerData;
 import com.auxdible.skrpg.player.guilds.Guild;
-import com.auxdible.skrpg.regions.Region;
+import com.auxdible.skrpg.locations.regions.Region;
 import com.auxdible.skrpg.utils.Text;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
@@ -11,7 +11,6 @@ import org.bukkit.entity.*;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -75,7 +74,7 @@ public class Raid {
         Text.applyText(raidInitiator, "&c&lLet the raid begin!");
         raidInitiator.playSound(raidInitiator.getLocation(), Sound.BLOCK_ANVIL_USE, 1.0f, 0.5f);
         raidInitiator.sendTitle(Text.color("&c&lYOU ARE RAIDING"), Text.color(region.getName()), 20, 20, 20);
-        Text.applyText(raidInitiator,"&7Region Defence: &c" + regionStrength);
+        Text.applyText(raidInitiator,"&7Region Defense: &c" + regionStrength);
         Text.applyText(raidInitiator,"&7Region Health: &c" + regionHP);
         raidInitiator.setAllowFlight(true);
         new BukkitRunnable() {

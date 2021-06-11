@@ -3,11 +3,11 @@ package com.auxdible.skrpg.mobs.boss.scrollboss;
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.items.Items;
 import com.auxdible.skrpg.mobs.Mob;
-import com.auxdible.skrpg.player.collections.CollectionType;
+import com.auxdible.skrpg.player.PlayerData;
+import com.auxdible.skrpg.player.quests.Quests;
 import com.auxdible.skrpg.utils.Text;
 import com.auxdible.skrpg.utils.TopPlayerComparator;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
@@ -33,6 +33,11 @@ public class ScrollBossManager {
         return list.get(index);
     }
     public void rewards(HashMap<Player, Integer> rewards, ScrollBoss scrollBoss) {
+        PlayerData originalData = skrpg.getPlayerManager().getPlayerData(scrollBoss.getScrollSpawner().getUniqueId());
+        if (originalData.hasQuest(Quests.VALISSA_ARACHNE_QUEST) && originalData.getQuest(Quests.VALISSA_ARACHNE_QUEST).getPhase() == 1) {
+            originalData.getQuest(Quests.VALISSA_ARACHNE_QUEST).setPhase(2);
+            Quests.VALISSA_ARACHNE_QUEST.getQuest().executePhase(scrollBoss.getScrollSpawner(), skrpg);
+        }
         TopPlayerComparator valueComparatorTop3 = new TopPlayerComparator(rewards);
         TreeMap<Player, Integer> sortedMap = new TreeMap<>(valueComparatorTop3);
         sortedMap.putAll(rewards);

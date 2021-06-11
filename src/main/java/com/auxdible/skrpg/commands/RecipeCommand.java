@@ -39,7 +39,7 @@ public class RecipeCommand implements CommandExecutor {
                 }
 
             }
-            player.sendMessage("Recipes in SKRPG: " + items.toString());
+            player.sendMessage("Recipes in SKQuest: " + items.toString());
         }
         for (Items items : EnumSet.allOf(Items.class)) {
             if (args[0].equalsIgnoreCase(items.getId()) && items.getCraftingRecipe() != null) {

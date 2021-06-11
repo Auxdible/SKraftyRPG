@@ -4,6 +4,7 @@ import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.items.ItemInfo;
 import com.auxdible.skrpg.items.ItemType;
 import com.auxdible.skrpg.items.Items;
+import com.auxdible.skrpg.mobs.DamageType;
 import com.auxdible.skrpg.mobs.Mob;
 import com.auxdible.skrpg.player.PlayerData;
 import com.auxdible.skrpg.utils.ItemBuilder;
@@ -37,12 +38,12 @@ public class NatureLaunchAbility implements Ability {
         }
         int damage;
         for (Mob mob : mobsInRange) {
-            ItemInfo itemInfo = ItemInfo.parseItemInfo(p.getInventory().getItemInMainHand());
+            ItemInfo itemInfo = playerData.getPlayerInventory().getItemInMainHand().getItemInfo();
             if (itemInfo != null) {
                 damage = playerData.getPlayerActionManager().calculateDamage();
 
                 damage = damage * (1 + (playerData.getMaxEnergy() / 100));
-                mob.damage(p, damage, skrpg);
+                mob.damage(p, damage, skrpg, DamageType.ENERGETIC);
             }
 
 

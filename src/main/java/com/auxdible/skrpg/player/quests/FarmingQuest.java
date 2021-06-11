@@ -1,10 +1,10 @@
 package com.auxdible.skrpg.player.quests;
 
 import com.auxdible.skrpg.SKRPG;
-import com.auxdible.skrpg.items.CraftingIngrediant;
 import com.auxdible.skrpg.items.ItemInfo;
 import com.auxdible.skrpg.items.Items;
 import com.auxdible.skrpg.player.PlayerData;
+import com.auxdible.skrpg.items.SKRPGItemStack;
 import com.auxdible.skrpg.player.skills.Level;
 import com.auxdible.skrpg.utils.Text;
 import org.bukkit.Sound;
@@ -12,13 +12,48 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class FarmingQuest implements Quest {
+    private int phase;
+    private SKRPG skrpg;
+    private PlayerData playerData;
     @Override
-    public List<CraftingIngrediant> getItemRewards() {
+    public void setPlayerData(PlayerData playerData) {
+        this.playerData = playerData;
+    }
+
+    @Override
+    public PlayerData getPlayerData() {
+        return playerData;
+    }
+    @Override
+    public void setSKRPG(SKRPG skrpg) { this.skrpg = skrpg; }
+    @Override
+    public SKRPG getSKRPG() { return skrpg; }
+    @Override
+    public String parseData() {
+        return phase + "";
+    }
+
+    @Override
+    public void stringToData(String data) {
+        phase = Integer.parseInt(data);
+    }
+
+    @Override
+    public void setPhase(int phase) {
+        this.phase = phase;
+    }
+
+    @Override
+    public int getPhase() {
+        return phase;
+    }
+
+    @Override
+    public List<SKRPGItemStack> getItemRewards() {
         return null;
     }
 
@@ -39,10 +74,10 @@ public class FarmingQuest implements Quest {
 
     @Override
     public List<Double> xpRewards() {
-        return Arrays.asList(0.0, 0.0, 200.0, 0.0);
+        return Arrays.asList(0.0, 0.0, 200.0, 0.0, 0.0);
     }
     public void giveItems(Player player, PlayerData playerData, Items itemType, ItemInfo itemInfo, SKRPG skrpg) {
-        if (playerData.getActiveQuest() != Quests.FARMING_QUEST) { return; }
+        if (!playerData.hasQuest(getQuestType())) { return; }
         int amount = 0;
         for (ItemStack itemStack : Arrays.asList(player.getInventory().getContents())) {
             ItemInfo itemInfo2 = ItemInfo.parseItemInfo(itemStack);
@@ -52,27 +87,27 @@ public class FarmingQuest implements Quest {
                 }
             }
         }
-        skrpg.getLogger().info("3");
-        if (itemType.equals(Items.SWEET_BERRIES) && playerData.getQuestPhase() == 3) {
+        if (itemType.equals(Items.SWEET_BERRIES) && phase == 3) {
             if (itemInfo.isProcessed()) {
-                executePhase(3, player, skrpg);
+                executePhase(player, skrpg);
             }
-        } else if (itemType.equals(Items.SWEET_BERRIES) && amount >= 10 && playerData.getQuestPhase() == 2) {
-            executePhase(2, player, skrpg);
+        } else if (itemType.equals(Items.SWEET_BERRIES) && amount >= 10 && phase == 2) {
+            executePhase( player, skrpg);
         }
     }
     @Override
-    public void executePhase(int phase, Player player, SKRPG skrpg) {
+    public void executePhase(Player player, SKRPG skrpg) {
+
         PlayerData playerData = skrpg.getPlayerManager().getPlayerData(player.getUniqueId());
         if (phase == 1) {
-            playerData.setQuestPhase(2);
+            setPhase(2);
 
             new BukkitRunnable() {
 
                 @Override
                 public void run() {
                     player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_YES, 1.0f, 1.0f);
-                    Text.applyText(player, "&e&lFarmer Joe &r&8| &7Alrighty, ma' little pumpkin. You want to start by farmin' some crops, &7thankfully there are some in ma' yard. &7Go gather 10 &fSweet Berries &7for me, would ya?");
+                    Text.applyText(player, "&e&lFarmer Joe &r&8| &7Alrighty, ma' pumpkin. You want to start by farmin' some crops, &7thankfully there are some in ma' yard. &7Go gather 10 &fSweet Berries &7for me, would ya?");
                 }
             }.runTaskLater(skrpg, 40);
             new BukkitRunnable() {
@@ -92,7 +127,7 @@ public class FarmingQuest implements Quest {
                 }
             }.runTaskLater(skrpg, 100);
         } else if (phase == 2) {
-            playerData.setQuestPhase(3);
+            setPhase(3);
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_YES, 1.0f, 1.0f);
             Text.applyText(player, "&e&lFarmer Joe &r&8| &7That's it! Now, we need to process the sweet berries. &7Click the Smoker behind me, and process the Sweet Berries. &7This will cost iron, so make sure you have some. &7Once you're done, bring the processed sweet berries to me.");
 
@@ -116,5 +151,10 @@ public class FarmingQuest implements Quest {
     @Override
     public String name() {
         return "Living Off The Land";
+    }
+
+    @Override
+    public Quests getQuestType() {
+        return Quests.FARMING_QUEST;
     }
 }

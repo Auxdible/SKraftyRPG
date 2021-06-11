@@ -17,30 +17,33 @@ public enum Abilities {
     NATURE_LAUNCH(new NatureLaunchAbility()),
     CRAB_KING_SUMMON(new CrabKingSummonAbility()),
     VALISSA_ARACHNE_SUMMON(new ValissaArachneSummonAbility()),
-    STUN(new StunAbility());
+    STUN(new StunAbility()),
+    ROYAL_LAUNCH(new KingStaffAbility());
     private Ability ability;
     Abilities(Ability ability) {
         this.ability = ability;
     }
     public Ability getAbility() { return ability; }
+    public static Abilities getAbilityFromItem(Items items) {
+        for (Abilities abilitiesSet : EnumSet.allOf(Abilities.class)) {
+            if (abilitiesSet.getAbility().getItem() == items) {
+                return abilitiesSet;
+            }
+        }
+        return null;
+    }
     public static void executeAbility(PlayerData playerData, SKRPG skrpg) {
         Player p = Bukkit.getPlayer(playerData.getUuid());
-        Items playerItem = null;
+
         if (p == null) { return; }
-        if (p.getInventory().getItemInMainHand().getType().equals(Material.AIR)) { return; }
-        if (p.getInventory().getItemInMainHand().getItemMeta() == null) { return; }
-        for (Items items : EnumSet.allOf(Items.class)) {
-            if (ChatColor.stripColor(p.getInventory().getItemInMainHand().getItemMeta().getDisplayName()).contains(items.getName())) {
-                playerItem = items;
-            }
-        }
+        if (playerData.getPlayerInventory().getItemInMainHand() == null && playerData.getPlayerInventory().getItemInMainHand().getItemInfo() == null
+        ) { skrpg.getLogger().info("null"); return; }
+        Items playerItem = playerData.getPlayerInventory().getItemInMainHand().getItemInfo().getItem();
         if (playerItem == null) { return; }
-        Ability ability = null;
-        for (Abilities abilitiesSet : EnumSet.allOf(Abilities.class)) {
-            if (abilitiesSet.getAbility().getItem() == playerItem) {
-                ability = abilitiesSet.getAbility();
-            }
-        }
+        Abilities abilities = Abilities.getAbilityFromItem(playerItem);
+        if (abilities == null) { skrpg.getLogger().info("ability null"); return; }
+        Ability ability = abilities.getAbility();
+
         if (ability == null) { return; }
         int cost = ability.getCost();
         if (cost == -1) {

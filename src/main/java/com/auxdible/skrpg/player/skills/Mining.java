@@ -34,7 +34,7 @@ public class Mining {
             Text.applyText(player, "&6&l           SKILL UP!");
             Text.applyText(player, " ");
             Text.applyText(player, "&7You leveled up to Mining &e" + playerData.getMining().getLevel().toString().replace("_", ""));
-            Text.applyText(player, "&7Earned &a+2 Defence ✿ &r&7and &64% more double drop chance!");
+            Text.applyText(player, "&7Earned &a+2 Defense ✿ &r&7and &64% more double drop chance!");
             Text.applyText(player, "&7+ &6" + creditsEarned + " Nuggets");
             Text.applyText(player, "&7Total Double Drop Chance: &6" + (4 *
                     Integer.parseInt(playerData.getMining()
@@ -43,6 +43,7 @@ public class Mining {
             Text.applyText(player, "&8&m>                                          ");
             playerData.setBaseDefence(playerData.getBaseDefence() + 2);
             playerData.setCredits(playerData.getCredits() + creditsEarned);
+            playerData.getGlobal().calculateGlobalLevel(playerData, skrpg);
             player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 0.4f);
         }
     }

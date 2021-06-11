@@ -1,11 +1,12 @@
 package com.auxdible.skrpg.player.quests;
 
 import com.auxdible.skrpg.SKRPG;
-import com.auxdible.skrpg.items.CraftingIngrediant;
 import com.auxdible.skrpg.items.ItemInfo;
 import com.auxdible.skrpg.items.Items;
 import com.auxdible.skrpg.items.enchantments.Enchantment;
 import com.auxdible.skrpg.items.enchantments.Enchantments;
+import com.auxdible.skrpg.player.PlayerData;
+import com.auxdible.skrpg.items.SKRPGItemStack;
 import com.auxdible.skrpg.player.skills.Level;
 import com.auxdible.skrpg.utils.Text;
 import org.bukkit.Sound;
@@ -13,13 +14,48 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class AbandonedMinesQuest implements Quest {
+    private int phase;
+    private SKRPG skrpg;
+    private PlayerData playerData;
     @Override
-    public ArrayList<CraftingIngrediant> getItemRewards() {
+    public void setPlayerData(PlayerData playerData) {
+        this.playerData = playerData;
+    }
+
+    @Override
+    public PlayerData getPlayerData() {
+        return playerData;
+    }
+    @Override
+    public void setSKRPG(SKRPG skrpg) { this.skrpg = skrpg; }
+    @Override
+    public SKRPG getSKRPG() { return skrpg; }
+
+    @Override
+    public String parseData() {
+        return phase + "";
+    }
+
+    @Override
+    public void stringToData(String data) {
+        phase = Integer.parseInt(data);
+    }
+    @Override
+    public void setPhase(int phase) {
+        this.phase = phase;
+    }
+
+    @Override
+    public int getPhase() {
+        return phase;
+    }
+
+    @Override
+    public List<SKRPGItemStack> getItemRewards() {
         return null;
     }
 
@@ -40,11 +76,11 @@ public class AbandonedMinesQuest implements Quest {
 
     @Override
     public List<Double> xpRewards() {
-        return Arrays.asList(0.0, 200.0, 0.0, 0.0);
+        return Arrays.asList(0.0, 200.0, 0.0, 0.0, 0.0);
     }
 
     @Override
-    public void executePhase(int phase, Player player, SKRPG skrpg) {
+    public void executePhase(Player player, SKRPG skrpg) {
         if (phase == 1) {
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_YES, 1.0f, 0.2f);
             Text.applyText(player, "&e&lOld Miner &r&8| &7The long abandoned mines are waiting for you. I will take you down the &elift. &7Meet me at the end of the mines.");
@@ -86,5 +122,10 @@ public class AbandonedMinesQuest implements Quest {
     @Override
     public String name() {
         return "The Abandoned Mines";
+    }
+
+    @Override
+    public Quests getQuestType() {
+        return Quests.ABANDONED_MINES;
     }
 }

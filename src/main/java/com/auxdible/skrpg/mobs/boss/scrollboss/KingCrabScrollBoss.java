@@ -2,6 +2,7 @@ package com.auxdible.skrpg.mobs.boss.scrollboss;
 
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.items.Items;
+import com.auxdible.skrpg.mobs.DamageType;
 import com.auxdible.skrpg.mobs.Mob;
 import com.auxdible.skrpg.mobs.MobType;
 import com.auxdible.skrpg.utils.Text;
@@ -50,72 +51,72 @@ public class KingCrabScrollBoss implements ScrollBoss {
                 }
 
                 mob = MobType.buildMob(bossMobType().getId(), skrpg, spawnLocation);
+                new BukkitRunnable() {
 
-            }
-        }.runTaskLater(skrpg, 200);
-        new BukkitRunnable() {
-
-            @Override
-            public void run() {
-                if (isDead) { cancel(); return; }
-                if (mob == null) {
-                    cancel();
-                    return;
-                }
-                if (mob.getEnt() == null) { cancel(); return; }
-                if (skrpg.getMobManager().getMobData(mob.getEnt()) == null) { cancel(); return; }
-                Random random = new Random();
-                int attack = random.nextInt(4);
-                if (attack == 0) {
-                    if (lastDamager != null) {
-                        mob.getEnt().teleport(lastDamager.getLocation());
-                        mob.getEnt().setVelocity(new Vector(0.0, 1.5, 0.0));
-                        new BukkitRunnable() {
-                            @Override
-                            public void run() {
+                    @Override
+                    public void run() {
+                        if (isDead) { cancel(); return; }
+                        if (mob == null) {
+                            cancel();
+                            return;
+                        }
+                        if (mob.getEnt() == null) { cancel(); return; }
+                        if (skrpg.getMobManager().getMobData(mob.getEnt()) == null) { cancel(); return; }
+                        Random random = new Random();
+                        int attack = random.nextInt(4);
+                        if (attack == 0) {
+                            if (lastDamager != null) {
+                                mob.getEnt().teleport(lastDamager.getLocation());
+                                mob.getEnt().setVelocity(new Vector(0.0, 1.5, 0.0));
                                 new BukkitRunnable() {
-
                                     @Override
                                     public void run() {
-                                        if (mob.getEnt().isOnGround()) {
-                                            mob.getEnt().getLocation().getWorld().playSound(mob.getEnt().getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1.0f, 0.2f);
-                                            mob.getEnt().getWorld().spawnParticle(Particle.EXPLOSION_HUGE, mob.getEnt().getLocation(), 3);
-                                            for (Player player : Bukkit.getOnlinePlayers()) {
-                                                if (mob.getEnt().getLocation().distance(player.getLocation()) <= 7) {
-                                                    player.setVelocity(new Vector(0.0, 2.0, 0.0));
-                                                    skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getPlayerActionManager().damagePlayer(1500);
-                                                    player.damage(0.1);
-                                                    Text.applyText(player, "&4&l! &r&8| &cCrab King &7stomped you for &c1500 Damage&7.");
+                                        new BukkitRunnable() {
 
+                                            @Override
+                                            public void run() {
+                                                if (mob.getEnt().isOnGround()) {
+                                                    mob.getEnt().getLocation().getWorld().playSound(mob.getEnt().getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1.0f, 0.2f);
+                                                    mob.getEnt().getWorld().spawnParticle(Particle.EXPLOSION_HUGE, mob.getEnt().getLocation(), 3);
+                                                    for (Player player : Bukkit.getOnlinePlayers()) {
+                                                        if (mob.getEnt().getLocation().distance(player.getLocation()) <= 7) {
+                                                            player.setVelocity(new Vector(0.0, 2.0, 0.0));
+                                                            skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getPlayerActionManager().damagePlayer(1500, DamageType.REGULAR);
+                                                            player.damage(0.1);
+                                                            Text.applyText(player, "&4&l! &r&8| &cCrab King &7stomped you for &c1500 Damage&7.");
+
+                                                        }
+                                                    }
+                                                    cancel();
                                                 }
                                             }
-                                            cancel();
-                                        }
+                                        }.runTaskTimer(skrpg, 0, 4);
                                     }
-                                }.runTaskTimer(skrpg, 0, 4);
+
+                                }.runTaskLater(skrpg, 4);
+                            }
+                        } else if (attack == 1) {
+                            Monster monsterEnt = (Monster) mob.getEnt();
+                            if (lastDamager != null) {
+                                monsterEnt.teleport(lastDamager.getLocation());
+                                monsterEnt.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, monsterEnt.getLocation(), 3);
+                                monsterEnt.getWorld().playSound(monsterEnt.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 1.0f, 0.2f);
+                                monsterEnt.getWorld().playSound(monsterEnt.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1.0f, 2.0f);
+                                monsterEnt.setVelocity(monsterEnt.getLocation().getDirection().multiply(2));
+                            }
+                        }
+                        if (mob.getEnt().getLocation().getBlock().getType().equals(Material.WATER)) {
+                            if (lastDamager != null) {
+                                mob.getEnt().teleport(lastDamager);
+                                lastDamager.setVelocity(new Vector(0, 0.5, 0));
                             }
 
-                        }.runTaskLater(skrpg, 4);
+                        }
                     }
-                } else if (attack == 1) {
-                    Monster monsterEnt = (Monster) mob.getEnt();
-                    if (lastDamager != null) {
-                        monsterEnt.teleport(lastDamager.getLocation());
-                        monsterEnt.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, monsterEnt.getLocation(), 3);
-                        monsterEnt.getWorld().playSound(monsterEnt.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 1.0f, 0.2f);
-                        monsterEnt.getWorld().playSound(monsterEnt.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1.0f, 2.0f);
-                        monsterEnt.setVelocity(monsterEnt.getLocation().getDirection().multiply(2));
-                    }
-                }
-                if (mob.getEnt().getLocation().getBlock().getType().equals(Material.WATER)) {
-                    if (lastDamager != null) {
-                        mob.getEnt().teleport(lastDamager);
-                        lastDamager.setVelocity(new Vector(0, 0.5, 0));
-                    }
-
-                }
+                }.runTaskTimer(skrpg, 0, 160);
             }
-        }.runTaskTimer(skrpg, 0, 160);
+        }.runTaskLater(skrpg, 200);
+
     }
 
     @Override

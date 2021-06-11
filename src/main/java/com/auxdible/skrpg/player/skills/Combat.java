@@ -46,7 +46,7 @@ public class Combat {
             Text.applyText(player, "&8&m>                                          ");
             playerData.setBaseStrength(playerData.getBaseStrength() + 2);
             playerData.setCredits(playerData.getCredits() + creditsEarned);
-            player.getScoreboard().getTeam("player").setPrefix(Text.color("&8&l[&r&e" + SKRPG.levelToInt(skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getCombat().getLevel().toString()) + "⚔&8&l] &r&7"));
+            playerData.getGlobal().calculateGlobalLevel(playerData, skrpg);
 
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f);
         }

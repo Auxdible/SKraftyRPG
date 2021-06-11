@@ -45,9 +45,9 @@ public class StatsCommand implements CommandExecutor {
                 Text.color("&7&oyour defence factored in.)")));
         hpHead.setItemMeta(hpiM);
         inv.setItem(10, hpHead);
-        inv.setItem(11, new ItemBuilder(Material.SHIELD, 0).setName("&aYour Defence ✿")
-                .setLore(Arrays.asList(" ", Text.color("&7Total Defence: &a" + playerData.getDefence() + " ✿"),
-                        Text.color("&7Base Defence: &a" + playerData.getBaseDefence() + " ✿"))).asItem());
+        inv.setItem(11, new ItemBuilder(Material.SHIELD, 0).setName("&aYour Defense ✿")
+                .setLore(Arrays.asList(" ", Text.color("&7Total Defense: &a" + playerData.getDefence() + " ✿"),
+                        Text.color("&7Base Defense: &a" + playerData.getBaseDefence() + " ✿"))).asItem());
         inv.setItem(12, new ItemBuilder(Material.RED_DYE,0).setName("&4Your Strength ☄")
                 .setLore(Arrays.asList(" ", Text.color("&7Total Strength: &4" + playerData.getStrength() + " ☄"),
                         Text.color("&7Base Strength: &4" + playerData.getBaseStrength() + " ☄"))).asItem());

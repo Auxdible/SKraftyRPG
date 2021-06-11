@@ -3,11 +3,9 @@ package com.auxdible.skrpg.mobs.boss.scrollboss;
 import com.auxdible.skrpg.items.Items;
 import com.auxdible.skrpg.mobs.Mob;
 import com.auxdible.skrpg.mobs.MobType;
-import com.auxdible.skrpg.mobs.npcs.NpcType;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 

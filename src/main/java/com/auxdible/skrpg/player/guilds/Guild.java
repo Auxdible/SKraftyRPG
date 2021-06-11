@@ -2,14 +2,12 @@ package com.auxdible.skrpg.player.guilds;
 
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.player.PlayerData;
-import com.auxdible.skrpg.regions.Region;
+import com.auxdible.skrpg.locations.regions.Region;
 import com.auxdible.skrpg.utils.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
-import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.Player;
 
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +30,7 @@ public class Guild {
         for (PlayerData playerData : playersInGuild.keySet()) {
             powerLevel = powerLevel + SKRPG.levelToInt(playerData.getCombat().getLevel().toString());
         }
+        if (this.ownedRegions == null) { this.ownedRegions = new ArrayList<>(); }
     }
     public boolean isDisbanded() { return disbanded; }
     public void setDisbanded(boolean disbanded) { this.disbanded = disbanded; }
@@ -42,7 +41,9 @@ public class Guild {
     public int getId() { return id; }
     public HashMap<GuildRank, List<GuildPermissions>> getGuildPermissions() { return guildPermissions; }
     public String getName() { return name; }
-    public ArrayList<Region> getOwnedRegions() { return ownedRegions; }
+    public ArrayList<Region> getOwnedRegions() {
+        if (this.ownedRegions == null) { this.ownedRegions = new ArrayList<>(); }
+        return ownedRegions; }
     public HashMap<PlayerData, GuildRank> getPlayersInGuild() { return playersInGuild; }
     public void takeOverRegion(Region region, Player player) {
 

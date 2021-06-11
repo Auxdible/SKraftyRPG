@@ -1,21 +1,18 @@
 package com.auxdible.skrpg.player.economy;
 
 import com.auxdible.skrpg.SKRPG;
-import com.auxdible.skrpg.items.CraftingIngrediant;
-import com.auxdible.skrpg.items.ItemInfo;
 import com.auxdible.skrpg.items.Items;
+import com.auxdible.skrpg.items.SKRPGItemStack;
 import com.auxdible.skrpg.player.PlayerData;
 import com.auxdible.skrpg.utils.ItemBuilder;
 import com.auxdible.skrpg.utils.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,8 +22,8 @@ public class Trade {
     private Player player2;
     private PlayerData playerData1;
     private PlayerData playerData2;
-    private ArrayList<TradeItem> player1Offer;
-    private ArrayList<TradeItem> player2Offer;
+    private ArrayList<SKRPGItemStack> player1Offer;
+    private ArrayList<SKRPGItemStack> player2Offer;
     private Inventory tradeInv1;
     private Inventory tradeInv2;
     private double player1CreditsOffer;
@@ -104,16 +101,16 @@ public class Trade {
         player1.openInventory(tradeInv1);
         player2.openInventory(tradeInv2);
     }
-    public void addItem(Player player, TradeItem tradeItem) {
+    public void addItem(Player player, SKRPGItemStack SKRPGItemStack) {
         List<Integer> tradeSlots1 = Arrays.asList(1, 2, 3, 10, 11, 12, 19, 20, 21);
         List<Integer> tradeSlots2 = Arrays.asList(5, 6, 7, 14, 15, 16, 23, 24, 25);
-        Items item = tradeItem.getItemInfo().getItem();
+        Items item = SKRPGItemStack.getItemInfo().getItem();
         if (player1.getUniqueId() == player.getUniqueId()) {
-            player1Offer.add(tradeItem);
+            player1Offer.add(SKRPGItemStack);
             for (int i : tradeSlots1) {
                 if (tradeInv1.getItem(i) == null) {
                     ItemStack itemStack = Items.buildItem(item);
-                    itemStack.setAmount(tradeItem.getAmount());
+                    itemStack.setAmount(SKRPGItemStack.getAmount());
                     tradeInv1.setItem(i, itemStack);
                     break;
                 }
@@ -121,17 +118,17 @@ public class Trade {
             for (int i : tradeSlots2) {
                 if (tradeInv2.getItem(i) == null) {
                     ItemStack itemStack = Items.buildItem(item);
-                    itemStack.setAmount(tradeItem.getAmount());
+                    itemStack.setAmount(SKRPGItemStack.getAmount());
                     tradeInv2.setItem(i, itemStack);
                     break;
                 }
             }
         } else {
-            player2Offer.add(tradeItem);
+            player2Offer.add(SKRPGItemStack);
             for (int i : tradeSlots1) {
                 if (tradeInv2.getItem(i) == null) {
                     ItemStack itemStack = Items.buildItem(item);
-                    itemStack.setAmount(tradeItem.getAmount());
+                    itemStack.setAmount(SKRPGItemStack.getAmount());
                     tradeInv2.setItem(i, itemStack);
                     break;
                 }
@@ -139,7 +136,7 @@ public class Trade {
             for (int i : tradeSlots2) {
                 if (tradeInv1.getItem(i) == null) {
                     ItemStack itemStack = Items.buildItem(item);
-                    itemStack.setAmount(tradeItem.getAmount());
+                    itemStack.setAmount(SKRPGItemStack.getAmount());
                     tradeInv1.setItem(i, itemStack);
                     break;
                 }
@@ -147,17 +144,17 @@ public class Trade {
         }
     }
     public void deny() {
-        for (TradeItem tradeItem : player1Offer) {
+        for (SKRPGItemStack SKRPGItemStack : player1Offer) {
 
-            ItemStack itemStack = Items.buildItem(tradeItem.getItemInfo().getItem());
-            Items.updateItem(itemStack, tradeItem.getItemInfo());
-            itemStack.setAmount(tradeItem.getAmount());
+            ItemStack itemStack = Items.buildItem(SKRPGItemStack.getItemInfo().getItem());
+            Items.updateItem(itemStack, SKRPGItemStack.getItemInfo());
+            itemStack.setAmount(SKRPGItemStack.getAmount());
             player1.getInventory().addItem(itemStack);
         }
-        for (TradeItem tradeItem : player2Offer) {
-            ItemStack itemStack = Items.buildItem(tradeItem.getItemInfo().getItem());
-            Items.updateItem(itemStack, tradeItem.getItemInfo());
-            itemStack.setAmount(tradeItem.getAmount());
+        for (SKRPGItemStack SKRPGItemStack : player2Offer) {
+            ItemStack itemStack = Items.buildItem(SKRPGItemStack.getItemInfo().getItem());
+            Items.updateItem(itemStack, SKRPGItemStack.getItemInfo());
+            itemStack.setAmount(SKRPGItemStack.getAmount());
             player2.getInventory().addItem(itemStack);
         }
         Text.applyText(player1, "&cTrade cancelled!");
@@ -184,34 +181,34 @@ public class Trade {
             player2Accepted = true;
         }
         if (player1Accepted && player2Accepted) {
-            for (TradeItem tradeItem : player1Offer) {
-                ItemStack itemStack = Items.buildItem(tradeItem.getItemInfo().getItem());
-                Items.updateItem(itemStack, tradeItem.getItemInfo());
-                itemStack.setAmount(tradeItem.getAmount());
+            for (SKRPGItemStack SKRPGItemStack : player1Offer) {
+                ItemStack itemStack = Items.buildItem(SKRPGItemStack.getItemInfo().getItem());
+                Items.updateItem(itemStack, SKRPGItemStack.getItemInfo());
+                itemStack.setAmount(SKRPGItemStack.getAmount());
                 player2.getInventory().addItem(itemStack);
             }
-            for (TradeItem tradeItem : player2Offer) {
-                ItemStack itemStack = Items.buildItem(tradeItem.getItemInfo().getItem());
-                Items.updateItem(itemStack, tradeItem.getItemInfo());
-                itemStack.setAmount(tradeItem.getAmount());
+            for (SKRPGItemStack SKRPGItemStack : player2Offer) {
+                ItemStack itemStack = Items.buildItem(SKRPGItemStack.getItemInfo().getItem());
+                Items.updateItem(itemStack, SKRPGItemStack.getItemInfo());
+                itemStack.setAmount(SKRPGItemStack.getAmount());
                 player1.getInventory().addItem(itemStack);
             }
             Text.applyText(player1, "&aTrade &e" + player1.getDisplayName() + " &e☛ " +
                       " ☚ " + player2.getDisplayName() + " &aCOMPLETE!");
             Text.applyText(player2, "&aTrade &e" + player2.getDisplayName() + " &e☛ " +
                     " ☚ " + player1.getDisplayName() + " &aCOMPLETE!");
-            for (TradeItem tradeItem : player1Offer) {
-                Items item = tradeItem.getItemInfo().getItem();
-                Text.applyText(player1, "&7x" + tradeItem.getAmount() + " &c&l- &r" +
+            for (SKRPGItemStack SKRPGItemStack : player1Offer) {
+                Items item = SKRPGItemStack.getItemInfo().getItem();
+                Text.applyText(player1, "&7x" + SKRPGItemStack.getAmount() + " &c&l- &r" +
                         item.getRarity().getColor() + item.getName());
-                Text.applyText(player2, "&7x" + tradeItem.getAmount() + " &a&l+ &r" +
+                Text.applyText(player2, "&7x" + SKRPGItemStack.getAmount() + " &a&l+ &r" +
                         item.getRarity().getColor() + item.getName());
             }
-            for (TradeItem tradeItem : player2Offer) {
-                Items item = tradeItem.getItemInfo().getItem();
-                Text.applyText(player2, "&7x" + tradeItem.getAmount() + " &c&l- &r" +
+            for (SKRPGItemStack SKRPGItemStack : player2Offer) {
+                Items item = SKRPGItemStack.getItemInfo().getItem();
+                Text.applyText(player2, "&7x" + SKRPGItemStack.getAmount() + " &c&l- &r" +
                         item.getRarity().getColor() + item.getName());
-                Text.applyText(player1, "&7x" + tradeItem.getAmount() + " &a&l+ &r" +
+                Text.applyText(player1, "&7x" + SKRPGItemStack.getAmount() + " &a&l+ &r" +
                         item.getRarity().getColor() + item.getName());
             }
             if (player1CreditsOffer != 0) {

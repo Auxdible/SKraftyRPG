@@ -4,8 +4,11 @@ import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.player.skills.BlockInformation;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.block.data.BlockData;
+
+import java.util.concurrent.BlockingDeque;
 
 
 public class BrokenBlock {
@@ -54,10 +57,16 @@ public class BrokenBlock {
     }
     public void create() {
         if (isAir || isStone) {
+            if (blockInformation == BlockInformation.CANE) {
+                return;
+            }
             location.getBlock().setBlockData(blockData);
 
         }
         if (isCrop) {
+            if (blockInformation == BlockInformation.CANE) {
+                return;
+            }
             location.getBlock().setBlockData(blockData);
             if (blockData instanceof Ageable) {
                 Ageable ageable = (Ageable) blockData;
@@ -66,10 +75,18 @@ public class BrokenBlock {
         }
         if (isStem) {
             if (blockInformation == BlockInformation.CANE) {
-                for (int i = 0; i <= 2; i++) {
-                    new Location(location.getWorld(), location.getX(), location.getY() + i, location.getZ()).getBlock().setBlockData(Material.SUGAR_CANE.createBlockData());
+                if (location.getBlock().getRelative(0, -1, 0).getType() != Material.AIR &&
+                        location.getBlock().getRelative(0, -1, 0).getType() != Material.SUGAR_CANE) {
 
+                    for (int y = 0; y <= 2; y++) {
+                        Block toCheck = location.getBlock().getRelative(0, y, 0);
+                        if (toCheck.getType() == Material.AIR) {
+                            toCheck.setType(Material.SUGAR_CANE);
+                        }
+
+                    }
                 }
+
             }
         }
     }

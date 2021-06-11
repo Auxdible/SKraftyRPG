@@ -1,11 +1,12 @@
 package com.auxdible.skrpg.items.abilities;
 
 import com.auxdible.skrpg.SKRPG;
+import com.auxdible.skrpg.items.ItemInfo;
 import com.auxdible.skrpg.items.Items;
-import com.auxdible.skrpg.mobs.MobType;
+import com.auxdible.skrpg.items.SKRPGItemStack;
 import com.auxdible.skrpg.mobs.boss.scrollboss.KingCrabScrollBoss;
 import com.auxdible.skrpg.player.PlayerData;
-import com.auxdible.skrpg.regions.RegionFlags;
+import com.auxdible.skrpg.locations.regions.RegionFlags;
 import com.auxdible.skrpg.utils.Text;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -28,15 +29,15 @@ public class CrabKingSummonAbility implements Ability {
                 return;
             }
         }
-        if (p.getInventory().getItemInMainHand().getAmount() > 1) {
-            ItemStack itemStack = p.getInventory().getItemInMainHand();
-            itemStack.setAmount(p.getInventory().getItemInMainHand().getAmount() - 1);
-            p.getInventory().setItemInMainHand(itemStack);
+        if (playerData.getPlayerInventory().getItemInMainHand().getAmount() > 1) {
+            SKRPGItemStack itemStack = playerData.getPlayerInventory().getItemInMainHand();
+            itemStack.setAmount(itemStack.getAmount() - 1);
+            playerData.getPlayerInventory().setItemInMainHand(itemStack);
         } else {
-            ItemStack itemStack = p.getInventory().getItemInMainHand();
-            itemStack.setType(Material.AIR);
-            p.getInventory().setItemInMainHand(itemStack);
+
+            playerData.getPlayerInventory().setItemInMainHand(null);
         }
+        playerData.getPlayerInventory().updateInventory(p);
         p.playSound(p.getLocation(), Sound.ENTITY_ENDERMAN_SCREAM, 1.0f, 0.2f);
         Location spawnLocation = new Location(p.getLocation().getWorld(), p.getLocation().getX(), p.getLocation().getY(), p.getLocation().getZ());
         for (Player player : Bukkit.getOnlinePlayers()) {

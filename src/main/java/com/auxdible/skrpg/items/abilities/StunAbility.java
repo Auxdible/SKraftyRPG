@@ -2,15 +2,11 @@ package com.auxdible.skrpg.items.abilities;
 
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.items.Items;
-import com.auxdible.skrpg.mobs.boss.scrollboss.KingCrabScrollBoss;
 import com.auxdible.skrpg.player.PlayerData;
-import com.auxdible.skrpg.regions.RegionFlags;
 import com.auxdible.skrpg.utils.Text;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.Potion;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;

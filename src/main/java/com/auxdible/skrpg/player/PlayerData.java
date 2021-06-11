@@ -1,28 +1,38 @@
 package com.auxdible.skrpg.player;
 
 import com.auxdible.skrpg.SKRPG;
+import com.auxdible.skrpg.items.ItemInfo;
 import com.auxdible.skrpg.items.Rarity;
-import com.auxdible.skrpg.mobs.npcs.NPC;
+import com.auxdible.skrpg.npcs.NPC;
 import com.auxdible.skrpg.player.actions.PlayerAction;
 import com.auxdible.skrpg.player.collections.Collection;
 import com.auxdible.skrpg.player.economy.Bank;
 import com.auxdible.skrpg.player.economy.Trade;
-import com.auxdible.skrpg.player.economy.TradeItem;
+import com.auxdible.skrpg.items.SKRPGItemStack;
 import com.auxdible.skrpg.player.effects.ActiveEffect;
 import com.auxdible.skrpg.player.effects.Effects;
+import com.auxdible.skrpg.player.guilds.Guild;
+import com.auxdible.skrpg.player.inventory.PlayerInventory;
+import com.auxdible.skrpg.player.quests.Quest;
 import com.auxdible.skrpg.player.quests.Quests;
 import com.auxdible.skrpg.player.quests.royaltyquests.RoyaltyQuest;
 import com.auxdible.skrpg.player.quests.royaltyquests.RoyaltyUpgrades;
 import com.auxdible.skrpg.player.skills.*;
-import com.auxdible.skrpg.regions.Region;
+import com.auxdible.skrpg.locations.regions.Region;
 import com.auxdible.skrpg.utils.Text;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.*;
 import org.bukkit.Sound;
+import org.bukkit.inventory.ItemStack;
 
+import java.lang.reflect.Array;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 public class PlayerData {
+    private SKRPG skrpg;
     private int speed;
     private int hp;
     private int maxHP;
@@ -42,6 +52,7 @@ public class PlayerData {
     private Mining mining;
     private Crafting crafting;
     private Herbalism herbalism;
+    private Fishing fishing;
     private ArrayList<Bank> banks;
     private Date intrestDate;
     private int baseSpeed;
@@ -50,25 +61,32 @@ public class PlayerData {
     private Trade trade;
     private ArrayList<Collection> collections;
     private ArrayList<Quests> completedQuests;
-    private Quests activeQuest;
-    private int questPhase;
+    private List<Quest> activeQuest;
     private List<NPC> renderedNPCs;
     private Runics runics;
     private HashMap<RunicUpgrades, Integer> runicUpgrades;
     private int fifthRunicPoint;
     private PlayerAction playerAction;
     private ArrayList<ActiveEffect> activeEffects;
-    private List<TradeItem> stash;
+    private List<SKRPGItemStack> stash;
     private int royaltyQuestSlots;
     private List<RoyaltyQuest> royaltyQuests;
     private int royaltyPoints;
     private HashMap<RoyaltyUpgrades, Integer> royaltyUpgrades;
     private boolean hasRefreshed;
+    private int marineLifeCatchChance;
+    private boolean canDrop;
+    private Global global;
+    private Location locationWhereLeft;
+    private PlayerInventory playerInventory;
     public PlayerData(SKRPG skrpg, int maxHP, int maxEnergy, int strength, int defence, int speed, UUID uuid, double credits, Combat combat,
-                      Mining mining, Herbalism herbalism, Crafting crafting, Runics runics, ArrayList<Bank> banks,
+                      Mining mining, Herbalism herbalism, Crafting crafting, Runics runics, Fishing fishing, ArrayList<Bank> banks,
                       Date intrestDate, ArrayList<Collection> collections, Rarity sellAboveRarity, boolean toggleTrade, ArrayList<Quests> quests,
-                      int runicPoints, HashMap<RunicUpgrades, Integer> runicUpgrades, int questPhase, Quests currentQuest, int royaltyQuestSlots,
-                      int royaltyPoints, HashMap<RoyaltyUpgrades, Integer> royaltyUpgrades) {
+                      int runicPoints, HashMap<RunicUpgrades, Integer> runicUpgrades, List<Quest> currentQuest, int royaltyQuestSlots,
+                      int royaltyPoints, HashMap<RoyaltyUpgrades, Integer> royaltyUpgrades, boolean canDrop, Location locationWhereLeft,
+                      String inventoryData) {
+        this.skrpg = skrpg;
+        this.marineLifeCatchChance = 0;
         this.crafting = crafting;
         this.maxHP = maxHP;
         this.hp = maxHP;
@@ -80,11 +98,12 @@ public class PlayerData {
         this.baseDefence = defence;
         this.baseEnergy = maxEnergy;
         this.baseStrength = strength;
-        this.credits = credits;
+        this.credits = (Math.round(credits * 100.0) / 100.0);
         this.baseHP = maxHP;
         this.combat = combat;
         this.mining = mining;
         this.herbalism = herbalism;
+        this.fishing = fishing;
         this.region = null;
         this.banks = banks;
         this.intrestDate = intrestDate;
@@ -96,7 +115,6 @@ public class PlayerData {
         this.sellAboveRarity = sellAboveRarity;
         this.completedQuests = quests;
         this.activeQuest = currentQuest;
-        this.questPhase = questPhase;
         this.renderedNPCs = new ArrayList<>();
         this.runicPoints = runicPoints;
         this.runics = runics;
@@ -109,6 +127,87 @@ public class PlayerData {
         this.royaltyUpgrades = royaltyUpgrades;
         this.royaltyQuestSlots = royaltyQuestSlots;
         this.hasRefreshed = false;
+        this.canDrop = canDrop;
+        this.global = new Global(this, skrpg);
+        this.locationWhereLeft = locationWhereLeft;
+        if (inventoryData == null || inventoryData.equals("") || inventoryData.equals(" ")) {
+            createInventory();
+        } else {
+            createInventory(inventoryData);
+        }
+    }
+    public Guild getGuild() {
+        return skrpg.getGuildManager().getPlayerGuild(this);
+    }
+    public PlayerInventory getPlayerInventory() {
+        if (playerInventory == null) {
+            createInventory();
+        }
+        return playerInventory; }
+
+    public void createInventory(String data) {
+        skrpg.getLogger().info(data);
+        List<String> createdData = Arrays.asList(data.split(","));
+        List<SKRPGItemStack> items = new ArrayList<>();
+        List<SKRPGItemStack> equipment = new ArrayList<>();
+        for (String string : createdData) {
+            if (!string.equals("0") && !string.equals("0*0")) {
+                skrpg.getLogger().info(createdData.indexOf(string) + " " + string);
+                if (createdData.indexOf(string) >= 37) {
+
+                    List<String> itemData = Arrays.asList(string.split("\\*"));
+                    ItemInfo itemInfo = ItemInfo.parseItemInfo(itemData.get(1));
+                    SKRPGItemStack skrpgItemStack = new SKRPGItemStack(itemInfo, Integer.parseInt(itemData.get(0)));
+                    equipment.add(skrpgItemStack);
+                } else {
+
+                    List<String> itemData = Arrays.asList(string.split("\\*"));
+
+                    ItemInfo itemInfo = ItemInfo.parseItemInfo(itemData.get(1));
+
+                    SKRPGItemStack skrpgItemStack = new SKRPGItemStack(itemInfo, Integer.parseInt(itemData.get(0)));
+                    items.add(skrpgItemStack);
+                }
+            } else {
+                items.add(null);
+            }
+        }
+        for (SKRPGItemStack skrpgItemStack : items) {
+            if (skrpgItemStack != null) {
+                if (skrpgItemStack.getItemInfo() != null) {
+                    skrpg.getLogger().info(skrpgItemStack.getItemInfo().getItem().getName());
+                }
+            }
+        }
+        playerInventory = new PlayerInventory(skrpg, this, items, equipment);
+    }
+    public void createInventory() {
+        playerInventory = new PlayerInventory(skrpg, this, new ArrayList<>(), new ArrayList<>());
+    }
+    public Location getLocationWhereLeft() { return locationWhereLeft; }
+
+    public void setLocationWhereLeft(Location locationWhereLeft) { this.locationWhereLeft = locationWhereLeft; }
+
+    public Global getGlobal() {
+        if (global == null) {
+            global = new Global(this, skrpg);
+        }
+        return global; }
+
+    public void setCanDrop(boolean canDrop) { this.canDrop = canDrop; }
+    public boolean canDrop() {
+
+        return canDrop; }
+
+    public Fishing getFishing() {
+        if (fishing == null) {
+            fishing = new Fishing(Level._0, 0, 0);
+        }
+        return fishing; }
+
+    public int getMarineLifeCatchChance() { return marineLifeCatchChance; }
+    public void setMarineLifeCatchChance(int marineLifeCatchChance) {
+        this.marineLifeCatchChance = marineLifeCatchChance;
     }
 
     public boolean hasRefreshed() { return hasRefreshed; }
@@ -123,8 +222,16 @@ public class PlayerData {
 
     public void setRoyaltyQuestSlots(int royaltyQuestSlots) { this.royaltyQuestSlots = royaltyQuestSlots; }
 
-    public List<TradeItem> getStash() { return stash; }
-    public ArrayList<ActiveEffect> getActiveEffects() { return activeEffects; }
+    public List<SKRPGItemStack> getStash() {
+        if (stash == null) {
+            stash = new ArrayList<>();
+        }
+        return stash; }
+    public ArrayList<ActiveEffect> getActiveEffects() {
+        if (activeEffects == null) {
+            activeEffects = new ArrayList<>();
+        }
+        return activeEffects; }
     public void addEffect(ActiveEffect activeEffect) {
         Player p = Bukkit.getPlayer(uuid);
         int seconds = activeEffect.getSeconds() % 60;
@@ -169,8 +276,17 @@ public class PlayerData {
     public void setActiveEffects(ArrayList<ActiveEffect> activeEffects) { this.activeEffects = activeEffects; }
 
     public void setPlayerAction(PlayerAction playerAction) { this.playerAction = playerAction; }
-    public HashMap<RunicUpgrades, Integer> getRunicUpgrades() { return runicUpgrades; }
-    public Runics getRunics() { return runics; }
+    public HashMap<RunicUpgrades, Integer> getRunicUpgrades() {
+        if (runicUpgrades == null) {
+            runicUpgrades = new HashMap<>();
+        }
+        return runicUpgrades;
+    }
+    public Runics getRunics() {
+        if (runics == null) {
+            runics = new Runics(Level._0, 0, 0);
+        }
+        return runics; }
     public int getRunicPoints() { return runicPoints; }
     public void removeRunicPoints(int runicPointsRemoved) {
         this.runicPoints = runicPoints - runicPointsRemoved;
@@ -196,15 +312,46 @@ public class PlayerData {
                 + runicPointsGained);
         getRunics().levelUpSkill(p, this, skrpg);
         this.runicPoints = runicPoints + runicPointsGained; }
-    public List<NPC> getRenderedNPCs() { return renderedNPCs; }
-    public PlayerAction getPlayerActionManager() { return playerAction; }
-    public void setQuestPhase(int questPhase) { this.questPhase = questPhase; }
-    public int getQuestPhase() { return questPhase; }
-    public void setActiveQuest(Quests activeQuest) { this.activeQuest = activeQuest; }
-    public Quests getActiveQuest() { return activeQuest; }
-    public ArrayList<Quests> getCompletedQuests() { return completedQuests; }
-    public ArrayList<Collection> getCollections() { return collections; }
-    public Rarity getSellAboveRarity() { return sellAboveRarity; }
+    public List<NPC> getRenderedNPCs() {
+        if (renderedNPCs == null) {
+            renderedNPCs = new ArrayList<>();
+        }
+        return renderedNPCs; }
+    public PlayerAction getPlayerActionManager() {
+        if (playerAction == null) {
+            playerAction = new PlayerAction(Bukkit.getPlayer(getUuid()), this, skrpg);
+        }
+        return playerAction; }
+    public List<Quest> getActiveQuest() { return activeQuest; }
+    public Quest getQuest(Quests questType) {
+        for (Quest quest : activeQuest) {
+            if (quest.getQuestType() == questType) {
+                return quest;
+            }
+        }
+        return null;
+    }
+    public boolean hasQuest(Quests questType) {
+        for (Quest quest : activeQuest) {
+            if (quest.getQuestType() == questType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public ArrayList<Quests> getCompletedQuests() {
+        return completedQuests; }
+    public ArrayList<Collection> getCollections() {
+        if (collections == null) {
+            collections = new ArrayList<>();
+        }
+        return collections; }
+    public Rarity getSellAboveRarity() {
+        if (sellAboveRarity == null) {
+            sellAboveRarity = Rarity.COMMON;
+        }
+        return sellAboveRarity; }
     public boolean canTrade() { return toggleTrade; }
     public void setToggleTrade(boolean toggleTrade) { this.toggleTrade = toggleTrade; }
     public void setSellAboveRarity(Rarity sellAboveRarity) { this.sellAboveRarity = sellAboveRarity; }
@@ -221,7 +368,11 @@ public class PlayerData {
     Bukkit.getPlayer(getUuid()).setWalkSpeed((speed / 5) * 0.01f);
     }
 
-    public Mining getMining() { return mining; }
+    public Mining getMining() {
+        if (mining == null) {
+            mining = new Mining(Level._0, 0, 0);
+        }
+        return mining; }
     public Region getRegion() { return region; }
     public void setRegion(Region region) {
         this.region = region;
@@ -235,9 +386,19 @@ public class PlayerData {
 
     public void setRenderedNPCs(List<NPC> renderedNPCs) { this.renderedNPCs = renderedNPCs; }
 
-    public Date getIntrestDate() { return intrestDate; }
+    public Date getIntrestDate() {
+        if (intrestDate == null) {
+            ZoneId zoneId = ZoneId.systemDefault();
+            LocalDate localDate = LocalDate.now();
+            intrestDate = java.sql.Date.from(localDate.atStartOfDay(zoneId).toInstant());
+        }
+        return intrestDate; }
     public void setIntrestDate(Date intrestDate) { this.intrestDate = intrestDate; }
-    public ArrayList<Bank> getBanks() { return banks; }
+    public ArrayList<Bank> getBanks() {
+        if (collections == null) {
+            collections = new ArrayList<>();
+        }
+        return banks; }
     public int getDefence() { return defence; }
     public int getEnergy() { return energy; }
     public int getHp() { return hp; }
@@ -252,6 +413,7 @@ public class PlayerData {
     public int getBaseStrength() { return baseStrength; }
     public double getCredits() { return credits; }
     public void setCredits(double credits) { this.credits = credits;
+    this.credits = (Math.round(credits * 100.0) / 100.0);
     Bukkit.getPlayer(uuid).getScoreboard().getTeam("credits").setSuffix(credits + "");
     }
     public void setDefence(int defence) { this.defence = defence; }
@@ -260,7 +422,11 @@ public class PlayerData {
             setEnergy(getMaxEnergy());
         }
     }
-    public Herbalism getHerbalism() { return herbalism; }
+    public Herbalism getHerbalism() {
+        if (herbalism == null) {
+            herbalism = new Herbalism(Level._0, 0, 0);
+        }
+        return herbalism; }
     public void setHp(int hp) { this.hp = hp;
     if (Bukkit.getPlayer(uuid) == null) { return; }
         if (getHp() > getMaxHP()) {
@@ -279,7 +445,11 @@ public class PlayerData {
         Bukkit.getPlayer(uuid).getScoreboard().getObjective("health").getScore(Bukkit.getPlayer(uuid).getDisplayName()).setScore(getHp());
 
     }
-    public Combat getCombat() { return combat; }
+    public Combat getCombat() {
+        if (combat == null) {
+            combat = new Combat(Level._0, 0, 0);
+        }
+        return combat; }
     public void setMaxEnergy(int maxEnergy) { this.maxEnergy = maxEnergy; }
     public void setMaxHP(int maxHP) { this.maxHP = maxHP; }
     public void setStrength(int strength) { this.strength = strength; }
@@ -288,7 +458,11 @@ public class PlayerData {
     public void setBaseEnergy(int setBaseEnergy) { this.baseEnergy = setBaseEnergy; this.maxEnergy = setBaseEnergy; }
     public void setBaseHP(int setBaseHP) { this.baseHP = setBaseHP; this.maxHP = setBaseHP; }
     public void setBaseStrength(int setBaseStrength) { this.baseStrength = setBaseStrength; this.strength = setBaseStrength; }
-    public Crafting getCrafting() { return crafting; }
+    public Crafting getCrafting() {
+        if (crafting == null) {
+            crafting = new Crafting(Level._0, 0, 0);
+        }
+        return crafting; }
 
 
 

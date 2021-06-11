@@ -35,7 +35,7 @@ public class CollectionsCommand implements CommandExecutor {
         Player p = (Player) sender;
         PlayerData playerData = skrpg.getPlayerManager().getPlayerData(p.getUniqueId());
         if (args.length == 0) {
-            Inventory inv = Bukkit.createInventory(null, 54, "Your Collections");
+            Inventory inv = Bukkit.createInventory(null, 54, "Your Accumulations");
             for (int i = 0; i <= 53; i++) {
                 inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE, 0).setName(" ").asItem());
             }
@@ -62,11 +62,11 @@ public class CollectionsCommand implements CommandExecutor {
             for (Collection collection : playerData.getCollections()) {
                 if (args[0].equalsIgnoreCase(collection.getCollectionType().toString())) {
                     HashMap<Tiers, List<Items>> rewardsMap = CollectionType.generateRewardsMap(collection.getCollectionType());
-                    Inventory inv = Bukkit.createInventory(null, 45, collection.getCollectionType().getItem().getName() + " | Collection Viewer");
+                    Inventory inv = Bukkit.createInventory(null, 45, collection.getCollectionType().getItem().getName() + " | Accumulation Viewer");
                     ItemStack collectionItem = Items.buildItem(collection.getCollectionType().getItem());
                     ItemMeta collectioniM = collectionItem.getItemMeta();
                     Tiers tiersNext = Tiers.valueOf("_" + (SKRPG.levelToInt(collection.getTier().toString()) + 1));
-                    collectioniM.setDisplayName(Text.color("&b" + collection.getCollectionType().getItem().getName() + " &7Collection"));
+                    collectioniM.setDisplayName(Text.color("&b" + collection.getCollectionType().getItem().getName() + " &7Accumulation"));
                     collectioniM.setLore(Arrays.asList(" ", Text.color("&7Total Collected: &b" + collection.getCollectionAmount()),
                             Text.color("&7Next Tier: &b" + SKRPG.levelToInt(tiersNext.toString()) + " &7Progress: &b" + collection.getCollectionAmount() + "&7/&b" + tiersNext.getAmountRequired()),
                             " ",

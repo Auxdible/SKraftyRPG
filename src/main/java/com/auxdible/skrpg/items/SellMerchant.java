@@ -5,5 +5,5 @@ public enum SellMerchant {
     WOODCUTTING,
     COMBAT,
     MINING,
-    WANDERING;
+    FISHING;
 }

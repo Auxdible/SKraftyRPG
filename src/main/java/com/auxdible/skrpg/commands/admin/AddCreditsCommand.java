@@ -1,7 +1,7 @@
 package com.auxdible.skrpg.commands.admin;
 
 import com.auxdible.skrpg.SKRPG;
-import com.auxdible.skrpg.items.Items;
+
 import com.auxdible.skrpg.utils.Text;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
@@ -13,8 +13,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Calendar;
-import java.util.EnumSet;
+
 
 public class AddCreditsCommand implements CommandExecutor {
     private SKRPG skrpg;
@@ -28,10 +27,10 @@ public class AddCreditsCommand implements CommandExecutor {
             return false;
         }
         Player player = (Player) sender;
-        if (!player.hasPermission("skrpg.admin")) {
+        /*if (!player.hasPermission("skrpg.admin")) {
             Text.applyText(player, "&cAdmin is required to run this command!");
             return false;
-        }
+        }*/
         if (args.length == 0) {
             Text.applyText(player, "&cPlease enter an amount!");
         }
@@ -65,6 +64,7 @@ public class AddCreditsCommand implements CommandExecutor {
         }.runTaskTimer(skrpg, 0, 4);
         skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).setCredits(
                 skrpg.getPlayerManager().getPlayerData(player.getUniqueId()).getCredits() + Integer.parseInt(args[0]));
+
         return false;
     }
 }

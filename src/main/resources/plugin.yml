@@ -1,40 +1,42 @@
-name: SKRPG
+name: SKQuest
 version: ${project.version}
 main: com.auxdible.skrpg.SKRPG
 api-version: 1.13
 authors: [Auxdible]
-description: SKrafty RPG Plugin
+description: SKQuest, an original plugin for SKrafty.
+depend: [NoteBlockAPI]
 commands:
   giveItem:
     description: Give a player an Item.
-  createMobSpawn:
+  mobspawn:
     description: Create a mob spawn.
   menu:
-    description: Open the Menu for SKRPG.
-  createregion:
-    description: Creates a region for SKRPG.
+    description: Open the Menu for SKQuest.
+  region:
+    description: Creates a region for SKQuest.
   ct:
     description: Open the crafting table.
   stats:
     description: Show your statistics.
   skills:
     description: Show your skills.
-  createnpc:
-    description: Create a npc for SKRPG.
+  npc:
+    description: Create a npc for SKQuest.
   addcredits:
     description: Add credits.
   trade:
     description: Do a trade with a player.
   spawnEntity:
     description: Spawn a entity.
-  collections:
-    description: View your collections.
+  accumulations:
+    description: View your accumulations.
   settings:
+    aliases: [sett]
     description: View your settings.
   guild:
     description: Manage things related to guilds.
-  skrpg:
-    description: View SKRPG commands.
+  skquest:
+    description: View SKQuest commands.
   recipe:
     aliases: [r]
     description: View a recipe for an item.
@@ -43,5 +45,11 @@ commands:
     description: Look at the technical information of an item.
   stash:
     description: Clear your stash.
+  forage:
+    description: Create a forage spawn point
+  quests:
+    description: See your currently active quests.
+  portal:
+    description: Access the portal setup.
 
 

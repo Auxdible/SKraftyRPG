@@ -2,13 +2,11 @@ package com.auxdible.skrpg.player.guilds;
 
 import com.auxdible.skrpg.SKRPG;
 import com.auxdible.skrpg.player.PlayerData;
-import com.auxdible.skrpg.regions.Region;
+import com.auxdible.skrpg.locations.regions.Region;
 import com.auxdible.skrpg.utils.Text;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
-import java.security.Permission;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
